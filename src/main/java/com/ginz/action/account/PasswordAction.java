@@ -66,32 +66,4 @@ public class PasswordAction extends BaseAction {
 		
 	}
 	
-	@SuppressWarnings("unchecked")
-	public void checkMobile() throws IOException{
-		
-		HttpServletResponse response = ServletActionContext.getResponse();
-		HttpServletRequest request = ServletActionContext.getRequest();
-		response.setContentType("text/html;charset=utf-8");
-		PrintWriter out = response.getWriter();
-		
-		Map<String,String[]> map = request.getParameterMap();
-		String a[] = map.get("json");
-		String jsonString = a[0];
-		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String mobile = valueMap.get("mobile");
-		
-		List<AcUser> list = accountService.findUser(" and mobile = '" + mobile + "' ");
-		if(list.size()>0){
-			//AcUser user = list.get(0);
-			JSONObject jsonObject=new JSONObject();
-			jsonObject.put("value", "true");
-			out.print(jsonObject.toString());
-		}else{
-			JSONObject jsonObject=new JSONObject();
-			jsonObject.put("value", "false");
-			out.print(jsonObject.toString());
-		}
-		
-	}
-	
 }

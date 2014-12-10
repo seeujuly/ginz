@@ -17,10 +17,13 @@ import org.apache.struts2.convention.annotation.Namespace;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ginz.action.BaseAction;
+import com.ginz.model.AcMerchant;
+import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
 import com.ginz.service.AccountService;
 import com.ginz.util.base.DictionaryUtil;
 import com.ginz.util.base.JsonUtil;
+import com.ginz.util.base.RandomUtil;
 
 @Namespace("/")
 @Action(value = "registerAction")
@@ -53,14 +56,21 @@ public class RegisterAction extends BaseAction {
 			Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 			
 			String accountType = valueMap.get("accounttype");
+			String password = valueMap.get("password");
 			
 			if(StringUtils.equals(DictionaryUtil.ACCOUNT_TYPE_01, accountType)){	//个人用户注册
 				String mobile = valueMap.get("mobile");
-				String password = valueMap.get("password");
 				
 				AcUser user = new AcUser();
 				user.setMobile(mobile);
 				user.setPassword(password);
+				
+				String userName = RandomUtil.digitsRandom();
+				List<AcUser> list =  accountService.findUser(" and userName = '" + userName + "'");
+				if(list.size()>0){
+					userName = RandomUtil.digitsRandom();
+				}
+				user.setUserName(userName);
 				user.setStatus(DictionaryUtil.ACCOUNT_STATUS_00);
 				user.setFlag(DictionaryUtil.DETELE_FLAG_00);
 				accountService.saveUser(user);
@@ -79,9 +89,9 @@ public class RegisterAction extends BaseAction {
 		
 	}
 	
-	//查重通用方法
+	//邮箱查重
 	@SuppressWarnings("unchecked")
-	public void check() throws IOException{
+	public void checkEmail() throws IOException{
 		
 		HttpServletResponse response = ServletActionContext.getResponse();
 		HttpServletRequest request = ServletActionContext.getRequest();
@@ -94,16 +104,45 @@ public class RegisterAction extends BaseAction {
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String key = valueMap.get("key");
-		String value = valueMap.get("value");
+		String email = valueMap.get("email");
 		
-		List<AcUser> list = accountService.findUser(" and " + key + " = '" + value + "' ");
-		if(list.size()>0){
+		List<AcUser> uList = accountService.findUser(" and " + email + " = '" + email + "' ");
+		List<AcProperty> pList = accountService.findProperty(" and " + email + " = '" + email + "' ");
+		List<AcMerchant> mList = accountService.findMerchant(" and " + email + " = '" + email + "' ");
+		
+		if(uList.size()>0||pList.size()>0||mList.size()>0){
 			jsonObject.put("value", "false");
 		}else{
 			jsonObject.put("value", "true");
 		}
 		out.print(jsonObject.toString());
+		
+	}
+	
+	//手机查重
+	@SuppressWarnings("unchecked")
+	public void checkMobile() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		JSONObject jsonObject=new JSONObject();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String mobile = valueMap.get("mobile");
+		
+		List<AcUser> list = accountService.findUser(" and mobile = '" + mobile + "' ");
+		if(list.size()>0){
+			jsonObject.put("value", "false");
+			out.print(jsonObject.toString());
+		}else{
+			jsonObject.put("value", "true");
+			out.print(jsonObject.toString());
+		}
 		
 	}
 	

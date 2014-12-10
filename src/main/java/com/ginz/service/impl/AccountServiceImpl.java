@@ -13,6 +13,7 @@ import com.ginz.dao.BaseDao;
 import com.ginz.model.AcMerchant;
 import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
+import com.ginz.model.AcUserDetail;
 import com.ginz.service.AccountService;
 import com.ginz.util.base.Encrypt;
 
@@ -20,6 +21,7 @@ import com.ginz.util.base.Encrypt;
 public class AccountServiceImpl implements AccountService {
 
 	private BaseDao<AcUser> userDao;
+	private BaseDao<AcUserDetail> userDetailDao;
 	private BaseDao<AcProperty> propertyDao;
 	private BaseDao<AcMerchant> merchantDao;
 	
@@ -32,6 +34,15 @@ public class AccountServiceImpl implements AccountService {
 		this.userDao = userDao;
 	}
 	
+	public BaseDao<AcUserDetail> getUserDetailDao() {
+		return userDetailDao;
+	}
+
+	@Autowired
+	public void setUserDetailDao(BaseDao<AcUserDetail> userDetailDao) {
+		this.userDetailDao = userDetailDao;
+	}
+
 	public BaseDao<AcProperty> getPropertyDao() {
 		return propertyDao;
 	}
@@ -109,6 +120,35 @@ public class AccountServiceImpl implements AccountService {
 	public List<AcUser> findUser(String condition){
 		String hql = "from AcUser where 1=1" + condition;
 		return userDao.find(hql);
+	}
+	
+	@Override
+	public AcUserDetail loadUserDetail(Long id) {
+		return userDetailDao.get(AcUserDetail.class, id);
+	}
+
+	@Override
+	public void saveUserDetail(AcUserDetail userDetail) {
+		userDetailDao.save(userDetail);
+	}
+
+	@Override
+	public void updateUserDetail(AcUserDetail userDetail) {
+		userDetailDao.saveOrUpdate(userDetail);
+	}
+
+	@Override
+	public void deleteUserDetail(Long id) {
+		AcUserDetail u = userDetailDao.get(AcUserDetail.class, id);
+		if (u != null) {
+			userDetailDao.delete(u);
+		}
+	}
+
+	@Override
+	public List<AcUserDetail> findUserDetail(String condition) {
+		String hql = "from AcUserDetail where 1=1" + condition;
+		return userDetailDao.find(hql);
 	}
 
 	//社区用户部分
@@ -232,5 +272,5 @@ public class AccountServiceImpl implements AccountService {
 		String hql = "from AcMerchant where 1=1" + condition;
 		return merchantDao.find(hql);
 	}
-	
+
 }

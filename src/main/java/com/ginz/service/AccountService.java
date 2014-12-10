@@ -5,6 +5,7 @@ import java.util.List;
 import com.ginz.model.AcMerchant;
 import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
+import com.ginz.model.AcUserDetail;
 
 public interface AccountService {
 
@@ -20,6 +21,17 @@ public interface AccountService {
 	public void deleteUser(Long id);
 	
 	public List<AcUser> findUser(String condition);
+	
+	//个人用户明细部分
+	public AcUserDetail loadUserDetail(Long id);
+
+	public void saveUserDetail(AcUserDetail userDetail);
+	
+	public void updateUserDetail(AcUserDetail userDetail);
+	
+	public void deleteUserDetail(Long id);
+	
+	public List<AcUserDetail> findUserDetail(String condition);
 	
 	//社区用户部分
 	public AcProperty loginProperty(AcProperty property);

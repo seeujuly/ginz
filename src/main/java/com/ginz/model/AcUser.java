@@ -43,21 +43,8 @@ public class AcUser implements Serializable {
 	@Column(name="address")
 	private String address;
 	
-	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="birthday")
-	private Date birthday;
-	
 	@Column(name="community_id")
 	private Long communityId;
-	
-	@Column(name="gender")
-	private String gender;
-	
-	@Column(name="age")
-	private int age;
-	
-	@Column(name="constellation")
-	private String constellation;
 	
 	@Column(name="blood_type")
 	private String bloodType;
@@ -146,44 +133,12 @@ public class AcUser implements Serializable {
 		this.address = address;
 	}
 	
-	public Date getBirthday() {
-		return birthday;
-	}
-
-	public void setBirthday(Date birthday) {
-		this.birthday = birthday;
-	}
-
 	public Long getCommunityId() {
 		return communityId;
 	}
 
 	public void setCommunityId(Long communityId) {
 		this.communityId = communityId;
-	}
-
-	public String getGender() {
-		return gender;
-	}
-
-	public void setGender(String gender) {
-		this.gender = gender;
-	}
-
-	public int getAge() {
-		return age;
-	}
-
-	public void setAge(int age) {
-		this.age = age;
-	}
-
-	public String getConstellation() {
-		return constellation;
-	}
-
-	public void setConstellation(String constellation) {
-		this.constellation = constellation;
 	}
 
 	public String getBloodType() {

@@ -19,7 +19,7 @@ public class RandomUtil {
 	}
 	
 	/**
-	 * 产生6位随机整数
+	 * 产生10位随机整数
 	 * @return
 	 */
 	public static String digitsRandom(){

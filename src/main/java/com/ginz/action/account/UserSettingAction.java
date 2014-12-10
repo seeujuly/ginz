@@ -18,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ginz.action.BaseAction;
 import com.ginz.model.AcUser;
+import com.ginz.model.AcUserDetail;
 import com.ginz.service.AccountService;
 import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.JsonUtil;
@@ -53,7 +54,7 @@ public class UserSettingAction extends BaseAction {
 		String email = valueMap.get("email");
 		String mobile = valueMap.get("mobile");
 		String gender = valueMap.get("gender");
-		String realName = valueMap.get("realname");
+		String realName = valueMap.get("realName");
 		String nickName = valueMap.get("nickName");
 		String birthday = valueMap.get("birthday");
 		
@@ -63,17 +64,27 @@ public class UserSettingAction extends BaseAction {
 		int day = DateFormatUtil.getDay(date);
 		String constellation = DateFormatUtil.getAstro(month,day);
 		
-		List<AcUser> list = accountService.findUser(" and mobile = '" + mobile + "' ");
-		if(list.size()>0){
-			AcUser user = list.get(0);
+		List<AcUser> userList = accountService.findUser(" and mobile = '" + mobile + "' ");
+		if(userList.size()>0){
+			AcUser user = userList.get(0);
 			user.setEmail(email);
-			user.setGender(gender);
 			user.setRealName(realName);
 			user.setNickName(nickName);
-			user.setConstellation(constellation);
-			user.setBirthday(DateFormatUtil.stringToDate(birthday));
-			user.setAge(DateFormatUtil.getAgeByBirthday(DateFormatUtil.stringToDate(birthday)));
 			accountService.updateUser(user);
+			
+			AcUserDetail userDetail;
+			List<AcUserDetail> detailList = accountService.findUserDetail(" and user = " + user.getId());
+			if(detailList.size()>0){
+				userDetail = detailList.get(0);
+			}else{
+				userDetail = new AcUserDetail();
+				userDetail.setUserId(user.getId());
+			}
+			userDetail.setGender(gender);
+			userDetail.setConstellation(constellation);
+			userDetail.setBirthday(DateFormatUtil.stringToDate(birthday));
+			userDetail.setAge(DateFormatUtil.getAgeByBirthday(DateFormatUtil.stringToDate(birthday)));
+			accountService.updateUserDetail(userDetail);
 		}
 		
 		JSONObject jsonObject=new JSONObject();
