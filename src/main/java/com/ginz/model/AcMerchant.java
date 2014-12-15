@@ -53,6 +53,12 @@ public class AcMerchant implements Serializable {
 	@Column(name="pic_id")
 	private Long picId;
 	
+	@Column(name="device_token")
+	private String deviceToken;
+	
+	@Column(name="device_account")
+	private String deviceAccount;
+	
 	@Column(name="status")
 	private String status;
 	
@@ -149,6 +155,22 @@ public class AcMerchant implements Serializable {
 
 	public void setPicId(Long picId) {
 		this.picId = picId;
+	}
+	
+	public String getDeviceToken() {
+		return deviceToken;
+	}
+
+	public void setDeviceToken(String deviceToken) {
+		this.deviceToken = deviceToken;
+	}
+
+	public String getDeviceAccount() {
+		return deviceAccount;
+	}
+
+	public void setDeviceAccount(String deviceAccount) {
+		this.deviceAccount = deviceAccount;
 	}
 
 	public String getStatus() {

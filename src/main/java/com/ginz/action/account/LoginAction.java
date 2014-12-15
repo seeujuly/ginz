@@ -55,6 +55,7 @@ public class LoginAction extends BaseAction {
 		String mobile = valueMap.get("mobile");
 		String email = valueMap.get("email");
 		String password = valueMap.get("password");
+		String deviceToken = valueMap.get("devicetoken");
 		
 		JSONObject jsonObject=new JSONObject();
 		String result = "";

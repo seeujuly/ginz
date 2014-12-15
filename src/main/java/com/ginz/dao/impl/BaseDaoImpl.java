@@ -63,6 +63,20 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 	public List<T> find(String hql) {
 		return this.getCurrentSession().createQuery(hql).list();
 	}
+	
+	/**
+	 * 查询
+	 * @param hql
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	public List<T> find(String hql, int start, int length){
+		Query query = this.getCurrentSession().createQuery(hql);
+		query.setFirstResult(start - 1);
+		query.setMaxResults(length);
+		return query.list();
+	}
+
 
 	public int countQuery(String condition,String className) {
 		Query query = this.getCurrentSession().createQuery(MessageFormat.format("select cast(count(*) as int) from " + className + " t where 1 = 1 {0} ", condition));

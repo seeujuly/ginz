@@ -55,6 +55,13 @@ public interface BaseDao<T> {
 	 * @return
 	 */
 	public List<T> find(String hql);
+	
+	/**
+	 * 查询
+	 * @param hql
+	 * @return
+	 */
+	public List<T> find(String hql, int start, int length);
 
 	/**
 	 * 查询集合

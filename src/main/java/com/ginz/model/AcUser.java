@@ -59,6 +59,12 @@ public class AcUser implements Serializable {
 	@Column(name="createDate")
 	private Date createDate;
 	
+	@Column(name="device_token")
+	private String deviceToken;
+	
+	@Column(name="device_account")
+	private String deviceAccount;
+	
 	@Column(name="status")
 	private String status;
 	
@@ -171,6 +177,22 @@ public class AcUser implements Serializable {
 
 	public void setCreateDate(Date createDate) {
 		this.createDate = createDate;
+	}
+
+	public String getDeviceToken() {
+		return deviceToken;
+	}
+
+	public void setDeviceToken(String deviceToken) {
+		this.deviceToken = deviceToken;
+	}
+
+	public String getDeviceAccount() {
+		return deviceAccount;
+	}
+
+	public void setDeviceAccount(String deviceAccount) {
+		this.deviceAccount = deviceAccount;
 	}
 
 	public String getStatus() {
