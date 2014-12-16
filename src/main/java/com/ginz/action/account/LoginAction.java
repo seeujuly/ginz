@@ -55,11 +55,11 @@ public class LoginAction extends BaseAction {
 		String mobile = valueMap.get("mobile");
 		String email = valueMap.get("email");
 		String password = valueMap.get("password");
-		String deviceToken = valueMap.get("devicetoken");
 		
 		JSONObject jsonObject=new JSONObject();
 		String result = "";
 		String accountType = "";
+		Long id = null;
 		if(StringUtils.isNotEmpty(mobile)){	//个人用户
 			AcUser user = new AcUser();
 			user.setMobile(mobile);
@@ -70,6 +70,7 @@ public class LoginAction extends BaseAction {
 		    	if(u2 != null){
 		    		if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_00, u2.getStatus())){
 		    			result = "1";
+		    			id = u2.getId();
 		    		}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_01, u2.getStatus())){
 		    			result = "2";
 		    		}
@@ -92,6 +93,7 @@ public class LoginAction extends BaseAction {
 		    	if(p != null){
 		    		if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_00, p.getStatus())){
 		    			result = "1";
+		    			id = p.getId();
 		    		}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_01, p.getStatus())){
 		    			result = "2";
 		    		}
@@ -108,6 +110,7 @@ public class LoginAction extends BaseAction {
 		    	if(m != null){
 		    		if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_00, m.getStatus())){
 		    			result = "1";
+		    			id = m.getId();
 		    		}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_01, m.getStatus())){
 		    			result = "2";
 		    		}
@@ -124,6 +127,7 @@ public class LoginAction extends BaseAction {
 		if(StringUtils.equals("1", result)){
 			jsonObject.put("result", "1");
 	    	jsonObject.put("value", "欢迎回来!");
+	    	jsonObject.put("id", id);
 		}else if(StringUtils.equals("2", result)){
 			jsonObject.put("result", "2");
 	    	jsonObject.put("value", "账户异常");
@@ -136,6 +140,46 @@ public class LoginAction extends BaseAction {
 		}
 		jsonObject.put("accountType", accountType);
 		out.print(jsonObject.toString());
+	}
+	
+	@SuppressWarnings("unchecked")
+	public void saveDeviceInfo() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String id = valueMap.get("id");
+		String accountType = valueMap.get("accountType");
+		String deviceToken = valueMap.get("devicetoken");
+		String deviceAccount = valueMap.get("deviceAccount");
+		
+		if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_01)){
+			AcUser user = accountService.loadUser(Long.parseLong(id));
+			user.setDeviceAccount(deviceAccount);
+			user.setDeviceToken(deviceToken);
+			accountService.saveUser(user);
+		}else if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_02)){
+			AcProperty property = accountService.loadProperty(Long.parseLong(id));
+			property.setDeviceAccount(deviceAccount);
+			property.setDeviceToken(deviceToken);
+			accountService.saveProperty(property);
+		}else if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_03)){
+			AcMerchant merchant = accountService.loadMerchant(Long.parseLong(id));
+			merchant.setDeviceAccount(deviceAccount);
+			merchant.setDeviceToken(deviceToken);
+			accountService.saveMerchant(merchant);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
 	}
 	
 }

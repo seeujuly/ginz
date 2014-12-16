@@ -45,6 +45,12 @@ public class NoticeServiceImpl implements NoticeService {
 			noticeDao.delete(u);
 		}
 	}
+	
+	@Override
+	public List<PubNotice> findNotice(String condition) {
+		String hql = "from PubNotice where 1=1" + condition;
+		return noticeDao.find(hql);
+	}
 
 	@Override
 	public List<PubNotice> findNotice(String condition, int page, int rows) {

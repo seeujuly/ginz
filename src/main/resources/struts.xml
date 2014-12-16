@@ -43,8 +43,8 @@
 				<interceptor-ref name="encodingStack"></interceptor-ref>
 				<interceptor-ref name="sessionInterceptor">
 
-					<param name="excludeMethods">upload*,check*,index,view*,reg*,list*,edit*,order*,
-					login*,init*,save*,add*,get*,datagrid*,change*</param>
+					<param name="excludeMethods">upload*,check*,reg*,list*,edit*,order*,
+					login*,init*,save*,add*,get*,datagrid*,change*,push*,do*,count*</param>
 
 				</interceptor-ref>
 			</interceptor-stack>
@@ -54,8 +54,8 @@
 				<interceptor-ref name="sessionStack"></interceptor-ref>
 				<interceptor-ref name="authInterceptor">
 
-					<param name="excludeMethods">upload*,check*,index,view*,reg*,list*,edit*,order*,
-					login*,init*,save*,add*,get*,datagrid*,change*</param>
+					<param name="excludeMethods">upload*,check*,reg*,list*,edit*,order*,
+					login*,init*,save*,add*,get*,datagrid*,change*,push*,do*,count*</param>
 
 				</interceptor-ref>
 			</interceptor-stack>

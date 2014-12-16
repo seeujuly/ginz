@@ -14,7 +14,7 @@ public class DictionaryUtil {
 	public static final String ACCOUNT_STATUS_00 = "0";	//正常
 	public static final String ACCOUNT_STATUS_01 = "1";	//异常
 	
-	//账户状态
+	//删除标识
 	public static final String DETELE_FLAG_00 = "0";	//正常
 	public static final String DETELE_FLAG_01 = "1";	//删除
 	
@@ -27,6 +27,14 @@ public class DictionaryUtil {
 	public static final String EMOTIONAL_STATE_01 = "1";	//交往中
 	public static final String EMOTIONAL_STATE_02 = "2";	//已婚
 	public static final String EMOTIONAL_STATE_03 = "3";	//已育
+	
+	//发布信息类型
+	public static final String RELEASE_TYPE_01 = "1";	//社区公告
+	public static final String RELEASE_TYPE_02 = "2";	//积分互动
+	public static final String RELEASE_TYPE_03 = "3";	//社区生活
+	public static final String RELEASE_TYPE_04 = "4";	//社区商户
+	public static final String RELEASE_TYPE_05 = "5";	//互联网商户
+	
 	
 	
 }

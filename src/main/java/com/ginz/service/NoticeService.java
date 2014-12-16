@@ -14,6 +14,8 @@ public interface NoticeService {
 	
 	public void deleteNotice(Long id);
 	
+	public List<PubNotice> findNotice(String condition);
+	
 	public List<PubNotice> findNotice(String condition, int page, int rows);
 	
 }
