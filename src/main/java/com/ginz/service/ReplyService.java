@@ -5,6 +5,7 @@ import java.util.List;
 import com.ginz.model.PubComments;
 import com.ginz.model.PubPraise;
 
+//响应
 public interface ReplyService {
 
 	//评论
@@ -18,6 +19,9 @@ public interface ReplyService {
 	
 	public List<PubComments> findComments(String condition);
 	
+	//统计评论总数
+	public int countComment(String condition);
+	
 	public List<PubComments> findComments(String condition, int page, int rows);
 	
 	//点赞
@@ -30,6 +34,9 @@ public interface ReplyService {
 	public void deletePraise(Long id);
 	
 	public List<PubPraise> findPraise(String condition);
+	
+	//统计点赞的总数
+	public int countPraise(String condition);
 	
 	public List<PubPraise> findPraise(String condition, int page, int rows);
 	

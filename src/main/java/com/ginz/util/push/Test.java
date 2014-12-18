@@ -11,11 +11,11 @@ public class Test {
 			
 		MessageIOS message = new MessageIOS();
 		message.setExpireTime(86400);
-		message.setAlert("ios test");
+		message.setAlert("赞了你的信息");
 				
 		XingeApp xinge = new XingeApp(2200069882L, PushDictionary.SECRET_KEY);
-		//JSONObject ret = xinge.pushSingleDevice(PushDictionary.DEVICE_TOKEN, message,2);
-		JSONObject ret = xinge.pushSingleAccount(0, "DEBUG_DEVICE_01", message, XingeApp.IOSENV_DEV);
+		JSONObject ret = xinge.pushSingleDevice(PushDictionary.DEVICE_TOKEN, message,2);
+		//JSONObject ret = xinge.pushSingleAccount(0, "DEBUG_DEVICE_01", message, XingeApp.IOSENV_DEV);
 		System.out.println(ret);
 	}
 	

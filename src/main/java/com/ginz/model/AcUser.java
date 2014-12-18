@@ -50,7 +50,7 @@ public class AcUser implements Serializable {
 	private String bloodType;
 	
 	@Column(name="head_portrait")
-	private Long headPortrait;
+	private String headPortrait;
 	
 	@Column(name="city")
 	private String city;
@@ -155,11 +155,11 @@ public class AcUser implements Serializable {
 		this.bloodType = bloodType;
 	}
 
-	public Long getHeadPortrait() {
+	public String getHeadPortrait() {
 		return headPortrait;
 	}
 
-	public void setHeadPortrait(Long headPortrait) {
+	public void setHeadPortrait(String headPortrait) {
 		this.headPortrait = headPortrait;
 	}
 

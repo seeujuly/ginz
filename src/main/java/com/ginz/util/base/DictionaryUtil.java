@@ -35,6 +35,11 @@ public class DictionaryUtil {
 	public static final String RELEASE_TYPE_04 = "4";	//社区商户
 	public static final String RELEASE_TYPE_05 = "5";	//互联网商户
 	
+	//发布信息状态
+	public static final String RELEASE_MSG_STATE_00 = "0";	//开放
+	public static final String RELEASE_MSG_STATE_01 = "1";	//待选(有人参与本次互动，但还未确定最终人选)
+	public static final String RELEASE_MSG_STATE_02 = "2";	//关闭(确定了互动的双方后关闭)
+	
 	
 	
 }

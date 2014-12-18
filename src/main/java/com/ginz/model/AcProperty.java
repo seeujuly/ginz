@@ -53,8 +53,8 @@ public class AcProperty implements Serializable {
 	@Column(name="createDate")
 	private Date createDate;
 	
-	@Column(name="pic_id")
-	private Long picId;
+	@Column(name="pic_url")
+	private String picUrl;
 	
 	@Column(name="device_token")
 	private String deviceToken;
@@ -160,12 +160,12 @@ public class AcProperty implements Serializable {
 		this.createDate = createDate;
 	}
 
-	public Long getPicId() {
-		return picId;
+	public String getPicUrl() {
+		return picUrl;
 	}
 
-	public void setPicId(Long picId) {
-		this.picId = picId;
+	public void setPicUrl(String picUrl) {
+		this.picUrl = picUrl;
 	}
 
 	public String getDeviceToken() {

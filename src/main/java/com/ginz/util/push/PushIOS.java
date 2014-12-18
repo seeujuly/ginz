@@ -12,7 +12,7 @@ import com.tencent.xinge.XingeApp;
 public class PushIOS {
 
 	//单个设备下发通知消息
-	protected JSONObject pushSingleDevice(String content, String deviceToken) {
+	public static JSONObject pushSingleDevice(String content, String deviceToken) {
 		
 		MessageIOS message = new MessageIOS();
 		message.setAlert(content);
@@ -32,7 +32,7 @@ public class PushIOS {
 	}
 	
 	//单个账号下发通知消息
-	protected JSONObject pushSingleAccount(String content, String account) {
+	public static JSONObject pushSingleAccount(String content, String account) {
 		
 		MessageIOS message = new MessageIOS();
 		message.setAlert(content);
@@ -52,7 +52,7 @@ public class PushIOS {
 	}
 	
 	//多个账号下发通知消息
-	protected JSONObject pushAccountList(String content, List<String> accountList) {
+	public static JSONObject pushAccountList(String content, List<String> accountList) {
 		
 		MessageIOS message = new MessageIOS();
 		message.setAlert(content);
@@ -69,7 +69,7 @@ public class PushIOS {
 	}
 	
 	//下发所有设备
-	protected JSONObject pushAllDevice(String content){
+	public static JSONObject pushAllDevice(String content){
 		
 		MessageIOS message = new MessageIOS();
 		message.setAlert(content);
@@ -81,7 +81,7 @@ public class PushIOS {
 	}
 	
 	//下发标签选中设备
-	protected JSONObject pushTags(String content){
+	public static JSONObject pushTags(String content){
 		
 		MessageIOS message = new MessageIOS();
 		message.setAlert(content);
@@ -97,7 +97,7 @@ public class PushIOS {
 	}
 	
 	//查询设备数量
-	protected JSONObject demoQueryDeviceCount() {
+	public static JSONObject demoQueryDeviceCount() {
 		
 		XingeApp xinge = new XingeApp(PushDictionary.ACCESS_ID, PushDictionary.SECRET_KEY);
 		JSONObject ret = xinge.queryDeviceCount();

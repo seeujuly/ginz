@@ -13,8 +13,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
-@Table(name = "pub_notice")
-public class PubNotice implements Serializable  {
+@Table(name = "pub_interactive")
+public class PubInteractive implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -22,14 +22,14 @@ public class PubNotice implements Serializable  {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
-	@Column(name="community_id")
-	private Long communityId;
-	
-	@Column(name="property_id")
-	private Long propertyId;
+	@Column(name="userId")
+	private Long userId;
 	
 	@Column(name="subject")
 	private String subject;
+	
+	@Column(name="label")
+	private String label;	//标签，最多5个标签，每个标签长度不超过8个汉字
 	
 	@Column(name="content")
 	private String content;
@@ -49,6 +49,19 @@ public class PubNotice implements Serializable  {
 	@Column(name="endTime")
 	private Date endTime;
 	
+	@Column(name="releasePoint")
+	private String releasePoint;	//发布积分
+	
+	@Column(name="eventPoint")
+	private String eventPoint;	//事件积分
+	
+	@Column(name="status")
+	private String status;	//信息状态
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="closeTime")
+	private Date closeTime;	//关闭时间
+
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="updateTime")
 	private Date updateTime;
@@ -56,7 +69,7 @@ public class PubNotice implements Serializable  {
 	@Column(name="flag")
 	private String flag;
 	
-	public PubNotice(){
+	public PubInteractive(){
 		
 	}
 
@@ -68,20 +81,12 @@ public class PubNotice implements Serializable  {
 		this.id = id;
 	}
 
-	public Long getCommunityId() {
-		return communityId;
+	public Long getUserId() {
+		return userId;
 	}
 
-	public void setCommunityId(Long communityId) {
-		this.communityId = communityId;
-	}
-
-	public Long getPropertyId() {
-		return propertyId;
-	}
-
-	public void setPropertyId(Long propertyId) {
-		this.propertyId = propertyId;
+	public void setUserId(Long userId) {
+		this.userId = userId;
 	}
 
 	public String getSubject() {
@@ -90,6 +95,14 @@ public class PubNotice implements Serializable  {
 
 	public void setSubject(String subject) {
 		this.subject = subject;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
 	}
 
 	public String getContent() {
@@ -130,6 +143,38 @@ public class PubNotice implements Serializable  {
 
 	public void setEndTime(Date endTime) {
 		this.endTime = endTime;
+	}
+
+	public String getReleasePoint() {
+		return releasePoint;
+	}
+
+	public void setReleasePoint(String releasePoint) {
+		this.releasePoint = releasePoint;
+	}
+
+	public String getEventPoint() {
+		return eventPoint;
+	}
+
+	public void setEventPoint(String eventPoint) {
+		this.eventPoint = eventPoint;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	public Date getCloseTime() {
+		return closeTime;
+	}
+
+	public void setCloseTime(Date closeTime) {
+		this.closeTime = closeTime;
 	}
 
 	public Date getUpdateTime() {

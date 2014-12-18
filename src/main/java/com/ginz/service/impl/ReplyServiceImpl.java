@@ -9,6 +9,7 @@ import com.ginz.dao.BaseDao;
 import com.ginz.model.PubComments;
 import com.ginz.model.PubPraise;
 import com.ginz.service.ReplyService;
+import com.ginz.util.base.DictionaryUtil;
 
 @Service("replyService")
 public class ReplyServiceImpl implements ReplyService {
@@ -65,6 +66,12 @@ public class ReplyServiceImpl implements ReplyService {
 	}
 	
 	@Override
+	public int countComment(String condition){
+		String hql = "from PubComments where 1=1" + condition;
+		return commentsDao.find(hql).size();
+	}
+	
+	@Override
 	public List<PubComments> findComments(String condition, int page, int rows){
 		String hql = "from PubComments where 1=1" + condition;
 		return commentsDao.find(hql, (page - 1) * rows + 1, rows);
@@ -96,8 +103,14 @@ public class ReplyServiceImpl implements ReplyService {
 
 	@Override
 	public List<PubPraise> findPraise(String condition) {
-		String hql = "from PubComments where 1=1" + condition;
+		String hql = "from PubPraise where 1=1" + condition;
 		return praiseDao.find(hql);
+	}
+	
+	@Override
+	public int countPraise(String condition){
+		String hql = "from PubPraise where 1=1" + condition;
+		return praiseDao.find(hql).size();
 	}
 	
 	@Override

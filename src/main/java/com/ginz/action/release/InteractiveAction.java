@@ -22,10 +22,11 @@ import com.ginz.action.BaseAction;
 import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
 import com.ginz.model.PubComments;
+import com.ginz.model.PubInteractive;
 import com.ginz.model.PubNotice;
 import com.ginz.model.PubPraise;
 import com.ginz.service.AccountService;
-import com.ginz.service.CommunityService;
+import com.ginz.service.InteractiveService;
 import com.ginz.service.NoticeService;
 import com.ginz.service.ReplyService;
 import com.ginz.util.base.DateFormatUtil;
@@ -35,22 +36,21 @@ import com.ginz.util.push.PushIOS;
 
 @Namespace("/")
 @Action(value = "noticeAction")
-public class NoticeAction extends BaseAction{
+public class InteractiveAction extends BaseAction{
 
-	private NoticeService noticeService;
+	private InteractiveService interactiveService;
 	private AccountService accountService;
 	private ReplyService replyService;
-	private CommunityService communityService;
 
-	public NoticeService getNoticeService() {
-		return noticeService;
+	public InteractiveService getInteractiveService() {
+		return interactiveService;
 	}
 
 	@Autowired
-	public void setNoticeService(NoticeService noticeService) {
-		this.noticeService = noticeService;
+	public void setInteractiveService(InteractiveService interactiveService) {
+		this.interactiveService = interactiveService;
 	}
-	
+
 	public AccountService getAccountService() {
 		return accountService;
 	}
@@ -69,16 +69,7 @@ public class NoticeAction extends BaseAction{
 		this.replyService = replyService;
 	}
 	
-	public CommunityService getCommunityService() {
-		return communityService;
-	}
-
-	@Autowired
-	public void setCommunityService(CommunityService communityService) {
-		this.communityService = communityService;
-	}
-	
-	//发布公告
+	//发布积分互动信息
 	@SuppressWarnings("unchecked")
 	public void release() throws IOException{
 		
@@ -93,7 +84,6 @@ public class NoticeAction extends BaseAction{
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String id = valueMap.get("id");	//社区用户id
-		String communityId = valueMap.get("communityId");
 		String subject = valueMap.get("subject");
 		String content = valueMap.get("content");
 		String startTime = valueMap.get("startTime");
@@ -101,50 +91,38 @@ public class NoticeAction extends BaseAction{
 		
 		AcProperty property = accountService.loadProperty(Long.parseLong(id));
 		if(property!=null){
-			PubNotice notice = new PubNotice();
-			notice.setPropertyId(Long.parseLong(id));
-			notice.setCommunityId(Long.parseLong(communityId));
-			notice.setSubject(subject);
-			notice.setContent(content);
-			notice.setStartTime(DateFormatUtil.toDate(startTime));
-			notice.setEndTime(DateFormatUtil.toDate(endTime));
-			notice.setFlag(DictionaryUtil.DETELE_FLAG_00);
-			noticeService.saveNotice(notice);
+			PubInteractive interactive = new PubInteractive();
+			interactive.setUserId(Long.parseLong(id));
+			interactive.setSubject(subject);
+			interactive.setContent(content);
+			interactive.setStartTime(DateFormatUtil.toDate(startTime));
+			interactive.setEndTime(DateFormatUtil.toDate(endTime));
+			interactive.setFlag(DictionaryUtil.DETELE_FLAG_00);
+			interactiveService.saveInteractive(interactive);
 		}
 		
 		jsonObject.put("value", "SUCCESS!");
 		out.print(jsonObject.toString());
 		
-		//推送给该社区内的所有用户
-		List<String> accountList = new ArrayList<String>();
-		List<AcUser> userList = accountService.findUser(" and communityId = " + communityId);
-		if(userList.size()>0){
-			for(AcUser user:userList){
-				String account =  user.getDeviceAccount();
-				accountList.add(account);
-			}
-		}
-		PushIOS.pushAccountList(subject, accountList);
-		
 	}
 	
-	//修改公告
-	public void editNotice() throws IOException{
+	//修改积分互动信息
+	public void editInteractive() throws IOException{
 		
 		
 		
 	}
 	
-	//删除公告
-	public void deleteNotice() throws IOException{
+	//删除积分互动信息
+	public void deleteInteractive() throws IOException{
 		
 		
 		
 	}
 	
-	//个人用户获取公告列表
+	//个人用户获取积分互动信息列表
 	@SuppressWarnings("unchecked")
-	public void getNoticeList() throws IOException{
+	public void getInteractiveList() throws IOException{
 		
 		HttpServletResponse response = ServletActionContext.getResponse();
 		HttpServletRequest request = ServletActionContext.getRequest();
@@ -165,38 +143,32 @@ public class NoticeAction extends BaseAction{
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		
 		if(user!=null){
-			Long communityId = user.getCommunityId();
-			if(communityId!=null&&communityId!=0){
-				List<PubNotice> noticeList = noticeService.findNotice(" and communityId = " + communityId + " order by createTime desc ", Integer.parseInt(page), rows);
-				if(noticeList.size()>0){
-					for(PubNotice notice:noticeList){
-						int praiseNum = replyService.countPraise(" and releaseId = " + notice.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
-						int commentNum = replyService.countComment(" and releaseId = " + notice.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
-						//JSONObject json = JSONObject.fromObject(notice);
-						JSONObject json = new JSONObject();
-						json.put("id", notice.getId());
-						json.put("subject", notice.getSubject());
-						json.put("picUrl", notice.getPicUrl());
-						AcProperty property = accountService.loadProperty(notice.getPropertyId());
-						if(property != null){
-							json.put("name", property.getPropertyName());
-						}
-						json.put("praiseNum", praiseNum);
-						json.put("commentNum", commentNum);
-						jsonArray.add(json);
+			//搜索，信息匹配
+			List<PubInteractive> interactiveList = interactiveService.findInteractive(" order by createTime desc ", Integer.parseInt(page), rows);
+			
+			if(interactiveList.size()>0){
+				for(PubInteractive interactive:interactiveList){
+					int praiseNum = replyService.countPraise(" and releaseId = " + interactive.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
+					int commentNum = replyService.countComment(" and releaseId = " + interactive.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
+					JSONObject json = new JSONObject();
+					json.put("id", interactive.getId());
+					json.put("subject", interactive.getSubject());
+					json.put("picUrl", interactive.getPicUrl());
+					AcUser u = accountService.loadUser(interactive.getUserId());
+					if(u != null){
+						json.put("name", u.getNickName());
 					}
-					jsonObject.put("result", "1");
-					jsonObject.put("page", page);
-					jsonObject.put("value", jsonArray);
-				}else{
-					jsonObject.put("result", "2");
-					jsonObject.put("page", page);
-					jsonObject.put("value", "没有更多的公告信息!");
+					json.put("praiseNum", praiseNum);
+					json.put("commentNum", commentNum);
+					jsonArray.add(json);
 				}
-			}else{
-				jsonObject.put("result", "3");
+				jsonObject.put("result", "1");
 				jsonObject.put("page", page);
-				jsonObject.put("value", "您还未添加社区信息!");
+				jsonObject.put("value", jsonArray);
+			}else{
+				jsonObject.put("result", "2");
+				jsonObject.put("page", page);
+				jsonObject.put("value", "没有更多的积分互动信息!");
 			}
 			
 		}
@@ -204,9 +176,9 @@ public class NoticeAction extends BaseAction{
 		
 	}
 	
-	//个人用户获取公告详细内容
+	//个人用户获取积分互动信息详细内容
 	@SuppressWarnings({ "unchecked", "static-access" })
-	public void getNoticeDetail() throws IOException{
+	public void getInteractiveDetail() throws IOException{
 		
 		HttpServletResponse response = ServletActionContext.getResponse();
 		HttpServletRequest request = ServletActionContext.getRequest();
@@ -217,20 +189,20 @@ public class NoticeAction extends BaseAction{
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String id = valueMap.get("id");	//公告id
+		String id = valueMap.get("id");	//积分互动信息id
 		
 		JSONObject jsonObject=new JSONObject();
 		
-		PubNotice notice = noticeService.loadNotice(Long.parseLong(id));
-		if(notice != null){
-			jsonObject.fromObject(notice);
+		PubInteractive interactive = interactiveService.loadInteractive(Long.parseLong(id));
+		if(interactive != null){
+			jsonObject.fromObject(interactive);
 		}
 		
 		out.print(jsonObject.toString());
 		
 	}
 	
-	//对公告点赞
+	//对积分互动信息点赞
 	@SuppressWarnings("unchecked")
 	public void doPraise() throws IOException{
 		
@@ -245,37 +217,35 @@ public class NoticeAction extends BaseAction{
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String userId = valueMap.get("userId");	//点赞操作的用户id-个人用户
-		String id = valueMap.get("id");	//公告id
+		String id = valueMap.get("id");	//积分互动信息id
 		
-		List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "' and userId = " + userId);
+		List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "' and userId = " + userId);
 		if(list.size()>0){	//判断是否已赞过..
 			jsonObject.put("result", "2");
 			jsonObject.put("value", "您已赞过!");
 		}else{
 			PubPraise praise = new PubPraise();
 			praise.setReleaseId(Long.parseLong(id));
-			praise.setReleaseType(DictionaryUtil.RELEASE_TYPE_01);
+			praise.setReleaseType(DictionaryUtil.RELEASE_TYPE_02);
 			praise.setUserId(Long.parseLong(userId));
 			praise.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
 			praise.setCreateTime(new Date());
 			praise.setFlag(DictionaryUtil.DETELE_FLAG_00);
 			replyService.savePraise(praise);
 			
-			int num = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
+			int num = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
 			jsonObject.put("result", "1");
 			jsonObject.put("value", "SUCCESS!");
 			jsonObject.put("number", num);	//更新点赞数量
 			
-			//发推送消息给发布该公告的社区用户
-			PubNotice notice = noticeService.loadNotice(Long.parseLong(id));
-			if(notice != null){
-				Long propertyId = notice.getPropertyId();
-				AcProperty property = accountService.loadProperty(propertyId);
-				if(property != null){
-					AcUser user = accountService.loadUser(Long.parseLong(userId));
-					if(user != null){
-						PushIOS.pushSingleDevice(user.getNickName() + "赞了你的信息", property.getDeviceToken());	//通知社区用户有人点赞..
-					}
+			//发推送消息给发布该积分互动信息的个人用户
+			PubInteractive interactive = interactiveService.loadInteractive(Long.parseLong(id));
+			if(interactive != null){
+				Long uId = interactive.getUserId();
+				AcUser user = accountService.loadUser(uId);
+				if(user != null){
+					PushIOS.pushSingleDevice(user.getNickName() + "赞了你的信息", user.getDeviceToken());	//通知个人用户有人点赞..
+					
 				}
 			}
 		}
@@ -283,7 +253,7 @@ public class NoticeAction extends BaseAction{
 		
 	}
 	
-	//对公告发表评论
+	//对积分互动信息发表评论
 	@SuppressWarnings("unchecked")
 	public void doComment() throws IOException{
 		
@@ -303,7 +273,7 @@ public class NoticeAction extends BaseAction{
 		
 		PubComments comment = new PubComments();
 		comment.setReleaseId(Long.parseLong(id));
-		comment.setReleaseType(DictionaryUtil.RELEASE_TYPE_01);
+		comment.setReleaseType(DictionaryUtil.RELEASE_TYPE_02);
 		comment.setContent(content);
 		comment.setUserId(Long.parseLong(userId));
 		comment.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
@@ -311,23 +281,21 @@ public class NoticeAction extends BaseAction{
 		comment.setFlag(DictionaryUtil.DETELE_FLAG_00);
 		replyService.saveComments(comment);
 		
-		int num = replyService.countComment(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
+		int num = replyService.countComment(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
 		jsonObject.put("result", "1");
 		jsonObject.put("value", "SUCCESS!");
 		jsonObject.put("number", num);	//更新评论数量
 		
 		out.print(jsonObject.toString());
 		
-		//发推送消息给发布该公告的社区用户
-		PubNotice notice = noticeService.loadNotice(Long.parseLong(id));
-		if(notice != null){
-			Long propertyId = notice.getPropertyId();
-			AcProperty property = accountService.loadProperty(propertyId);
-			if(property != null){
-				AcUser user = accountService.loadUser(Long.parseLong(userId));
-				if(user != null){
-					PushIOS.pushSingleDevice(user.getNickName() + "评论了你的信息", property.getDeviceToken());	//通知社区用户有人评论..
-				}
+		//发推送消息给发布该积分互动信息的个人用户
+		PubInteractive interactive = interactiveService.loadInteractive(Long.parseLong(id));
+		if(interactive != null){
+			Long uId = interactive.getUserId();
+			AcUser user = accountService.loadUser(uId);
+			if(user != null){
+				PushIOS.pushSingleDevice(user.getNickName() + "评论了你的信息", user.getDeviceToken());	//通知个人用户有人评论
+				
 			}
 		}
 		
@@ -349,9 +317,9 @@ public class NoticeAction extends BaseAction{
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String id = valueMap.get("id");	//公告id
+		String id = valueMap.get("id");	//积分互动信息id
 		
-		List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
+		List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "' order by createTime desc ");
 		if(list.size()>0){
 			for(PubPraise praise:list){
 				JSONObject json = new JSONObject();
@@ -395,7 +363,7 @@ public class NoticeAction extends BaseAction{
 		String page = valueMap.get("page");
 		int rows = 5;
 		
-		List<PubComments> list = replyService.findComments(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "' order by createTime desc ", Integer.parseInt(page), rows);
+		List<PubComments> list = replyService.findComments(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "' order by createTime desc ", Integer.parseInt(page), rows);
 		if(list.size()>0){
 			for(PubComments comment:list){
 				JSONObject json = new JSONObject();
