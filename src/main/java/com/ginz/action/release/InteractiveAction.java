@@ -2,7 +2,6 @@ package com.ginz.action.release;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -23,11 +22,9 @@ import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
 import com.ginz.model.PubComments;
 import com.ginz.model.PubInteractive;
-import com.ginz.model.PubNotice;
 import com.ginz.model.PubPraise;
 import com.ginz.service.AccountService;
 import com.ginz.service.InteractiveService;
-import com.ginz.service.NoticeService;
 import com.ginz.service.ReplyService;
 import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.DictionaryUtil;
@@ -153,7 +150,9 @@ public class InteractiveAction extends BaseAction{
 					JSONObject json = new JSONObject();
 					json.put("id", interactive.getId());
 					json.put("subject", interactive.getSubject());
-					json.put("picUrl", interactive.getPicUrl());
+					String picIds = interactive.getPicIds();
+					String[] ids = picIds.split(",");
+					json.put("picUrl", ids[0]);
 					AcUser u = accountService.loadUser(interactive.getUserId());
 					if(u != null){
 						json.put("name", u.getNickName());
@@ -295,7 +294,6 @@ public class InteractiveAction extends BaseAction{
 			AcUser user = accountService.loadUser(uId);
 			if(user != null){
 				PushIOS.pushSingleDevice(user.getNickName() + "评论了你的信息", user.getDeviceToken());	//通知个人用户有人评论
-				
 			}
 		}
 		

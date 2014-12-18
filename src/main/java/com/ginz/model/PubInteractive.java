@@ -38,8 +38,8 @@ public class PubInteractive implements Serializable {
 	@Column(name="createTime")
 	private Date createTime;
 	
-	@Column(name="pic_url")
-	private String picUrl;
+	@Column(name="picIds")
+	private String picIds;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="startTime")
@@ -54,6 +54,9 @@ public class PubInteractive implements Serializable {
 	
 	@Column(name="eventPoint")
 	private String eventPoint;	//事件积分
+	
+	@Column(name="limit")
+	private String limit;	//人数限制
 	
 	@Column(name="status")
 	private String status;	//信息状态
@@ -121,12 +124,20 @@ public class PubInteractive implements Serializable {
 		this.createTime = createTime;
 	}
 
-	public String getPicUrl() {
-		return picUrl;
+	public String getPicIds() {
+		return picIds;
 	}
 
-	public void setPicUrl(String picUrl) {
-		this.picUrl = picUrl;
+	public void setPicIds(String picIds) {
+		this.picIds = picIds;
+	}
+
+	public String getLimit() {
+		return limit;
+	}
+
+	public void setLimit(String limit) {
+		this.limit = limit;
 	}
 
 	public Date getStartTime() {

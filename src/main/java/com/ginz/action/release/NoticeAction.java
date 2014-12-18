@@ -176,7 +176,9 @@ public class NoticeAction extends BaseAction{
 						JSONObject json = new JSONObject();
 						json.put("id", notice.getId());
 						json.put("subject", notice.getSubject());
-						json.put("picUrl", notice.getPicUrl());
+						String picIds = notice.getPicIds();
+						String[] ids = picIds.split(",");
+						json.put("picUrl", ids[0]);
 						AcProperty property = accountService.loadProperty(notice.getPropertyId());
 						if(property != null){
 							json.put("name", property.getPropertyName());

@@ -38,8 +38,8 @@ public class PubNotice implements Serializable  {
 	@Column(name="createTime")
 	private Date createTime;
 	
-	@Column(name="pic_url")
-	private String picUrl;
+	@Column(name="picIds")
+	private String picIds;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="startTime")
@@ -108,12 +108,12 @@ public class PubNotice implements Serializable  {
 		this.createTime = createTime;
 	}
 
-	public String getPicUrl() {
-		return picUrl;
+	public String getPicIds() {
+		return picIds;
 	}
 
-	public void setPicUrl(String picUrl) {
-		this.picUrl = picUrl;
+	public void setPicIds(String picIds) {
+		this.picIds = picIds;
 	}
 
 	public Date getStartTime() {
