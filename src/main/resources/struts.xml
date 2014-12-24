@@ -26,55 +26,35 @@
 	<constant name="struts.tag.altSyntax" value="true" />
 	<!-- 对于WebLogic,Orion,OC4J此属性应该设置成true -->
 	<constant name="struts.dispatcher.parametersWorkaround" value="false" />
-	<constant name="struts.multipart.saveDir" value="D:/temp" />
+	<constant name="struts.multipart.saveDir" value="/temp" />
+
 	<package name="basePackage" extends="struts-default">
 		<interceptors>
-			<!-- 字符集拦截器 -->
-			<interceptor name="encodingInterceptor"
-				class="com.ginz.interceptor.EncodingInterceptor" />
-			<interceptor-stack name="encodingStack">
-				<interceptor-ref name="defaultStack"></interceptor-ref>
-				<interceptor-ref name="encodingInterceptor"></interceptor-ref>
-			</interceptor-stack>
-			<!-- session拦截器 -->
-			<interceptor name="sessionInterceptor"
-				class="com.ginz.interceptor.SessionInterceptor" />
-			<interceptor-stack name="sessionStack">
-				<interceptor-ref name="encodingStack"></interceptor-ref>
-				<interceptor-ref name="sessionInterceptor">
-
-					<param name="excludeMethods">upload*,check*,reg*,list*,edit*,order*,delete*,
-					login*,init*,save*,add*,get*,datagrid*,change*,push*,do*,count*</param>
-
+			<interceptor-stack name="defaultStack">
+				<!--interceptor-ref name="exception" / -->
+				<interceptor-ref name="alias" />
+				<interceptor-ref name="servletConfig" />
+				<interceptor-ref name="i18n" />
+				<interceptor-ref name="prepare" />
+				<interceptor-ref name="chain" />
+				<interceptor-ref name="debugging" />
+				<interceptor-ref name="scopedModelDriven" />
+				<interceptor-ref name="modelDriven" />
+				<interceptor-ref name="fileUpload" />
+				<interceptor-ref name="checkbox" />
+				<interceptor-ref name="multiselect" />
+				<interceptor-ref name="staticParams" />
+				<interceptor-ref name="actionMappingParams" />
+				<interceptor-ref name="params">
+					<param name="excludeParams">dojo\..*,^struts\..*</param>
 				</interceptor-ref>
 			</interceptor-stack>
-			<!-- 权限拦截器 -->
-			<interceptor name="authInterceptor" class="com.ginz.interceptor.AuthInterceptor" />
-			<interceptor-stack name="authStack">
-				<interceptor-ref name="sessionStack"></interceptor-ref>
-				<interceptor-ref name="authInterceptor">
-
-					<param name="excludeMethods">upload*,check*,reg*,list*,edit*,order*,delete*,
-					login*,init*,save*,add*,get*,datagrid*,change*,push*,do*,count*</param>
-
-				</interceptor-ref>
-			</interceptor-stack>
-
 		</interceptors>
-		<!-- 全局拦截器栈 -->
-		<default-interceptor-ref name="authStack"></default-interceptor-ref>
-
-		<global-results>
-			<result name="noAuth">/error/noAuth.jsp</result>
-			<result name="noSession">/error/noSession.jsp</result>
-			<result name="strutsException">/error/strutsException.jsp</result>
-		</global-results>
 
 		<global-exception-mappings>
-			<exception-mapping result="strutsException"
-				exception="java.lang.Exception"></exception-mapping>
+			<exception-mapping result="error" exception="java.lang.Exception">
+			</exception-mapping>
 		</global-exception-mappings>
-
 	</package>
 
 </struts>

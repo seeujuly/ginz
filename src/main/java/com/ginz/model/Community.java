@@ -41,8 +41,8 @@ public class Community implements Serializable {
 	private Long propertyId;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="createDate")
-	private Date createDate;
+	@Column(name="createTime")
+	private Date createTime;
 	
 	@Column(name="status")
 	private String status;
@@ -110,12 +110,12 @@ public class Community implements Serializable {
 		this.propertyId = propertyId;
 	}
 
-	public Date getCreateDate() {
-		return createDate;
+	public Date getCreateTime() {
+		return createTime;
 	}
 
-	public void setCreateDate(Date createDate) {
-		this.createDate = createDate;
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
 	}
 
 	public String getStatus() {

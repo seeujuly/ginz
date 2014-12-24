@@ -11,35 +11,20 @@ import java.util.List;
  */
 public interface BaseDao<T> {
 
-	/**
-	 * 保存一个对象
-	 * 
-	 * @param o
-	 * @return
-	 */
-	public void saveTrend(T o);
+	public T save(T o);
 	
-	public void saveCus(T o);
-	
-	public void saveSta(T o);
-	
-	public Serializable save(T o);
-	
-	public Serializable saveC(T o);
-
 	/**
 	 * 删除一个对象
-	 * 
 	 * @param o
 	 */
 	public void delete(T o);
 
 	/**
 	 * 更新一个对象
-	 * 
 	 * @param o
 	 */
-	public void update(T o);
+	public T update(T o);
+	
 	public void merge(T o);
 
 	/**
@@ -47,7 +32,7 @@ public interface BaseDao<T> {
 	 * 
 	 * @param o
 	 */
-	public void saveOrUpdate(T o);
+	public T saveOrUpdate(T o);
 
 	/**
 	 * 查询

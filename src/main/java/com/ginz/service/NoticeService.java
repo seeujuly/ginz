@@ -8,9 +8,9 @@ public interface NoticeService {
 
 	public PubNotice loadNotice(Long id);
 
-	public void saveNotice(PubNotice notice);
+	public PubNotice saveNotice(PubNotice notice);
 	
-	public void updateNotice(PubNotice notice);
+	public PubNotice updateNotice(PubNotice notice);
 	
 	public void deleteNotice(Long id);
 	

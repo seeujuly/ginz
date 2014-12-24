@@ -29,7 +29,7 @@ public class PubInteractive implements Serializable {
 	private String subject;
 	
 	@Column(name="label")
-	private String label;	//标签，最多5个标签，每个标签长度不超过8个汉字
+	private String label;	//标签，最多10个标签，每个标签长度不超过5个汉字
 	
 	@Column(name="content")
 	private String content;

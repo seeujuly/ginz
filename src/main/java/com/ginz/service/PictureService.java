@@ -8,9 +8,9 @@ public interface PictureService {
 
 	public Picture loadPicture(Long id);
 
-	public void savePicture(Picture picture);
+	public Picture savePicture(Picture picture);
 	
-	public void updatePicture(Picture picture);
+	public Picture updatePicture(Picture picture);
 	
 	public void deletePicture(Long id);
 	

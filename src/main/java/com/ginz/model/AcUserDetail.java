@@ -127,6 +127,10 @@ public class AcUserDetail implements Serializable {
 	@Column(name="isOpen_dislike")
 	private String isOpenDislike;
 	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="createTime")
+	private Date createTime;
+	
 	@Column(name="flag")
 	private String flag;	//删除标识
 	
@@ -412,6 +416,14 @@ public class AcUserDetail implements Serializable {
 
 	public void setIsOpenDislike(String isOpenDislike) {
 		this.isOpenDislike = isOpenDislike;
+	}
+	
+	public Date getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
 	}
 
 	public String getFlag() {

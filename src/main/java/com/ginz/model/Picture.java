@@ -25,15 +25,28 @@ public class Picture implements Serializable {
 	@Column(name="userId")
 	private Long userId;
 	
-	@Column(name="accountType")
+	@Column(name="account_type")
 	private String accountType;
 	
 	@Column(name="url")
 	private String url;
 	
+	@Column(name="isHeadPortrait")
+	private String isHeadPortrait;
+	
+	@Column(name="release_type")
+	private String releaseType;
+	
+	@Column(name="release_id")
+	private Long releaseId;
+	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="uploadDate")
-	private Date uploadDate;
+	@Column(name="createTime")
+	private Date createTime;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="updateTime")
+	private Date updateTime;
 
 	@Column(name="flag")
 	private String flag;
@@ -74,12 +87,44 @@ public class Picture implements Serializable {
 		this.url = url;
 	}
 
-	public Date getUploadDate() {
-		return uploadDate;
+	public String getIsHeadPortrait() {
+		return isHeadPortrait;
 	}
 
-	public void setUploadDate(Date uploadDate) {
-		this.uploadDate = uploadDate;
+	public void setIsHeadPortrait(String isHeadPortrait) {
+		this.isHeadPortrait = isHeadPortrait;
+	}
+
+	public String getReleaseType() {
+		return releaseType;
+	}
+
+	public void setReleaseType(String releaseType) {
+		this.releaseType = releaseType;
+	}
+
+	public Long getReleaseId() {
+		return releaseId;
+	}
+
+	public void setReleaseId(Long releaseId) {
+		this.releaseId = releaseId;
+	}
+
+	public Date getCreateTime() {
+		return createTime;
+	}
+
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
+	}
+
+	public Date getUpdateTime() {
+		return updateTime;
+	}
+
+	public void setUpdateTime(Date updateTime) {
+		this.updateTime = updateTime;
 	}
 
 	public String getFlag() {
@@ -89,5 +134,5 @@ public class Picture implements Serializable {
 	public void setFlag(String flag) {
 		this.flag = flag;
 	}
-	
+
 }

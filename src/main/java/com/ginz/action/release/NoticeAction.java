@@ -1,11 +1,14 @@
 package com.ginz.action.release;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -13,20 +16,24 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.struts2.ServletActionContext;
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Namespace;
+import org.apache.struts2.dispatcher.multipart.MultiPartRequestWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ginz.action.BaseAction;
 import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
+import com.ginz.model.Picture;
 import com.ginz.model.PubComments;
 import com.ginz.model.PubNotice;
 import com.ginz.model.PubPraise;
 import com.ginz.service.AccountService;
 import com.ginz.service.CommunityService;
 import com.ginz.service.NoticeService;
+import com.ginz.service.PictureService;
 import com.ginz.service.ReplyService;
 import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.DictionaryUtil;
@@ -41,6 +48,7 @@ public class NoticeAction extends BaseAction{
 	private AccountService accountService;
 	private ReplyService replyService;
 	private CommunityService communityService;
+	private PictureService pictureService;
 
 	public NoticeService getNoticeService() {
 		return noticeService;
@@ -78,9 +86,18 @@ public class NoticeAction extends BaseAction{
 		this.communityService = communityService;
 	}
 	
+	public PictureService getPictureService() {
+		return pictureService;
+	}
+
+	@Autowired
+	public void setPictureService(PictureService pictureService) {
+		this.pictureService = pictureService;
+	}
+
 	//发布公告
 	@SuppressWarnings("unchecked")
-	public void release() throws IOException{
+	public void releaseNotice() throws IOException{
 		
 		HttpServletResponse response = ServletActionContext.getResponse();
 		HttpServletRequest request = ServletActionContext.getRequest();
@@ -100,17 +117,51 @@ public class NoticeAction extends BaseAction{
 		String endTime = valueMap.get("endTime");
 		
 		AcProperty property = accountService.loadProperty(Long.parseLong(id));
-		if(property!=null){
-			PubNotice notice = new PubNotice();
-			notice.setPropertyId(Long.parseLong(id));
-			notice.setCommunityId(Long.parseLong(communityId));
-			notice.setSubject(subject);
-			notice.setContent(content);
-			notice.setStartTime(DateFormatUtil.toDate(startTime));
-			notice.setEndTime(DateFormatUtil.toDate(endTime));
-			notice.setFlag(DictionaryUtil.DETELE_FLAG_00);
-			noticeService.saveNotice(notice);
+		
+		String picIds = "";
+		SimpleDateFormat sdf=new SimpleDateFormat("yyyyMMddHHmmss");
+		Date nowDate = new Date();
+		MultiPartRequestWrapper wrapper = (MultiPartRequestWrapper) request;  
+		String[] fileNames = wrapper.getFileNames("images");
+		File[] files = wrapper.getFiles("images");
+		String ext = "";
+		//String path = request.getSession().getServletContext().getRealPath("/upload/");
+		String path = "F:/upload";
+		if(files.length>0&&fileNames.length>0){
+			for(int i=0;i<files.length;i++){
+				ext = fileNames[i].substring(fileNames[i].lastIndexOf("."), fileNames[i].length());
+				String filePath = path + "/" + sdf.format(nowDate) + "_" + UUID.randomUUID().toString() + ext; 
+				FileUtils.copyFile(files[i], new File(filePath)); 
+				
+				Picture picture = new Picture();
+				picture.setUrl(filePath);
+				picture.setAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
+				picture.setUserId(property.getId());
+				picture.setIsHeadPortrait(DictionaryUtil.STATE_NO);
+				picture.setCreateTime(nowDate);
+				picture.setFlag(DictionaryUtil.DETELE_FLAG_00);
+				Picture picture2 = pictureService.savePicture(picture);
+				
+				if(picIds.equals("")){
+					picIds += picture2.getId();
+				}else{
+					picIds += "," + picture2.getId();
+				}
+			}
 		}
+		
+		PubNotice notice = new PubNotice();
+		notice.setPropertyId(Long.parseLong(id));
+		notice.setCommunityId(Long.parseLong(communityId));
+		notice.setSubject(subject);
+		notice.setContent(content);
+		notice.setPicIds(picIds);
+		notice.setCreateTime(nowDate);
+		notice.setStartTime(DateFormatUtil.toDate(startTime));
+		notice.setEndTime(DateFormatUtil.toDate(endTime));
+		notice.setFlag(DictionaryUtil.DETELE_FLAG_00);
+		noticeService.saveNotice(notice);
+			
 		
 		jsonObject.put("value", "SUCCESS!");
 		out.print(jsonObject.toString());
@@ -125,13 +176,6 @@ public class NoticeAction extends BaseAction{
 			}
 		}
 		PushIOS.pushAccountList(subject, accountList);
-		
-	}
-	
-	//修改公告
-	public void editNotice() throws IOException{
-		
-		
 		
 	}
 	
@@ -177,8 +221,10 @@ public class NoticeAction extends BaseAction{
 						json.put("id", notice.getId());
 						json.put("subject", notice.getSubject());
 						String picIds = notice.getPicIds();
-						String[] ids = picIds.split(",");
-						json.put("picUrl", ids[0]);
+						if(picIds!=null&&picIds.equals("")){
+							String[] ids = picIds.split(",");
+							json.put("picUrl", ids[0]);
+						}
 						AcProperty property = accountService.loadProperty(notice.getPropertyId());
 						if(property != null){
 							json.put("name", property.getPropertyName());

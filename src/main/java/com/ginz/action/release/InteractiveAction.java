@@ -18,7 +18,6 @@ import org.apache.struts2.convention.annotation.Namespace;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ginz.action.BaseAction;
-import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
 import com.ginz.model.PubComments;
 import com.ginz.model.PubInteractive;
@@ -32,7 +31,7 @@ import com.ginz.util.base.JsonUtil;
 import com.ginz.util.push.PushIOS;
 
 @Namespace("/")
-@Action(value = "noticeAction")
+@Action(value = "interactiveAction")
 public class InteractiveAction extends BaseAction{
 
 	private InteractiveService interactiveService;
@@ -80,18 +79,19 @@ public class InteractiveAction extends BaseAction{
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String id = valueMap.get("id");	//社区用户id
+		String id = valueMap.get("id");	//个人用户id
 		String subject = valueMap.get("subject");
 		String content = valueMap.get("content");
 		String startTime = valueMap.get("startTime");
 		String endTime = valueMap.get("endTime");
 		
-		AcProperty property = accountService.loadProperty(Long.parseLong(id));
-		if(property!=null){
+		AcUser user = accountService.loadUser(Long.parseLong(id));
+		if(user!=null){
 			PubInteractive interactive = new PubInteractive();
 			interactive.setUserId(Long.parseLong(id));
 			interactive.setSubject(subject);
 			interactive.setContent(content);
+			interactive.setCreateTime(new Date());
 			interactive.setStartTime(DateFormatUtil.toDate(startTime));
 			interactive.setEndTime(DateFormatUtil.toDate(endTime));
 			interactive.setFlag(DictionaryUtil.DETELE_FLAG_00);

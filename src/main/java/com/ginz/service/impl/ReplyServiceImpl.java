@@ -9,7 +9,6 @@ import com.ginz.dao.BaseDao;
 import com.ginz.model.PubComments;
 import com.ginz.model.PubPraise;
 import com.ginz.service.ReplyService;
-import com.ginz.util.base.DictionaryUtil;
 
 @Service("replyService")
 public class ReplyServiceImpl implements ReplyService {

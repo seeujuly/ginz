@@ -34,29 +34,26 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 	}
 	
 	@Transactional(propagation=Propagation.REQUIRED)
-	public Serializable save(T o) {
-		return this.getCurrentSession().save(o);
+	public T save(T o) {
+		this.getCurrentSession().save(o);
+		return o;
 	}
 	
-	@Transactional(propagation=Propagation.REQUIRED)
-	public Serializable saveC(T o){
-		this.getCurrentSession().clear();
-		return this.getCurrentSession().save(o);
-	}
-
 	@Transactional(propagation=Propagation.REQUIRED)
 	public void delete(T o) {
 		this.getCurrentSession().delete(o);
 	}
 
 	@Transactional(propagation=Propagation.REQUIRED)
-	public void update(T o) {
+	public T update(T o) {
 		this.getCurrentSession().update(o);
+		return o;
 	}
 
 	@Transactional(propagation=Propagation.REQUIRED)
-	public void saveOrUpdate(T o) {
+	public T saveOrUpdate(T o) {
 		this.getCurrentSession().saveOrUpdate(o);
+		return o;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -220,27 +217,6 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 		return q.executeUpdate();
 	}
 
-	@Override
-	@Transactional(propagation=Propagation.REQUIRED)
-	public void saveTrend(T o) {
-		this.getCurrentSession().clear();
-		this.getCurrentSession().save(o);
-	}
-
-	@Override
-	@Transactional(propagation=Propagation.REQUIRED)
-	public void saveCus(T o) {
-		this.getCurrentSession().clear();
-		this.getCurrentSession().saveOrUpdate(o);
-	}
-	
-	@Override
-	@Transactional(propagation=Propagation.REQUIRED)
-	public void saveSta(T o) {
-		this.getCurrentSession().clear();
-		this.getCurrentSession().saveOrUpdate(o);
-	}
-	
 	@SuppressWarnings("unchecked")
 	@Transactional(propagation = Propagation.REQUIRED, readOnly = true)
 	public List<T> queryBySql(String sqlQuery) {

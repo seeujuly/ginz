@@ -77,7 +77,7 @@ public class CommunityAction extends BaseAction {
 			community.setDistrict(district);
 			community.setAddress(address);
 			community.setPropertyId(Long.parseLong(id));
-			community.setCreateDate(new Date());
+			community.setCreateTime(new Date());
 			community.setStatus(DictionaryUtil.ACCOUNT_STATUS_00);
 			community.setFlag(DictionaryUtil.DETELE_FLAG_00);
 			communityService.save(community);

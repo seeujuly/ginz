@@ -18,9 +18,9 @@ public class DictionaryUtil {
 	public static final String DETELE_FLAG_00 = "0";	//正常
 	public static final String DETELE_FLAG_01 = "1";	//删除
 	
-	//是否公开
-	public static final String PUBLIC_STATE_00 = "0";	//公开
-	public static final String PUBLIC_STATE_01 = "1";	//不公开
+	//是否标识
+	public static final String STATE_YES = "0";	//是
+	public static final String STATE_NO = "1";	//否
 
 	//情感状态
 	public static final String EMOTIONAL_STATE_00 = "0";	//单身
@@ -29,6 +29,7 @@ public class DictionaryUtil {
 	public static final String EMOTIONAL_STATE_03 = "3";	//已育
 	
 	//发布信息类型
+	public static final String RELEASE_TYPE_00 = "0";	//个人动态(社区生活显示在一个版块)
 	public static final String RELEASE_TYPE_01 = "1";	//社区公告
 	public static final String RELEASE_TYPE_02 = "2";	//积分互动
 	public static final String RELEASE_TYPE_03 = "3";	//社区生活

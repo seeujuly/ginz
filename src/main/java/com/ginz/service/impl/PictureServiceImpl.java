@@ -29,13 +29,13 @@ public class PictureServiceImpl implements PictureService {
 	}
 
 	@Override
-	public void savePicture(Picture picture) {
-		pictureDao.save(picture);
+	public Picture savePicture(Picture picture) {
+		return pictureDao.save(picture);
 	}
 
 	@Override
-	public void updatePicture(Picture picture) {
-		pictureDao.update(picture);
+	public Picture updatePicture(Picture picture) {
+		return pictureDao.update(picture);
 	}
 
 	@Override

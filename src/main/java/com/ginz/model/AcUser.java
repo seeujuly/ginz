@@ -56,8 +56,8 @@ public class AcUser implements Serializable {
 	private String city;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="createDate")
-	private Date createDate;
+	@Column(name="createTime")
+	private Date createTime;
 	
 	@Column(name="device_token")
 	private String deviceToken;
@@ -171,12 +171,12 @@ public class AcUser implements Serializable {
 		this.city = city;
 	}
 
-	public Date getCreateDate() {
-		return createDate;
+	public Date getCreateTime() {
+		return createTime;
 	}
 
-	public void setCreateDate(Date createDate) {
-		this.createDate = createDate;
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
 	}
 
 	public String getDeviceToken() {

@@ -50,8 +50,8 @@ public class AcProperty implements Serializable {
 	private String address;
 	
 	@Temporal(TemporalType.TIMESTAMP)
-	@Column(name="createDate")
-	private Date createDate;
+	@Column(name="createTime")
+	private Date createTime;
 	
 	@Column(name="pic_url")
 	private String picUrl;
@@ -152,12 +152,12 @@ public class AcProperty implements Serializable {
 		this.address = address;
 	}
 
-	public Date getCreateDate() {
-		return createDate;
+	public Date getCreateTime() {
+		return createTime;
 	}
 
-	public void setCreateDate(Date createDate) {
-		this.createDate = createDate;
+	public void setCreateTime(Date createTime) {
+		this.createTime = createTime;
 	}
 
 	public String getPicUrl() {

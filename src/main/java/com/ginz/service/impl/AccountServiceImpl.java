@@ -96,8 +96,8 @@ public class AccountServiceImpl implements AccountService {
 	public void saveUser(AcUser user) {
 		AcUser u = new AcUser();
 		BeanUtils.copyProperties(user, u, new String[] { "password" });
-		if (user.getCreateDate() == null) {
-			u.setCreateDate(new Date());
+		if (user.getCreateTime() == null) {
+			u.setCreateTime(new Date());
 		}
 		u.setPassword(Encrypt.e(user.getPassword()));
 		userDao.save(u);
@@ -186,8 +186,8 @@ public class AccountServiceImpl implements AccountService {
 	public void saveProperty(AcProperty property) {
 		AcProperty p = new AcProperty();
 		BeanUtils.copyProperties(property, p, new String[] { "password" });
-		if (property.getCreateDate() == null) {
-			p.setCreateDate(new Date());
+		if (property.getCreateTime() == null) {
+			p.setCreateTime(new Date());
 		}
 		p.setPassword(Encrypt.e(property.getPassword()));
 		propertyDao.save(p);
@@ -247,9 +247,10 @@ public class AccountServiceImpl implements AccountService {
 	public void saveMerchant(AcMerchant merchant) {
 		AcMerchant m = new AcMerchant();
 		BeanUtils.copyProperties(merchant, m, new String[] { "password" });
-		if (merchant.getCreateDate() == null) {
-			m.setCreateDate(new Date());
+		if (merchant.getCreateTime() == null) {
+			m.setCreateTime(new Date());
 		}
+		
 		m.setPassword(Encrypt.e(merchant.getPassword()));
 		merchantDao.save(m);
 	}

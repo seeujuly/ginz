@@ -29,13 +29,13 @@ public class NoticeServiceImpl implements NoticeService {
 	}
 
 	@Override
-	public void saveNotice(PubNotice notice) {
-		noticeDao.save(notice);
+	public PubNotice saveNotice(PubNotice notice) {
+		return noticeDao.save(notice);
 	}
 
 	@Override
-	public void updateNotice(PubNotice notice) {
-		noticeDao.update(notice);
+	public PubNotice updateNotice(PubNotice notice) {
+		return noticeDao.update(notice);
 	}
 
 	@Override
