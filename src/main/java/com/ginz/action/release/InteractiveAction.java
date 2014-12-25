@@ -79,16 +79,16 @@ public class InteractiveAction extends BaseAction{
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String id = valueMap.get("id");	//个人用户id
+		String userId = valueMap.get("userId");	//个人用户id
 		String subject = valueMap.get("subject");
 		String content = valueMap.get("content");
 		String startTime = valueMap.get("startTime");
 		String endTime = valueMap.get("endTime");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(id));
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		if(user!=null){
 			PubInteractive interactive = new PubInteractive();
-			interactive.setUserId(Long.parseLong(id));
+			interactive.setUserId(Long.parseLong(userId));
 			interactive.setSubject(subject);
 			interactive.setContent(content);
 			interactive.setCreateTime(new Date());
@@ -176,7 +176,7 @@ public class InteractiveAction extends BaseAction{
 	}
 	
 	//个人用户获取积分互动信息详细内容
-	@SuppressWarnings({ "unchecked", "static-access" })
+	@SuppressWarnings("unchecked")
 	public void getInteractiveDetail() throws IOException{
 		
 		HttpServletResponse response = ServletActionContext.getResponse();
@@ -190,14 +190,14 @@ public class InteractiveAction extends BaseAction{
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String id = valueMap.get("id");	//积分互动信息id
 		
-		JSONObject jsonObject=new JSONObject();
+		JSONObject json = new JSONObject();
 		
 		PubInteractive interactive = interactiveService.loadInteractive(Long.parseLong(id));
 		if(interactive != null){
-			jsonObject.fromObject(interactive);
+			json = JSONObject.fromObject(interactive);
 		}
 		
-		out.print(jsonObject.toString());
+		out.print(json.toString());
 		
 	}
 	

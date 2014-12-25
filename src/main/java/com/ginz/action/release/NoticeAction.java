@@ -2,12 +2,14 @@ package com.ginz.action.release;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -94,7 +96,7 @@ public class NoticeAction extends BaseAction{
 	public void setPictureService(PictureService pictureService) {
 		this.pictureService = pictureService;
 	}
-
+	
 	//发布公告
 	@SuppressWarnings("unchecked")
 	public void releaseNotice() throws IOException{
@@ -125,16 +127,24 @@ public class NoticeAction extends BaseAction{
 		String[] fileNames = wrapper.getFileNames("images");
 		File[] files = wrapper.getFiles("images");
 		String ext = "";
+		
+		InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("config.properties");   
+		Properties p = new Properties();   
+		p.load(inputStream);   
+		String serverUrl = p.getProperty("server_path");
+		String path = p.getProperty("server_dir");
 		//String path = request.getSession().getServletContext().getRealPath("/upload/");
-		String path = "F:/upload";
+		
 		if(files.length>0&&fileNames.length>0){
 			for(int i=0;i<files.length;i++){
 				ext = fileNames[i].substring(fileNames[i].lastIndexOf("."), fileNames[i].length());
-				String filePath = path + "/" + sdf.format(nowDate) + "_" + UUID.randomUUID().toString() + ext; 
-				FileUtils.copyFile(files[i], new File(filePath)); 
+				String fileName = sdf.format(nowDate) + "_" + UUID.randomUUID().toString() + ext; 
+				String dir = DictionaryUtil.PIC_RELEASE_NOTICE;
+				FileUtils.copyFile(files[i], new File(path + dir + fileName)); 
 				
 				Picture picture = new Picture();
-				picture.setUrl(filePath);
+				picture.setUrl(serverUrl + dir + fileName);
+				picture.setFileName(fileName);
 				picture.setAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
 				picture.setUserId(property.getId());
 				picture.setIsHeadPortrait(DictionaryUtil.STATE_NO);
@@ -162,7 +172,6 @@ public class NoticeAction extends BaseAction{
 		notice.setFlag(DictionaryUtil.DETELE_FLAG_00);
 		noticeService.saveNotice(notice);
 			
-		
 		jsonObject.put("value", "SUCCESS!");
 		out.print(jsonObject.toString());
 		
@@ -206,8 +215,11 @@ public class NoticeAction extends BaseAction{
 		JSONArray jsonArray = new JSONArray();
 		JSONObject jsonObject=new JSONObject();
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
-		
+		AcUser user = new AcUser();
+		if(userId!=null&&!userId.equals("")){
+			user = accountService.loadUser(Long.parseLong(userId));
+		}
+	
 		if(user!=null){
 			Long communityId = user.getCommunityId();
 			if(communityId!=null&&communityId!=0){
@@ -216,21 +228,27 @@ public class NoticeAction extends BaseAction{
 					for(PubNotice notice:noticeList){
 						int praiseNum = replyService.countPraise(" and releaseId = " + notice.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
 						int commentNum = replyService.countComment(" and releaseId = " + notice.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
-						//JSONObject json = JSONObject.fromObject(notice);
 						JSONObject json = new JSONObject();
 						json.put("id", notice.getId());
 						json.put("subject", notice.getSubject());
+						json.put("createTime", DateFormatUtil.dateToStringSS(notice.getCreateTime()));
 						String picIds = notice.getPicIds();
-						if(picIds!=null&&picIds.equals("")){
+						if(picIds!=null&&!picIds.equals("")){
 							String[] ids = picIds.split(",");
-							json.put("picUrl", ids[0]);
+							if(ids.length>0){
+								Picture picture = pictureService.loadPicture(Long.parseLong(ids[0]));
+								if(picture!=null){
+									json.put("picUrl", picture.getUrl());
+								}
+							}
 						}
 						AcProperty property = accountService.loadProperty(notice.getPropertyId());
 						if(property != null){
 							json.put("name", property.getPropertyName());
+							json.put("headUrl", property.getPicUrl());
 						}
-						json.put("praiseNum", praiseNum);
-						json.put("commentNum", commentNum);
+						json.put("praiseNum", praiseNum+"");
+						json.put("commentNum", commentNum+"");
 						jsonArray.add(json);
 					}
 					jsonObject.put("result", "1");
@@ -253,7 +271,7 @@ public class NoticeAction extends BaseAction{
 	}
 	
 	//个人用户获取公告详细内容
-	@SuppressWarnings({ "unchecked", "static-access" })
+	@SuppressWarnings("unchecked")
 	public void getNoticeDetail() throws IOException{
 		
 		HttpServletResponse response = ServletActionContext.getResponse();
@@ -267,14 +285,31 @@ public class NoticeAction extends BaseAction{
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String id = valueMap.get("id");	//公告id
 		
-		JSONObject jsonObject=new JSONObject();
-		
+		JSONObject json = new JSONObject();
 		PubNotice notice = noticeService.loadNotice(Long.parseLong(id));
 		if(notice != null){
-			jsonObject.fromObject(notice);
+			json = JSONObject.fromObject(notice);
+			
+			AcProperty property = accountService.loadProperty(notice.getPropertyId());
+			if(property!=null){
+				json.put("headUrl", property.getPicUrl());
+			}
+			String picIds = notice.getPicIds();
+			if(picIds!=null&&!picIds.equals("")){
+				String[] ids = picIds.split(",");
+				if(ids.length>0){
+					for(int i=0;i<ids.length;i++){
+						Picture picture = pictureService.loadPicture(Long.parseLong(ids[i]));
+						if(picture!=null){
+							json.put("image"+(i+1), picture.getUrl());
+						}
+					}
+					
+				}
+			}
 		}
 		
-		out.print(jsonObject.toString());
+		out.print(json.toString());
 		
 	}
 	
@@ -312,7 +347,7 @@ public class NoticeAction extends BaseAction{
 			int num = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
 			jsonObject.put("result", "1");
 			jsonObject.put("value", "SUCCESS!");
-			jsonObject.put("number", num);	//更新点赞数量
+			jsonObject.put("number", num+"");	//更新点赞数量
 			
 			//发推送消息给发布该公告的社区用户
 			PubNotice notice = noticeService.loadNotice(Long.parseLong(id));
@@ -362,7 +397,7 @@ public class NoticeAction extends BaseAction{
 		int num = replyService.countComment(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
 		jsonObject.put("result", "1");
 		jsonObject.put("value", "SUCCESS!");
-		jsonObject.put("number", num);	//更新评论数量
+		jsonObject.put("number", num+"");	//更新评论数量
 		
 		out.print(jsonObject.toString());
 		

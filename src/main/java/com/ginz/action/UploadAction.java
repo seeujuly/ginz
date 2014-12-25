@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Properties;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -37,11 +38,18 @@ public class UploadAction extends BaseAction {
 		String[] fileNames = wrapper.getFileNames("images");
 		File[] files = wrapper.getFiles("images");
 		String ext = "";
-		String filePath = request.getSession().getServletContext().getRealPath("/upload/") + "/" + sdf.format(new Date()) + "_" + UUID.randomUUID().toString() + ext;
+		
+		InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("config.properties");   
+		Properties p = new Properties();   
+		p.load(inputStream);   
+		String path = p.getProperty("server_dir");
+		//String path = request.getSession().getServletContext().getRealPath("/upload/");
+		
 		if(files.length>0&&fileNames.length>0){
 			for(int i=0;i<files.length;i++){
 				ext = fileNames[i].substring(fileNames[i].lastIndexOf("."), fileNames[i].length());
-				FileUtils.copyFile(files[i], new File(filePath)); 
+				String filePath = sdf.format(new Date()) + "_" + UUID.randomUUID().toString() + ext; 
+				FileUtils.copyFile(files[i], new File(path + "/" + filePath)); 
 			}
 		}
 		

@@ -31,6 +31,9 @@ public class Picture implements Serializable {
 	@Column(name="url")
 	private String url;
 	
+	@Column(name="file_name")
+	private String fileName;
+	
 	@Column(name="isHeadPortrait")
 	private String isHeadPortrait;
 	
@@ -85,6 +88,14 @@ public class Picture implements Serializable {
 
 	public void setUrl(String url) {
 		this.url = url;
+	}
+	
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
 	}
 
 	public String getIsHeadPortrait() {
