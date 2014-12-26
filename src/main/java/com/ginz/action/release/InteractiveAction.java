@@ -24,12 +24,14 @@ import com.ginz.model.PubInteractive;
 import com.ginz.model.PubPraise;
 import com.ginz.service.AccountService;
 import com.ginz.service.InteractiveService;
+import com.ginz.service.PictureService;
 import com.ginz.service.ReplyService;
 import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.DictionaryUtil;
 import com.ginz.util.base.JsonUtil;
 import com.ginz.util.push.PushIOS;
 
+//互动积分
 @Namespace("/")
 @Action(value = "interactiveAction")
 public class InteractiveAction extends BaseAction{
@@ -37,6 +39,7 @@ public class InteractiveAction extends BaseAction{
 	private InteractiveService interactiveService;
 	private AccountService accountService;
 	private ReplyService replyService;
+	private PictureService pictureService;
 
 	public InteractiveService getInteractiveService() {
 		return interactiveService;
@@ -65,9 +68,17 @@ public class InteractiveAction extends BaseAction{
 		this.replyService = replyService;
 	}
 	
+	public PictureService getPictureService() {
+		return pictureService;
+	}
+
+	public void setPictureService(PictureService pictureService) {
+		this.pictureService = pictureService;
+	}
+
 	//发布积分互动信息
 	@SuppressWarnings("unchecked")
-	public void release() throws IOException{
+	public void releaseInteractive() throws IOException{
 		
 		HttpServletResponse response = ServletActionContext.getResponse();
 		HttpServletRequest request = ServletActionContext.getRequest();

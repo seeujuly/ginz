@@ -29,10 +29,10 @@ import com.ginz.action.BaseAction;
 import com.ginz.model.AcUser;
 import com.ginz.model.Picture;
 import com.ginz.model.PubComments;
-import com.ginz.model.PubPersonalStatus;
+import com.ginz.model.PubEvent;
 import com.ginz.model.PubPraise;
 import com.ginz.service.AccountService;
-import com.ginz.service.PersonalStatusService;
+import com.ginz.service.EventService;
 import com.ginz.service.PictureService;
 import com.ginz.service.ReplyService;
 import com.ginz.util.base.DictionaryUtil;
@@ -46,7 +46,7 @@ public class EventAction extends BaseAction {
 
 	private AccountService accountService;
 	private ReplyService replyService;
-	private PersonalStatusService personalStatusService;
+	private EventService personalStatusService;
 	private PictureService pictureService;
 	
 	public AccountService getAccountService() {
@@ -67,12 +67,12 @@ public class EventAction extends BaseAction {
 		this.replyService = replyService;
 	}
 	
-	public PersonalStatusService getPersonalStatusService() {
+	public EventService getPersonalStatusService() {
 		return personalStatusService;
 	}
 
 	@Autowired
-	public void setPersonalStatusService(PersonalStatusService personalStatusService) {
+	public void setPersonalStatusService(EventService personalStatusService) {
 		this.personalStatusService = personalStatusService;
 	}
 	
@@ -146,7 +146,7 @@ public class EventAction extends BaseAction {
 				}
 			}
 		
-			PubPersonalStatus personalStatus = new PubPersonalStatus();
+			PubEvent personalStatus = new PubEvent();
 			personalStatus.setUserId(Long.parseLong(id));
 			personalStatus.setSubject(subject);
 			personalStatus.setContent(content);
@@ -178,7 +178,7 @@ public class EventAction extends BaseAction {
 		String id = valueMap.get("id");	//个人动态信息id
 		String userId = valueMap.get("userId");	//个人用户id
 		
-		PubPersonalStatus personalStatus = personalStatusService.loadPersonalStatus(Long.parseLong(id));
+		PubEvent personalStatus = personalStatusService.loadPersonalStatus(Long.parseLong(id));
 		if(personalStatus != null){
 			if(StringUtils.equals(personalStatus.getUserId().toString(),userId)){
 				personalStatusService.deletePersonalStatus(Long.parseLong(id));
@@ -213,10 +213,10 @@ public class EventAction extends BaseAction {
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		
 		if(user!=null){
-			List<PubPersonalStatus> personalStatusList = personalStatusService.findPersonalStatus(" and userId = " + userId + " order by createTime desc ", Integer.parseInt(page), rows);
+			List<PubEvent> personalStatusList = personalStatusService.findPersonalStatus(" and userId = " + userId + " order by createTime desc ", Integer.parseInt(page), rows);
 			
 			if(personalStatusList.size()>0){
-				for(PubPersonalStatus personalStatus:personalStatusList){
+				for(PubEvent personalStatus:personalStatusList){
 					int praiseNum = replyService.countPraise(" and releaseId = " + personalStatus.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "'");
 					int commentNum = replyService.countComment(" and releaseId = " + personalStatus.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "'");
 					JSONObject json = new JSONObject();
@@ -264,7 +264,7 @@ public class EventAction extends BaseAction {
 		
 		JSONObject json = new JSONObject();
 		
-		PubPersonalStatus personalStatus = personalStatusService.loadPersonalStatus(Long.parseLong(id));
+		PubEvent personalStatus = personalStatusService.loadPersonalStatus(Long.parseLong(id));
 		if(personalStatus != null){
 			json = JSONObject.fromObject(personalStatus);
 		}
@@ -310,7 +310,7 @@ public class EventAction extends BaseAction {
 			jsonObject.put("number", num);	//更新点赞数量
 			
 			//发推送消息给发布该个人动态信息的个人用户
-			PubPersonalStatus personalStatus = personalStatusService.loadPersonalStatus(Long.parseLong(id));
+			PubEvent personalStatus = personalStatusService.loadPersonalStatus(Long.parseLong(id));
 			if(personalStatus != null){
 				Long uId = personalStatus.getUserId();
 				AcUser user = accountService.loadUser(uId);
@@ -360,7 +360,7 @@ public class EventAction extends BaseAction {
 		out.print(jsonObject.toString());
 		
 		//发推送消息给发布该个人动态信息的个人用户
-		PubPersonalStatus personalStatus = personalStatusService.loadPersonalStatus(Long.parseLong(id));
+		PubEvent personalStatus = personalStatusService.loadPersonalStatus(Long.parseLong(id));
 		if(personalStatus != null){
 			Long uId = personalStatus.getUserId();
 			AcUser user = accountService.loadUser(uId);

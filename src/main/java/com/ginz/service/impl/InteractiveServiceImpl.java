@@ -29,13 +29,13 @@ public class InteractiveServiceImpl implements InteractiveService {
 	}
 
 	@Override
-	public void saveInteractive(PubInteractive interactive) {
-		interactiveDao.save(interactive);
+	public PubInteractive saveInteractive(PubInteractive interactive) {
+		return interactiveDao.save(interactive);
 	}
 
 	@Override
-	public void updateInteractive(PubInteractive interactive) {
-		interactiveDao.update(interactive);
+	public PubInteractive updateInteractive(PubInteractive interactive) {
+		return interactiveDao.update(interactive);
 	}
 
 	@Override

@@ -31,6 +31,9 @@ public class Picture implements Serializable {
 	@Column(name="url")
 	private String url;
 	
+	@Column(name="thumbnail_url")
+	private String thumbnailUrl;
+	
 	@Column(name="file_name")
 	private String fileName;
 	
@@ -90,6 +93,14 @@ public class Picture implements Serializable {
 		this.url = url;
 	}
 	
+	public String getThumbnailUrl() {
+		return thumbnailUrl;
+	}
+
+	public void setThumbnailUrl(String thumbnailUrl) {
+		this.thumbnailUrl = thumbnailUrl;
+	}
+
 	public String getFileName() {
 		return fileName;
 	}

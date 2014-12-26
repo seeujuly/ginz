@@ -8,9 +8,9 @@ public interface InteractiveService {
 
 	public PubInteractive loadInteractive(Long id);
 
-	public void saveInteractive(PubInteractive interactive);
+	public PubInteractive saveInteractive(PubInteractive interactive);
 	
-	public void updateInteractive(PubInteractive interactive);
+	public PubInteractive updateInteractive(PubInteractive interactive);
 	
 	public void deleteInteractive(Long id);
 	

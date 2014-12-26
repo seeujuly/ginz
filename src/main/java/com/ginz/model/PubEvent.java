@@ -13,8 +13,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
-@Table(name = "pub_personal_status")
-public class PubPersonalStatus implements Serializable {
+@Table(name = "pub_event")
+public class PubEvent implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -41,7 +41,7 @@ public class PubPersonalStatus implements Serializable {
 	@Column(name="flag")
 	private String flag;
 	
-	public PubPersonalStatus(){
+	public PubEvent(){
 		
 	}
 

@@ -47,5 +47,6 @@ public class DictionaryUtil {
 	public static final String PIC_RELEASE_INTERACTIVE = "/interactive/";	//积分互动
 	public static final String PIC_RELEASE_PERSONALSTATUS = "/personalStatus/";	//社区生活
 	public static final String PIC_RELEASE_ACTIVITY = "/activity/";	//社区商户
+	public static final String PIC_THUMBNAIL = "/thumbnail";	//缩略图目录
 	
 }

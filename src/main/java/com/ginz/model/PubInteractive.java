@@ -58,6 +58,12 @@ public class PubInteractive implements Serializable {
 	@Column(name="limit")
 	private String limit;	//人数限制
 	
+	@Column(name="signUp")
+	private String signUp;	//报名用户
+	
+	@Column(name="joinIn")
+	private String joinIn;	//参加用户
+	
 	@Column(name="status")
 	private String status;	//信息状态
 	
@@ -170,6 +176,22 @@ public class PubInteractive implements Serializable {
 
 	public void setEventPoint(String eventPoint) {
 		this.eventPoint = eventPoint;
+	}
+
+	public String getSignUp() {
+		return signUp;
+	}
+
+	public void setSignUp(String signUp) {
+		this.signUp = signUp;
+	}
+
+	public String getJoinIn() {
+		return joinIn;
+	}
+
+	public void setJoinIn(String joinIn) {
+		this.joinIn = joinIn;
 	}
 
 	public String getStatus() {

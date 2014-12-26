@@ -52,6 +52,9 @@ public class AcUser implements Serializable {
 	@Column(name="head_portrait")
 	private String headPortrait;
 	
+	@Column(name="thumbnail_url")
+	private String thumbnailUrl;
+	
 	@Column(name="city")
 	private String city;
 	
@@ -161,6 +164,14 @@ public class AcUser implements Serializable {
 
 	public void setHeadPortrait(String headPortrait) {
 		this.headPortrait = headPortrait;
+	}
+	
+	public String getThumbnailUrl() {
+		return thumbnailUrl;
+	}
+
+	public void setThumbnailUrl(String thumbnailUrl) {
+		this.thumbnailUrl = thumbnailUrl;
 	}
 
 	public String getCity() {

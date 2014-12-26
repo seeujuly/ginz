@@ -40,8 +40,10 @@ import com.ginz.service.ReplyService;
 import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.DictionaryUtil;
 import com.ginz.util.base.JsonUtil;
+import com.ginz.util.base.ThumbnailUtil;
 import com.ginz.util.push.PushIOS;
 
+//公告
 @Namespace("/")
 @Action(value = "noticeAction")
 public class NoticeAction extends BaseAction{
@@ -133,6 +135,7 @@ public class NoticeAction extends BaseAction{
 		p.load(inputStream);   
 		String serverUrl = p.getProperty("server_path");
 		String path = p.getProperty("server_dir");
+		String resize = p.getProperty("release_thumbnail_size");
 		//String path = request.getSession().getServletContext().getRealPath("/upload/");
 		
 		if(files.length>0&&fileNames.length>0){
@@ -140,10 +143,15 @@ public class NoticeAction extends BaseAction{
 				ext = fileNames[i].substring(fileNames[i].lastIndexOf("."), fileNames[i].length());
 				String fileName = sdf.format(nowDate) + "_" + UUID.randomUUID().toString() + ext; 
 				String dir = DictionaryUtil.PIC_RELEASE_NOTICE;
+				String thumbnailDir = DictionaryUtil.PIC_THUMBNAIL;
 				FileUtils.copyFile(files[i], new File(path + dir + fileName)); 
+				
+				ThumbnailUtil ccc = new ThumbnailUtil(path + dir + fileName, path + thumbnailDir + dir + fileName);
+				ccc.resize(Integer.parseInt(resize),Integer.parseInt(resize));
 				
 				Picture picture = new Picture();
 				picture.setUrl(serverUrl + dir + fileName);
+				picture.setThumbnailUrl(serverUrl + thumbnailDir + dir + fileName);
 				picture.setFileName(fileName);
 				picture.setAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
 				picture.setUserId(property.getId());
@@ -223,6 +231,9 @@ public class NoticeAction extends BaseAction{
 		if(user!=null){
 			Long communityId = user.getCommunityId();
 			if(communityId!=null&&communityId!=0){
+				if(Integer.parseInt(page)>1){
+					rows = 5;
+				}
 				List<PubNotice> noticeList = noticeService.findNotice(" and communityId = " + communityId + " order by createTime desc ", Integer.parseInt(page), rows);
 				if(noticeList.size()>0){
 					for(PubNotice notice:noticeList){
@@ -245,7 +256,7 @@ public class NoticeAction extends BaseAction{
 						AcProperty property = accountService.loadProperty(notice.getPropertyId());
 						if(property != null){
 							json.put("name", property.getPropertyName());
-							json.put("headUrl", property.getPicUrl());
+							json.put("headUrl", property.getThumbnailUrl());
 						}
 						json.put("praiseNum", praiseNum+"");
 						json.put("commentNum", commentNum+"");
@@ -301,7 +312,7 @@ public class NoticeAction extends BaseAction{
 					for(int i=0;i<ids.length;i++){
 						Picture picture = pictureService.loadPicture(Long.parseLong(ids[i]));
 						if(picture!=null){
-							json.put("image"+(i+1), picture.getUrl());
+							json.put("image"+(i+1), picture.getThumbnailUrl());
 						}
 					}
 					
@@ -488,6 +499,7 @@ public class NoticeAction extends BaseAction{
 				if(user != null){
 					json.put("id", user.getId());
 					json.put("name", user.getNickName());
+					json.put("headUrl", user.getThumbnailUrl());
 				}
 				jsonArray.add(json);
 			}
