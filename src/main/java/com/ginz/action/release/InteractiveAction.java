@@ -1,10 +1,15 @@
 package com.ginz.action.release;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -12,13 +17,16 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.struts2.ServletActionContext;
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Namespace;
+import org.apache.struts2.dispatcher.multipart.MultiPartRequestWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ginz.action.BaseAction;
 import com.ginz.model.AcUser;
+import com.ginz.model.Picture;
 import com.ginz.model.PubComments;
 import com.ginz.model.PubInteractive;
 import com.ginz.model.PubPraise;
@@ -29,6 +37,7 @@ import com.ginz.service.ReplyService;
 import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.DictionaryUtil;
 import com.ginz.util.base.JsonUtil;
+import com.ginz.util.base.ThumbnailUtil;
 import com.ginz.util.push.PushIOS;
 
 //互动积分
@@ -95,8 +104,56 @@ public class InteractiveAction extends BaseAction{
 		String content = valueMap.get("content");
 		String startTime = valueMap.get("startTime");
 		String endTime = valueMap.get("endTime");
+		String limit = valueMap.get("limit");
+		String label = valueMap.get("label");
 		
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		
+		String picIds = "";
+		SimpleDateFormat sdf=new SimpleDateFormat("yyyyMMddHHmmss");
+		Date nowDate = new Date();
+		MultiPartRequestWrapper wrapper = (MultiPartRequestWrapper) request;  
+		String[] fileNames = wrapper.getFileNames("images");
+		File[] files = wrapper.getFiles("images");
+		String ext = "";
+		
+		InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("config.properties");   
+		Properties p = new Properties();   
+		p.load(inputStream);   
+		String serverUrl = p.getProperty("server_path");
+		String path = p.getProperty("server_dir");
+		String resize = p.getProperty("release_thumbnail_size");
+		
+		if(files.length>0&&fileNames.length>0){
+			for(int i=0;i<files.length;i++){
+				ext = fileNames[i].substring(fileNames[i].lastIndexOf("."), fileNames[i].length());
+				String fileName = sdf.format(nowDate) + "_" + UUID.randomUUID().toString() + ext; 
+				String dir = DictionaryUtil.PIC_RELEASE_INTERACTIVE;
+				String thumbnailDir = DictionaryUtil.PIC_THUMBNAIL;
+				FileUtils.copyFile(files[i], new File(path + dir + fileName)); 
+				
+				ThumbnailUtil ccc = new ThumbnailUtil(path + dir + fileName, path + thumbnailDir + dir + fileName);
+				ccc.resize(Integer.parseInt(resize),Integer.parseInt(resize));
+				
+				Picture picture = new Picture();
+				picture.setUrl(serverUrl + dir + fileName);
+				picture.setThumbnailUrl(serverUrl + thumbnailDir + dir + fileName);
+				picture.setFileName(fileName);
+				picture.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+				picture.setUserId(user.getId());
+				picture.setIsHeadPortrait(DictionaryUtil.STATE_NO);
+				picture.setCreateTime(nowDate);
+				picture.setFlag(DictionaryUtil.DETELE_FLAG_00);
+				Picture picture2 = pictureService.savePicture(picture);
+				
+				if(picIds.equals("")){
+					picIds += picture2.getId();
+				}else{
+					picIds += "," + picture2.getId();
+				}
+			}
+		}
+		
 		if(user!=null){
 			PubInteractive interactive = new PubInteractive();
 			interactive.setUserId(Long.parseLong(userId));
@@ -252,10 +309,13 @@ public class InteractiveAction extends BaseAction{
 			PubInteractive interactive = interactiveService.loadInteractive(Long.parseLong(id));
 			if(interactive != null){
 				Long uId = interactive.getUserId();
-				AcUser user = accountService.loadUser(uId);
-				if(user != null){
-					PushIOS.pushSingleDevice(user.getNickName() + "赞了你的信息", user.getDeviceToken());	//通知个人用户有人点赞..
-					
+				AcUser u = accountService.loadUser(uId);
+				if(u!=null){
+					AcUser user = accountService.loadUser(Long.parseLong(userId));
+					if(user != null){
+						PushIOS.pushSingleDevice(user.getNickName() + "赞了你的信息", u.getDeviceToken());	//通知个人用户有人点赞..
+						
+					}
 				}
 			}
 		}
@@ -302,9 +362,12 @@ public class InteractiveAction extends BaseAction{
 		PubInteractive interactive = interactiveService.loadInteractive(Long.parseLong(id));
 		if(interactive != null){
 			Long uId = interactive.getUserId();
-			AcUser user = accountService.loadUser(uId);
-			if(user != null){
-				PushIOS.pushSingleDevice(user.getNickName() + "评论了你的信息", user.getDeviceToken());	//通知个人用户有人评论
+			AcUser u = accountService.loadUser(uId);
+			if(u!=null){
+				AcUser user = accountService.loadUser(Long.parseLong(userId));
+				if(user != null){
+					PushIOS.pushSingleDevice(user.getNickName() + "评论了你的信息", u.getDeviceToken());	//通知个人用户有人评论
+				}
 			}
 		}
 		

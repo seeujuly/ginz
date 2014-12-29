@@ -42,11 +42,11 @@ public class DictionaryUtil {
 	public static final String RELEASE_MSG_STATE_02 = "2";	//关闭(确定了互动的双方后关闭)
 	
 	//图片目录
-	public static final String PIC_HEAD_PORTRAIT = "/head/";	//个人动态(社区生活显示在一个版块)
+	public static final String PIC_HEAD_PORTRAIT = "/head/";	//头像照
 	public static final String PIC_RELEASE_NOTICE = "/notice/";	//社区公告
 	public static final String PIC_RELEASE_INTERACTIVE = "/interactive/";	//积分互动
-	public static final String PIC_RELEASE_PERSONALSTATUS = "/personalStatus/";	//社区生活
-	public static final String PIC_RELEASE_ACTIVITY = "/activity/";	//社区商户
+	public static final String PIC_RELEASE_EVENT = "/event/";	//个人动态
+	public static final String PIC_RELEASE_ACTIVITY = "/activity/";	//社区生活(活动)
 	public static final String PIC_THUMBNAIL = "/thumbnail";	//缩略图目录
 	
 }

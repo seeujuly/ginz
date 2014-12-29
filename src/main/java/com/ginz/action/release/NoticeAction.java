@@ -303,6 +303,7 @@ public class NoticeAction extends BaseAction{
 			
 			AcProperty property = accountService.loadProperty(notice.getPropertyId());
 			if(property!=null){
+				json.put("name", property.getPropertyName());
 				json.put("headUrl", property.getPicUrl());
 			}
 			String picIds = notice.getPicIds();

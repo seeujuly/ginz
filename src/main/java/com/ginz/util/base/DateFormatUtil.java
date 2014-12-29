@@ -172,11 +172,4 @@ public class DateFormatUtil {
 		return age;
 	}
 	
-	public static void main(String []args){
-		System.out.println(getAstro(4,3));
-		System.out.println(getDay(new Date()));
-		System.out.println(getAgeByBirthday(stringToDate("1984-04-03")));
-		
-	}
-	
 }
