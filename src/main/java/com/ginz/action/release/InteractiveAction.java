@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -26,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ginz.action.BaseAction;
 import com.ginz.model.AcUser;
+import com.ginz.model.AcUserDetail;
 import com.ginz.model.Picture;
 import com.ginz.model.PubComments;
 import com.ginz.model.PubInteractive;
@@ -102,6 +105,8 @@ public class InteractiveAction extends BaseAction{
 		String userId = valueMap.get("userId");	//个人用户id
 		String subject = valueMap.get("subject");
 		String content = valueMap.get("content");
+		String place = valueMap.get("place");
+		String cost = valueMap.get("cost");
 		String startTime = valueMap.get("startTime");
 		String endTime = valueMap.get("endTime");
 		String limit = valueMap.get("limit");
@@ -132,6 +137,10 @@ public class InteractiveAction extends BaseAction{
 				String thumbnailDir = DictionaryUtil.PIC_THUMBNAIL;
 				FileUtils.copyFile(files[i], new File(path + dir + fileName)); 
 				
+				File file = new File(path + thumbnailDir + dir);
+				if (!file.exists()) {
+					file.mkdir();
+				}
 				ThumbnailUtil ccc = new ThumbnailUtil(path + dir + fileName, path + thumbnailDir + dir + fileName);
 				ccc.resize(Integer.parseInt(resize),Integer.parseInt(resize));
 				
@@ -159,9 +168,19 @@ public class InteractiveAction extends BaseAction{
 			interactive.setUserId(Long.parseLong(userId));
 			interactive.setSubject(subject);
 			interactive.setContent(content);
+			interactive.setLabel(label);
+			interactive.setPlace(place);
+			interactive.setCost(cost);
+			interactive.setNumberLimit(limit);
+			interactive.setPicIds(picIds);
+			interactive.setStatus(DictionaryUtil.RELEASE_MSG_STATE_00);
 			interactive.setCreateTime(new Date());
-			interactive.setStartTime(DateFormatUtil.toDate(startTime));
-			interactive.setEndTime(DateFormatUtil.toDate(endTime));
+			if(startTime!=null&&!startTime.equals("")){
+				interactive.setStartTime(DateFormatUtil.toDate(startTime));
+			}
+			if(endTime!=null&&!endTime.equals("")){
+				interactive.setEndTime(DateFormatUtil.toDate(endTime));
+			}
 			interactive.setFlag(DictionaryUtil.DETELE_FLAG_00);
 			interactiveService.saveInteractive(interactive);
 		}
@@ -169,24 +188,26 @@ public class InteractiveAction extends BaseAction{
 		jsonObject.put("value", "SUCCESS!");
 		out.print(jsonObject.toString());
 		
-	}
-	
-	//修改积分互动信息
-	public void editInteractive() throws IOException{
-		
-		
+		//推送给匹配的用户
+		/*List<String> accountList = new ArrayList<String>();
+		List<AcUser> userList = accountService.findUser(" and communityId = " + communityId);
+		if(userList.size()>0){
+			for(AcUser user:userList){
+				String account =  user.getDeviceAccount();
+				accountList.add(account);
+			}
+		}
+		PushIOS.pushAccountList(subject, accountList);*/
 		
 	}
 	
 	//删除积分互动信息
 	public void deleteInteractive() throws IOException{
 		
-		
-		
 	}
 	
 	//个人用户获取积分互动信息列表
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void getInteractiveList() throws IOException{
 		
 		HttpServletResponse response = ServletActionContext.getResponse();
@@ -205,42 +226,107 @@ public class InteractiveAction extends BaseAction{
 		JSONArray jsonArray = new JSONArray();
 		JSONObject jsonObject=new JSONObject();
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = new AcUser();
+		if(userId!=null&&!userId.equals("")){
+			user = accountService.loadUser(Long.parseLong(userId));
+		}
 		
 		if(user!=null){
-			//搜索，信息匹配
-			List<PubInteractive> interactiveList = interactiveService.findInteractive(" order by createTime desc ", Integer.parseInt(page), rows);
+			if(Integer.parseInt(page)>1){
+				rows = 5;
+			}
 			
-			if(interactiveList.size()>0){
-				for(PubInteractive interactive:interactiveList){
-					int praiseNum = replyService.countPraise(" and releaseId = " + interactive.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
-					int commentNum = replyService.countComment(" and releaseId = " + interactive.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
+			String valueString = getHobbies(Long.parseLong(userId));
+			String in = valueString.substring(0, valueString.indexOf("|"));;
+			in = in.replace(",", "|");
+			String notIn = valueString.substring(valueString.indexOf("|")+1,valueString.length());
+			notIn = notIn.replace(",", "|");
+			
+			HashMap<String,Object> rethm = interactiveService.seachInteractive(in, notIn, Integer.parseInt(page), rows);
+			List<Object> list = (List<Object>) rethm.get("list");
+			if(list != null && !list.isEmpty()){
+				Iterator iterator = list.iterator();
+				while(iterator.hasNext()){
+					Object[] obj = (Object[]) iterator.next();
 					JSONObject json = new JSONObject();
-					json.put("id", interactive.getId());
-					json.put("subject", interactive.getSubject());
-					String picIds = interactive.getPicIds();
-					String[] ids = picIds.split(",");
-					json.put("picUrl", ids[0]);
-					AcUser u = accountService.loadUser(interactive.getUserId());
-					if(u != null){
-						json.put("name", u.getNickName());
+					String id = String.valueOf(obj[0]==null?"":obj[0]);
+					json.put("id", id);
+					json.put("subject", String.valueOf(obj[1]==null?"":obj[1]));
+					json.put("createTime", String.valueOf(obj[2]==null?"":obj[2]));
+					String uId = String.valueOf(obj[3]==null?"":obj[3]);
+					String picIds = String.valueOf(obj[4]==null?"":obj[4]);
+					if(picIds!=null&&!picIds.equals("")){
+						String[] ids = picIds.split(",");
+						if(ids.length>0){
+							Picture picture = pictureService.loadPicture(Long.parseLong(ids[0]));
+							if(picture!=null){
+								json.put("picUrl", picture.getThumbnailUrl());
+							}
+						}
 					}
-					json.put("praiseNum", praiseNum);
-					json.put("commentNum", commentNum);
+					if(uId!=null&&!uId.equals("")){
+						AcUser u = accountService.loadUser(Long.parseLong(uId));
+						if(u != null){
+							json.put("name", u.getNickName());
+							json.put("headUrl", u.getHeadPortrait());
+						}
+					}
+					if(id!=null&&!id.equals("")){
+						int praiseNum = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
+						int commentNum = replyService.countComment(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
+						json.put("praiseNum", praiseNum+"");
+						json.put("commentNum", commentNum+"");
+					}
 					jsonArray.add(json);
 				}
+				
 				jsonObject.put("result", "1");
 				jsonObject.put("page", page);
 				jsonObject.put("value", jsonArray);
 			}else{
 				jsonObject.put("result", "2");
 				jsonObject.put("page", page);
-				jsonObject.put("value", "没有更多的积分互动信息!");
+				jsonObject.put("value", "没有更多的活动信息!");
 			}
-			
 		}
 		out.print(jsonObject.toString());
 		
+	}
+	
+	//拼接兴趣喜好关键字
+	public String getHobbies(Long userId){
+		
+		String valueString = "";
+		AcUserDetail userDetail = accountService.loadUserDetail(userId);
+		if(userDetail != null){
+			if(userDetail.getCatering()!=null&&!userDetail.getCatering().equals("")){
+				valueString += "," + userDetail.getCatering();
+			}
+			if(userDetail.getSocialContact()!=null&&!userDetail.getSocialContact().equals("")){
+				valueString += "," + userDetail.getSocialContact();
+			}
+			if(userDetail.getTravel()!=null&&!userDetail.getTravel().equals("")){
+				valueString += "," + userDetail.getTravel();
+			}
+			if(userDetail.getSports()!=null&&!userDetail.getSports().equals("")){
+				valueString += "," + userDetail.getSports();
+			}
+			if(userDetail.getMusic()!=null&&!userDetail.getMusic().equals("")){
+				valueString += "," + userDetail.getMusic();
+			}
+			if(userDetail.getOthers()!=null&&!userDetail.getOthers().equals("")){
+				valueString += "," + userDetail.getOthers();
+			}
+			if(userDetail.getCommunityNeed()!=null&&!userDetail.getCommunityNeed().equals("")){
+				valueString += "," + userDetail.getCommunityNeed();
+			}
+			if(userDetail.getDislike()!=null&&!userDetail.getDislike().equals("")){
+				valueString += "|" + userDetail.getDislike();
+			}
+			
+		}
+		
+		return valueString;
 	}
 	
 	//个人用户获取积分互动信息详细内容
@@ -263,9 +349,120 @@ public class InteractiveAction extends BaseAction{
 		PubInteractive interactive = interactiveService.loadInteractive(Long.parseLong(id));
 		if(interactive != null){
 			json = JSONObject.fromObject(interactive);
+			String startTime = DateFormatUtil.dateToStringM(interactive.getStartTime());
+			json.remove("startTime");
+			json.put("startTime", startTime);
+			AcUser user = accountService.loadUser(interactive.getUserId());
+			if(user!=null){
+				json.put("name", user.getNickName());
+				json.put("headUrl", user.getThumbnailUrl());
+			}
+			String picIds = interactive.getPicIds();
+			if(picIds!=null&&!picIds.equals("")){
+				String[] ids = picIds.split(",");
+				if(ids.length>0){
+					for(int i=0;i<ids.length;i++){
+						Picture picture = pictureService.loadPicture(Long.parseLong(ids[i]));
+						if(picture!=null){
+							json.put("image"+(i+1), picture.getThumbnailUrl());
+						}
+					}
+					
+				}
+			}
 		}
 		
 		out.print(json.toString());
+		
+	}
+	
+	//活动报名(点击报名参加)
+	@SuppressWarnings("unchecked")
+	public void signUpActivities() throws IOException {
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		JSONObject jsonObject=new JSONObject();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");	//报名用户id
+		String id = valueMap.get("id");	//活动id
+		
+		PubInteractive interactive = interactiveService.loadInteractive(Long.parseLong(id));
+		if(interactive != null){
+			if(interactive.getStatus().equals("0")){
+				String signUp = interactive.getSignUp();
+				if(signUp.equals("")){
+					signUp += userId;
+				}else{
+					signUp += "," + userId;
+				}
+				interactive.setSignUp(signUp);
+				interactiveService.saveInteractive(interactive);
+				
+				jsonObject.put("result", "1");
+				jsonObject.put("value", "SUCCESS!");
+			}else if(interactive.getStatus().equals("1")){
+				jsonObject.put("result", "2");
+				jsonObject.put("value", "该活动参加人数已满！");
+			}else if(interactive.getStatus().equals("2")){
+				jsonObject.put("result", "3");
+				jsonObject.put("value", "该活动已经结束！");
+			}
+		}
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//确定参加活动操作(通过参加活动的申请)
+	@SuppressWarnings("unchecked")
+	public void comfirmActivity() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		JSONObject jsonObject=new JSONObject();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");	//报名用户id
+		String id = valueMap.get("id");	//活动id
+		
+		PubInteractive interactive = interactiveService.loadInteractive(Long.parseLong(id));
+		if(interactive != null){
+			if(interactive.getStatus().equals("0")){
+				String joinIn = interactive.getJoinIn();
+				if(joinIn.equals("")){
+					joinIn += userId;
+				}else{
+					joinIn += "," + userId;
+				}
+				/*String[] ids = joinIn.split(",");
+				if(ids.length==Integer.parseInt(interactive.getLimit())){
+					interactive.setStatus("1");
+				}*/
+				interactive.setJoinIn(joinIn);
+				interactiveService.saveInteractive(interactive);
+				
+				jsonObject.put("result", "1");
+				jsonObject.put("value", "SUCCESS!");
+			}else if(interactive.getStatus().equals("1")){
+				jsonObject.put("result", "2");
+				jsonObject.put("value", "该活动参加人数已满！");
+			}else if(interactive.getStatus().equals("2")){
+				jsonObject.put("result", "3");
+				jsonObject.put("value", "该活动已经结束！");
+			}
+		}
+		out.print(jsonObject.toString());
 		
 	}
 	

@@ -61,6 +61,7 @@ public class LoginAction extends BaseAction {
 		String accountType = "";
 		Long id = null;
 		String headUrl = "";
+		String name = "";
 		if(StringUtils.isNotEmpty(mobile)){	//个人用户
 			AcUser user = new AcUser();
 			user.setMobile(mobile);
@@ -72,6 +73,7 @@ public class LoginAction extends BaseAction {
 		    		if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_00, u2.getStatus())){
 		    			result = "1";
 		    			id = u2.getId();
+		    			name = u2.getNickName();
 		    			headUrl = u2.getThumbnailUrl();
 		    		}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_01, u2.getStatus())){
 		    			result = "2";
@@ -96,6 +98,7 @@ public class LoginAction extends BaseAction {
 		    		if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_00, p.getStatus())){
 		    			result = "1";
 		    			id = p.getId();
+		    			name = p.getPropertyName();
 		    			headUrl = p.getThumbnailUrl();
 		    		}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_01, p.getStatus())){
 		    			result = "2";
@@ -114,6 +117,7 @@ public class LoginAction extends BaseAction {
 		    		if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_00, m.getStatus())){
 		    			result = "1";
 		    			id = m.getId();
+		    			name = m.getMerchantName();
 		    			headUrl = m.getThumbnailUrl();
 		    		}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_01, m.getStatus())){
 		    			result = "2";
@@ -132,6 +136,7 @@ public class LoginAction extends BaseAction {
 			jsonObject.put("result", "1");
 	    	jsonObject.put("value", "欢迎回来!");
 	    	jsonObject.put("id", id);
+	    	jsonObject.put("name", name);
 	    	jsonObject.put("headUrl", headUrl);
 		}else if(StringUtils.equals("2", result)){
 			jsonObject.put("result", "2");

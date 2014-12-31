@@ -146,6 +146,10 @@ public class NoticeAction extends BaseAction{
 				String thumbnailDir = DictionaryUtil.PIC_THUMBNAIL;
 				FileUtils.copyFile(files[i], new File(path + dir + fileName)); 
 				
+				File file = new File(path + thumbnailDir + dir);
+				if (!file.exists()) {
+					file.mkdir();
+				}
 				ThumbnailUtil ccc = new ThumbnailUtil(path + dir + fileName, path + thumbnailDir + dir + fileName);
 				ccc.resize(Integer.parseInt(resize),Integer.parseInt(resize));
 				
@@ -175,8 +179,12 @@ public class NoticeAction extends BaseAction{
 		notice.setContent(content);
 		notice.setPicIds(picIds);
 		notice.setCreateTime(nowDate);
-		notice.setStartTime(DateFormatUtil.toDate(startTime));
-		notice.setEndTime(DateFormatUtil.toDate(endTime));
+		if(startTime!=null&&!startTime.equals("")){
+			notice.setStartTime(DateFormatUtil.toDate(startTime));
+		}
+		if(endTime!=null&&!endTime.equals("")){
+			notice.setEndTime(DateFormatUtil.toDate(endTime));
+		}
 		notice.setFlag(DictionaryUtil.DETELE_FLAG_00);
 		noticeService.saveNotice(notice);
 			
@@ -242,7 +250,7 @@ public class NoticeAction extends BaseAction{
 						JSONObject json = new JSONObject();
 						json.put("id", notice.getId());
 						json.put("subject", notice.getSubject());
-						json.put("createTime", DateFormatUtil.dateToStringSS(notice.getCreateTime()));
+						json.put("createTime", DateFormatUtil.dateToStringS(notice.getCreateTime()));
 						String picIds = notice.getPicIds();
 						if(picIds!=null&&!picIds.equals("")){
 							String[] ids = picIds.split(",");

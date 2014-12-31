@@ -20,7 +20,16 @@ public class DateFormatUtil {
 	}
 	
 	//日期转String	yyyy-MM-dd HH:mm:ss
-	public static String dateToStringSS(Date date) {
+	public static String dateToStringM(Date date) {
+		if (date == null) {
+			return "未知日期";
+		}
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+		return dateFormat.format(date);
+	}
+	
+	//日期转String	yyyy-MM-dd HH:mm:ss
+	public static String dateToStringS(Date date) {
 		if (date == null) {
 			return "未知日期";
 		}
@@ -31,6 +40,17 @@ public class DateFormatUtil {
 	//String转日期	yyyy-MM-dd HH:mm:ss
 	public static Date toDate(String date) {
 		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		try {
+			return dateFormat.parse(date);
+		} catch (ParseException ex) {
+			ex.printStackTrace();
+		}
+		return null;
+	}
+	
+	//String转日期	yyyy-MM-dd HH:mm:ss
+	public static Date toDate2(String date) {
+		SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm");
 		try {
 			return dateFormat.parse(date);
 		} catch (ParseException ex) {

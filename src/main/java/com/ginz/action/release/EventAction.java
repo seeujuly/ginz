@@ -37,6 +37,7 @@ import com.ginz.service.PictureService;
 import com.ginz.service.ReplyService;
 import com.ginz.util.base.DictionaryUtil;
 import com.ginz.util.base.JsonUtil;
+import com.ginz.util.base.ThumbnailUtil;
 import com.ginz.util.push.PushIOS;
 
 //用户动态
@@ -117,20 +118,29 @@ public class EventAction extends BaseAction {
 		p.load(inputStream);   
 		String serverUrl = p.getProperty("server_path");
 		String path = p.getProperty("server_dir");
-		//String path = request.getSession().getServletContext().getRealPath("/upload/");
+		String resize = p.getProperty("release_thumbnail_size");
 		
 		if(user!=null){
 			if(files.length>0&&fileNames.length>0){
 				for(int i=0;i<files.length;i++){
 					ext = fileNames[i].substring(fileNames[i].lastIndexOf("."), fileNames[i].length());
 					String fileName = sdf.format(nowDate) + "_" + UUID.randomUUID().toString() + ext; 
-					String dir = DictionaryUtil.PIC_RELEASE_PERSONALSTATUS;
+					String dir = DictionaryUtil.PIC_RELEASE_EVENT;
+					String thumbnailDir = DictionaryUtil.PIC_THUMBNAIL;
 					FileUtils.copyFile(files[i], new File(path + dir + fileName)); 
+					
+					File file = new File(path + thumbnailDir + dir);
+					if (!file.exists()) {
+						file.mkdir();
+					}
+					ThumbnailUtil ccc = new ThumbnailUtil(path + dir + fileName, path + thumbnailDir + dir + fileName);
+					ccc.resize(Integer.parseInt(resize),Integer.parseInt(resize));
 					
 					Picture picture = new Picture();
 					picture.setUrl(serverUrl + dir + fileName);
+					picture.setThumbnailUrl(serverUrl + thumbnailDir + dir + fileName);
 					picture.setFileName(fileName);
-					picture.setAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
+					picture.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
 					picture.setUserId(user.getId());
 					picture.setIsHeadPortrait(DictionaryUtil.STATE_NO);
 					picture.setCreateTime(nowDate);
@@ -182,6 +192,18 @@ public class EventAction extends BaseAction {
 			if(StringUtils.equals(event.getUserId().toString(),userId)){
 				eventService.deleteEvent(Long.parseLong(id));
 			}
+			List<PubPraise> praiseList = replyService.findPraise(" and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "' and releaseId = " + event.getId());
+			if(praiseList.size()>0){
+				for(PubPraise praise:praiseList){
+					replyService.deletePraise(praise.getId());
+				}
+			}
+			List<PubComments> commentsList = replyService.findComments(" and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "' and releaseId = " + event.getId());
+			if(commentsList.size()>0){
+				for(PubComments comment:commentsList){
+					replyService.deleteComments(comment.getId());
+				}
+			}
 		}
 		
 		jsonObject.put("value", "SUCCESS!");
@@ -215,18 +237,28 @@ public class EventAction extends BaseAction {
 			List<PubEvent> eventList = eventService.findEvent(" and userId = " + userId + " order by createTime desc ", Integer.parseInt(page), rows);
 			
 			if(eventList.size()>0){
-				for(PubEvent personalStatus:eventList){
-					int praiseNum = replyService.countPraise(" and releaseId = " + personalStatus.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "'");
-					int commentNum = replyService.countComment(" and releaseId = " + personalStatus.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "'");
+				for(PubEvent event:eventList){
+					int praiseNum = replyService.countPraise(" and releaseId = " + event.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "'");
+					int commentNum = replyService.countComment(" and releaseId = " + event.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "'");
 					JSONObject json = new JSONObject();
-					json.put("id", personalStatus.getId());
-					json.put("subject", personalStatus.getSubject());
-					String picIds = personalStatus.getPicIds();
-					String[] ids = picIds.split(",");
-					json.put("picUrl", ids[0]);
-					AcUser u = accountService.loadUser(personalStatus.getUserId());
+					json.put("id", event.getId());
+					json.put("subject", event.getSubject());
+					
+					String picIds = event.getPicIds();
+					if(picIds!=null&&!picIds.equals("")){
+						String[] ids = picIds.split(",");
+						if(ids.length>0){
+							Picture picture = pictureService.loadPicture(Long.parseLong(ids[0]));
+							if(picture!=null){
+								json.put("picUrl", picture.getThumbnailUrl());
+							}
+						}
+					}
+					
+					AcUser u = accountService.loadUser(event.getUserId());
 					if(u != null){
 						json.put("name", u.getNickName());
+						json.put("headUrl", u.getHeadPortrait());
 					}
 					json.put("praiseNum", praiseNum);
 					json.put("commentNum", commentNum);
@@ -266,6 +298,25 @@ public class EventAction extends BaseAction {
 		PubEvent event = eventService.loadEvent(Long.parseLong(id));
 		if(event != null){
 			json = JSONObject.fromObject(event);
+			
+			AcUser user = accountService.loadUser(event.getUserId());
+			if(user!=null){
+				json.put("name", user.getNickName());
+				json.put("headUrl", user.getThumbnailUrl());
+			}
+			String picIds = event.getPicIds();
+			if(picIds!=null&&!picIds.equals("")){
+				String[] ids = picIds.split(",");
+				if(ids.length>0){
+					for(int i=0;i<ids.length;i++){
+						Picture picture = pictureService.loadPicture(Long.parseLong(ids[i]));
+						if(picture!=null){
+							json.put("image"+(i+1), picture.getThumbnailUrl());
+						}
+					}
+					
+				}
+			}
 		}
 		
 		out.print(json.toString());

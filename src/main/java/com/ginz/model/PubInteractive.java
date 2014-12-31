@@ -31,6 +31,12 @@ public class PubInteractive implements Serializable {
 	@Column(name="label")
 	private String label;	//标签，最多10个标签，每个标签长度不超过5个汉字
 	
+	@Column(name="place")
+	private String place;	//地点
+	
+	@Column(name="cost")
+	private String cost;	//费用
+	
 	@Column(name="content")
 	private String content;
 	
@@ -55,8 +61,8 @@ public class PubInteractive implements Serializable {
 	@Column(name="eventPoint")
 	private String eventPoint;	//事件积分
 	
-	@Column(name="limit")
-	private String limit;	//人数限制
+	@Column(name="number_limit")
+	private String numberLimit;	//人数限制
 	
 	@Column(name="signUp")
 	private String signUp;	//报名用户
@@ -114,6 +120,22 @@ public class PubInteractive implements Serializable {
 		this.label = label;
 	}
 
+	public String getPlace() {
+		return place;
+	}
+
+	public void setPlace(String place) {
+		this.place = place;
+	}
+
+	public String getCost() {
+		return cost;
+	}
+
+	public void setCost(String cost) {
+		this.cost = cost;
+	}
+
 	public String getContent() {
 		return content;
 	}
@@ -138,12 +160,12 @@ public class PubInteractive implements Serializable {
 		this.picIds = picIds;
 	}
 
-	public String getLimit() {
-		return limit;
+	public String getNumberLimit() {
+		return numberLimit;
 	}
 
-	public void setLimit(String limit) {
-		this.limit = limit;
+	public void setNumberLimit(String numberLimit) {
+		this.numberLimit = numberLimit;
 	}
 
 	public Date getStartTime() {
