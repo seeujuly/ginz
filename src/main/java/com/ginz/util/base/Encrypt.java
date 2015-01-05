@@ -25,7 +25,7 @@ public class Encrypt {
 		String sha_2 = sha("孙宇");
 		System.out.println(sha_1 + "\n" + sha_2);*/
 		
-		System.out.println(e("ginz101"));
+		System.out.println(e("iloveginz"));
 
 	}
 

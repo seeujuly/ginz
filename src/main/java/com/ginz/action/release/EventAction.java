@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.ServletActionContext;
@@ -108,19 +109,23 @@ public class EventAction extends BaseAction {
 		String picIds = "";
 		SimpleDateFormat sdf=new SimpleDateFormat("yyyyMMddHHmmss");
 		Date nowDate = new Date();
-		MultiPartRequestWrapper wrapper = (MultiPartRequestWrapper) request;  
-		String[] fileNames = wrapper.getFileNames("images");
-		File[] files = wrapper.getFiles("images");
-		String ext = "";
 		
-		InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("config.properties");   
-		Properties p = new Properties();   
-		p.load(inputStream);   
-		String serverUrl = p.getProperty("server_path");
-		String path = p.getProperty("server_dir");
-		String resize = p.getProperty("release_thumbnail_size");
-		
-		if(user!=null){
+		MultiPartRequestWrapper wrapper = null;
+		boolean isMultipart = ServletFileUpload.isMultipartContent(request);
+		if(isMultipart) {
+			wrapper = (MultiPartRequestWrapper) request;
+			String[] fileNames = wrapper.getFileNames("images");
+			File[] files = wrapper.getFiles("images");
+			
+			String ext = "";
+			
+			InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("config.properties");   
+			Properties p = new Properties();   
+			p.load(inputStream);   
+			String serverUrl = p.getProperty("server_path");
+			String path = p.getProperty("server_dir");
+			String resize = p.getProperty("release_thumbnail_size");
+			
 			if(files.length>0&&fileNames.length>0){
 				for(int i=0;i<files.length;i++){
 					ext = fileNames[i].substring(fileNames[i].lastIndexOf("."), fileNames[i].length());
@@ -154,16 +159,16 @@ public class EventAction extends BaseAction {
 					}
 				}
 			}
-		
-			PubEvent event = new PubEvent();
-			event.setUserId(Long.parseLong(id));
-			event.setSubject(subject);
-			event.setContent(content);
-			event.setPicIds(picIds);
-			event.setCreateTime(new Date());
-			event.setFlag(DictionaryUtil.DETELE_FLAG_00);
-			eventService.saveEvent(event);
 		}
+		
+		PubEvent event = new PubEvent();
+		event.setUserId(Long.parseLong(id));
+		event.setSubject(subject);
+		event.setContent(content);
+		event.setPicIds(picIds);
+		event.setCreateTime(new Date());
+		event.setFlag(DictionaryUtil.DETELE_FLAG_00);
+		eventService.saveEvent(event);
 		
 		jsonObject.put("value", "SUCCESS!");
 		out.print(jsonObject.toString());

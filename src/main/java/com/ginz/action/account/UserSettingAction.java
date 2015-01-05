@@ -16,6 +16,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.sf.json.JSONObject;
 
+import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
 import org.apache.struts2.ServletActionContext;
 import org.apache.struts2.convention.annotation.Action;
@@ -78,46 +79,54 @@ public class UserSettingAction extends BaseAction {
 		
 		SimpleDateFormat sdf=new SimpleDateFormat("yyyyMMddHHmmss");
 		Date nowDate = new Date();
-		MultiPartRequestWrapper wrapper = (MultiPartRequestWrapper) request;  
-		String[] fileNames = wrapper.getFileNames("images");
-		File[] files = wrapper.getFiles("images");
-		String ext = "";
 		
-		InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("config.properties");   
-		Properties p = new Properties();   
-		p.load(inputStream);   
-		String serverUrl = p.getProperty("server_path");
-		String path = p.getProperty("server_dir");
-		String resize = p.getProperty("release_thumbnail_size");
+		MultiPartRequestWrapper wrapper = null;
 		
-		if(files.length>0&&fileNames.length>0){
-			for(int i=0;i<files.length;i++){
-				ext = fileNames[i].substring(fileNames[i].lastIndexOf("."), fileNames[i].length());
-				String fileName = sdf.format(nowDate) + "_" + UUID.randomUUID().toString() + ext; 
-				String dir = DictionaryUtil.PIC_RELEASE_INTERACTIVE;
-				String thumbnailDir = DictionaryUtil.PIC_THUMBNAIL;
-				FileUtils.copyFile(files[i], new File(path + dir + fileName)); 
-				
-				ThumbnailUtil ccc = new ThumbnailUtil(path + dir + fileName, path + thumbnailDir + dir + fileName);
-				ccc.resize(Integer.parseInt(resize),Integer.parseInt(resize));
-				
-				Picture picture = new Picture();
-				picture.setUrl(serverUrl + dir + fileName);
-				picture.setThumbnailUrl(serverUrl + thumbnailDir + dir + fileName);
-				picture.setFileName(fileName);
-				picture.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
-				picture.setUserId(user.getId());
-				picture.setIsHeadPortrait(DictionaryUtil.STATE_NO);
-				picture.setCreateTime(nowDate);
-				picture.setFlag(DictionaryUtil.DETELE_FLAG_00);
-				pictureService.savePicture(picture);
-				
-				user.setHeadPortrait(serverUrl + dir + fileName);
-				user.setThumbnailUrl(serverUrl + thumbnailDir + dir + fileName);
-				accountService.saveUser(user);
-				
+		//判断http body中是否存在file，存在file才可转为(MultiPartRequestWrapper)request
+		boolean isMultipart = ServletFileUpload.isMultipartContent(request);
+		if(isMultipart) {
+			wrapper = (MultiPartRequestWrapper) request;
+			
+			String[] fileNames = wrapper.getFileNames("images");
+			File[] files = wrapper.getFiles("images");
+			String ext = "";
+			
+			InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("config.properties");   
+			Properties p = new Properties();   
+			p.load(inputStream);   
+			String serverUrl = p.getProperty("server_path");
+			String path = p.getProperty("server_dir");
+			String resize = p.getProperty("release_thumbnail_size");
+			
+			if(files.length>0&&fileNames.length>0){
+				for(int i=0;i<files.length;i++){
+					ext = fileNames[i].substring(fileNames[i].lastIndexOf("."), fileNames[i].length());
+					String fileName = sdf.format(nowDate) + "_" + UUID.randomUUID().toString() + ext; 
+					String dir = DictionaryUtil.PIC_RELEASE_INTERACTIVE;
+					String thumbnailDir = DictionaryUtil.PIC_THUMBNAIL;
+					FileUtils.copyFile(files[i], new File(path + dir + fileName)); 
+					
+					ThumbnailUtil ccc = new ThumbnailUtil(path + dir + fileName, path + thumbnailDir + dir + fileName);
+					ccc.resize(Integer.parseInt(resize),Integer.parseInt(resize));
+					
+					Picture picture = new Picture();
+					picture.setUrl(serverUrl + dir + fileName);
+					picture.setThumbnailUrl(serverUrl + thumbnailDir + dir + fileName);
+					picture.setFileName(fileName);
+					picture.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+					picture.setUserId(user.getId());
+					picture.setIsHeadPortrait(DictionaryUtil.STATE_NO);
+					picture.setCreateTime(nowDate);
+					picture.setFlag(DictionaryUtil.DETELE_FLAG_00);
+					pictureService.savePicture(picture);
+					
+					user.setHeadPortrait(serverUrl + dir + fileName);
+					user.setThumbnailUrl(serverUrl + thumbnailDir + dir + fileName);
+					accountService.saveUser(user);
+				}
 			}
 		}
+		
 		jsonObject.put("value", "SUCCESS!");
 		out.print(jsonObject.toString());
 		
