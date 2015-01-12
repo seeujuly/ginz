@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import com.ginz.dao.BaseDao;
 import com.ginz.model.PubComments;
 import com.ginz.model.PubPraise;
+import com.ginz.model.Reports;
 import com.ginz.service.ReplyService;
 
 @Service("replyService")
@@ -15,6 +16,7 @@ public class ReplyServiceImpl implements ReplyService {
 
 	private BaseDao<PubComments> commentsDao;
 	private BaseDao<PubPraise> praiseDao;
+	private BaseDao<Reports> reportDao;
 	
 	public BaseDao<PubComments> getCommentsDao() {
 		return commentsDao;
@@ -32,6 +34,15 @@ public class ReplyServiceImpl implements ReplyService {
 	@Autowired
 	public void setPraiseDao(BaseDao<PubPraise> praiseDao) {
 		this.praiseDao = praiseDao;
+	}
+	
+	public BaseDao<Reports> getReportDao() {
+		return reportDao;
+	}
+
+	@Autowired
+	public void setReportDao(BaseDao<Reports> reportDao) {
+		this.reportDao = reportDao;
 	}
 
 	//评论
@@ -118,4 +129,10 @@ public class ReplyServiceImpl implements ReplyService {
 		return praiseDao.find(hql, (page - 1) * rows + 1, rows);
 	}
 
+	//举报
+	@Override
+	public void saveReport(Reports report){
+		reportDao.save(report);
+	}
+	
 }

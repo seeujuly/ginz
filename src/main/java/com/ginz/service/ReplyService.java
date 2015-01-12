@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.ginz.model.PubComments;
 import com.ginz.model.PubPraise;
+import com.ginz.model.Reports;
 
 //响应
 public interface ReplyService {
@@ -39,5 +40,8 @@ public interface ReplyService {
 	public int countPraise(String condition);
 	
 	public List<PubPraise> findPraise(String condition, int page, int rows);
+	
+	//举报
+	public void saveReport(Reports report);
 	
 }

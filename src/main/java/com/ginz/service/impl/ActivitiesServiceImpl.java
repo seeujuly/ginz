@@ -83,7 +83,7 @@ private BaseDao<PubActivities> activitiesDao;
 		if(notIn!=null&&!notIn.equals("")){
 			sb.append(" and subject not REGEXP '" + notIn + "' and content not REGEXP '" + notIn + "' and label not REGEXP '" + notIn + "' ");
 		}
-		sb.append(" and status not REGEXP '2' order by createTime desc ");
+		sb.append(" and status not REGEXP '1' order by createTime desc ");
 		hm.put("list", activitiesDao.queryBySql(sb.toString(), (page-1)*rows+1, rows));
 		return hm;
 	}

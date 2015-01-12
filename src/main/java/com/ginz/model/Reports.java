@@ -13,8 +13,8 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
 @Entity
-@Table(name = "pub_praise")
-public class PubPraise implements Serializable {
+@Table(name = "reports")
+public class Reports implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	
@@ -27,6 +27,9 @@ public class PubPraise implements Serializable {
 	
 	@Column(name="releaseType")
 	private String releaseType;
+	
+	@Column(name="description")
+	private String description;
 	
 	@Column(name="userId")
 	private Long userId;
@@ -41,7 +44,7 @@ public class PubPraise implements Serializable {
 	@Column(name="flag")
 	private String flag;
 	
-	public PubPraise(){
+	public Reports(){
 		
 	}
 
@@ -67,6 +70,14 @@ public class PubPraise implements Serializable {
 
 	public void setReleaseType(String releaseType) {
 		this.releaseType = releaseType;
+	}
+
+	public String getDescription() {
+		return description;
+	}
+
+	public void setDescription(String description) {
+		this.description = description;
 	}
 
 	public Long getUserId() {

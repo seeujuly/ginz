@@ -21,6 +21,7 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.ServletActionContext;
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Namespace;
@@ -34,6 +35,7 @@ import com.ginz.model.Picture;
 import com.ginz.model.PubActivities;
 import com.ginz.model.PubComments;
 import com.ginz.model.PubPraise;
+import com.ginz.model.Reports;
 import com.ginz.service.AccountService;
 import com.ginz.service.ActivitiesService;
 import com.ginz.service.PictureService;
@@ -44,7 +46,7 @@ import com.ginz.util.base.JsonUtil;
 import com.ginz.util.base.ThumbnailUtil;
 import com.ginz.util.push.PushIOS;
 
-//活动
+//活动/交易
 @Namespace("/")
 @Action(value = "activitiesAction")
 public class ActivitiesAction extends BaseAction {
@@ -159,7 +161,7 @@ public class ActivitiesAction extends BaseAction {
 					picture.setFileName(fileName);
 					picture.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
 					picture.setUserId(user.getId());
-					picture.setIsHeadPortrait(DictionaryUtil.STATE_NO);
+					picture.setPicType(DictionaryUtil.PIC_TYPE_RELEASE);
 					picture.setCreateTime(nowDate);
 					picture.setFlag(DictionaryUtil.DETELE_FLAG_00);
 					Picture picture2 = pictureService.savePicture(picture);
@@ -211,9 +213,44 @@ public class ActivitiesAction extends BaseAction {
 	}
 	
 	//删除活动
+	@SuppressWarnings("unchecked")
 	public void deleteActivity() throws IOException{
 		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		JSONObject jsonObject=new JSONObject();
 		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String id = valueMap.get("id");	//信息id
+		String userId = valueMap.get("userId");	//个人用户id
+		
+		PubActivities activity = activitiesService.loadActivities(Long.parseLong(id));
+		if(activity != null){
+			if(StringUtils.equals(activity.getUserId().toString(),userId)){
+				activitiesService.deleteActivities(Long.parseLong(id));	//删除个人动态信息
+				
+				List<PubPraise> praiseList = replyService.findPraise(" and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' and releaseId = " + activity.getId());
+				if(praiseList.size()>0){	//删除个人动态信息的点赞
+					for(PubPraise praise:praiseList){
+						replyService.deletePraise(praise.getId());
+					}
+				}
+				List<PubComments> commentsList = replyService.findComments(" and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' and releaseId = " + activity.getId());
+				if(commentsList.size()>0){	//删除个人动态信息的相关评论
+					for(PubComments comment:commentsList){
+						replyService.deleteComments(comment.getId());
+					}
+				}
+			}
+		}
+		
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
 		
 	}
 	
@@ -281,6 +318,7 @@ public class ActivitiesAction extends BaseAction {
 					if(uId!=null&&!uId.equals("")){
 						AcUser u = accountService.loadUser(Long.parseLong(uId));
 						if(u != null){
+							json.put("userId", uId);
 							json.put("name", u.getNickName());
 							json.put("headUrl", u.getHeadPortrait());
 						}
@@ -357,6 +395,7 @@ public class ActivitiesAction extends BaseAction {
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String id = valueMap.get("id");	//公告id
+		String userId = valueMap.get("userId");	//用户id
 		
 		JSONObject json = new JSONObject();
 		PubActivities activity = activitiesService.loadActivities(Long.parseLong(id));
@@ -368,7 +407,13 @@ public class ActivitiesAction extends BaseAction {
 			AcUser user = accountService.loadUser(activity.getUserId());
 			if(user!=null){
 				json.put("name", user.getNickName());
-				json.put("headUrl", user.getThumbnailUrl());
+				json.put("headUrl", user.getHeadPortrait());
+			}
+			List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' and userId = " + userId);
+			if(list.size()>0){	//判断是否已赞过..
+				json.put("isPraise", "1");
+			}else{
+				json.put("isPraise", "0");
 			}
 			String picIds = activity.getPicIds();
 			if(picIds!=null&&!picIds.equals("")){
@@ -406,6 +451,7 @@ public class ActivitiesAction extends BaseAction {
 		String userId = valueMap.get("userId");	//报名用户id
 		String id = valueMap.get("id");	//活动id
 		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		PubActivities activity = activitiesService.loadActivities(Long.parseLong(id));
 		if(activity != null){
 			if(activity.getStatus().equals("0")){
@@ -417,6 +463,14 @@ public class ActivitiesAction extends BaseAction {
 				}
 				activity.setSignUp(signUp);
 				activitiesService.saveActivities(activity);
+				
+				//推送给发布信息的用户
+				AcUser u = accountService.loadUser(activity.getUserId());
+				if(u!=null){
+					if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
+						PushIOS.pushSingleDevice(user.getNickName() + "想要报名参加你的活动!",u.getDeviceToken());
+					}
+				}
 				
 				jsonObject.put("result", "1");
 				jsonObject.put("value", "SUCCESS!");
@@ -449,6 +503,7 @@ public class ActivitiesAction extends BaseAction {
 		String userId = valueMap.get("userId");	//报名用户id
 		String id = valueMap.get("id");	//活动id
 		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		PubActivities activity = activitiesService.loadActivities(Long.parseLong(id));
 		if(activity != null){
 			if(activity.getStatus().equals("0")){
@@ -464,6 +519,13 @@ public class ActivitiesAction extends BaseAction {
 				}*/
 				activity.setJoinIn(joinIn);
 				activitiesService.saveActivities(activity);
+				
+				if(user.getDeviceToken()!=null&&!user.getDeviceToken().equals("")){
+					AcUser u = accountService.loadUser(activity.getUserId());
+					if(u!=null){
+						PushIOS.pushSingleDevice(u.getNickName() + "通过了您的报名申请!",user.getDeviceToken());
+					}
+				}
 				
 				jsonObject.put("result", "1");
 				jsonObject.put("value", "SUCCESS!");
@@ -496,10 +558,13 @@ public class ActivitiesAction extends BaseAction {
 		String userId = valueMap.get("userId");	//点赞操作的用户id-个人用户
 		String id = valueMap.get("id");	//活动id
 		
+		int num = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "'");
 		List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' and userId = " + userId);
-		if(list.size()>0){	//判断是否已赞过..
+		if(list.size()>0){	//判断是否已赞过..删除点赞记录(取消点赞)
+			replyService.deletePraise(list.get(0).getId());
+			num--;
 			jsonObject.put("result", "2");
-			jsonObject.put("value", "您已赞过!");
+			jsonObject.put("number", num+"");	//更新点赞数量
 		}else{
 			PubPraise praise = new PubPraise();
 			praise.setReleaseId(Long.parseLong(id));
@@ -510,20 +575,23 @@ public class ActivitiesAction extends BaseAction {
 			praise.setFlag(DictionaryUtil.DETELE_FLAG_00);
 			replyService.savePraise(praise);
 			
-			int num = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "'");
+			num++;
 			jsonObject.put("result", "1");
-			jsonObject.put("value", "SUCCESS!");
 			jsonObject.put("number", num+"");	//更新点赞数量
 			
 			//发推送消息给发布该活动的社区用户
 			PubActivities activity = activitiesService.loadActivities(Long.parseLong(id));
 			if(activity != null){
 				Long uId = activity.getUserId();
-				AcUser u = accountService.loadUser(uId);
-				if(u != null){
-					AcUser user = accountService.loadUser(Long.parseLong(userId));
-					if(user != null){
-						PushIOS.pushSingleDevice(user.getNickName() + "赞了你的信息", u.getDeviceToken());	//通知用户有人点赞..
+				if(!userId.equals(uId)){	//如果是本人点赞，不发推送消息
+					AcUser u = accountService.loadUser(uId);
+					if(u != null){
+						if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
+							AcUser user = accountService.loadUser(Long.parseLong(userId));
+							if(user != null){
+								PushIOS.pushSingleDevice(user.getNickName() + "赞了你的信息", u.getDeviceToken());	//通知用户有人点赞..
+							}
+						}
 					}
 				}
 			}
@@ -571,11 +639,15 @@ public class ActivitiesAction extends BaseAction {
 		PubActivities activity = activitiesService.loadActivities(Long.parseLong(id));
 		if(activity != null){
 			Long uId = activity.getUserId();
-			AcUser u = accountService.loadUser(uId);
-			if(u != null){
-				AcUser user = accountService.loadUser(Long.parseLong(userId));
-				if(user != null){
-					PushIOS.pushSingleDevice(user.getNickName() + "评论了你的信息", u.getDeviceToken());	//通知社区用户有人评论..
+			if(!userId.equals(uId)){	//如果是本人评论，不发推送消息
+				AcUser u = accountService.loadUser(uId);
+				if(u != null){
+					if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
+						AcUser user = accountService.loadUser(Long.parseLong(userId));
+						if(user != null){
+							PushIOS.pushSingleDevice(user.getNickName() + "评论了你的信息", u.getDeviceToken());	//通知社区用户有人评论..
+						}
+					}
 				}
 			}
 		}
@@ -640,21 +712,23 @@ public class ActivitiesAction extends BaseAction {
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String id = valueMap.get("id");	//公告id
+		String id = valueMap.get("id");	//消息id
 		String page = valueMap.get("page");
-		int rows = 5;
+		int rows = 50;
 		
 		List<PubComments> list = replyService.findComments(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' order by createTime desc ", Integer.parseInt(page), rows);
 		if(list.size()>0){
 			for(PubComments comment:list){
 				JSONObject json = new JSONObject();
 				json.put("content", comment.getContent());
-				json.put("createTime", comment.getCreateTime());
+				
+				String createTime = DateFormatUtil.dateToStringM(comment.getCreateTime());
+				json.put("createTime", createTime);
 				AcUser user = accountService.loadUser(comment.getUserId());
 				if(user != null){
 					json.put("id", user.getId());
 					json.put("name", user.getNickName());
-					json.put("headUrl", user.getThumbnailUrl());
+					json.put("headUrl", user.getHeadPortrait());
 				}
 				jsonArray.add(json);
 			}
@@ -669,6 +743,71 @@ public class ActivitiesAction extends BaseAction {
 			jsonObject.put("number", 0);
 		}
 		
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//举报
+	@SuppressWarnings("unchecked")
+	public void report() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		JSONObject jsonObject=new JSONObject();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String id = valueMap.get("id");	//消息id
+		String userId = valueMap.get("userId");
+		String accountType = valueMap.get("accountType");
+		String description = valueMap.get("description");
+		
+		Reports report = new Reports();
+		
+		report.setReleaseId(Long.parseLong(id));
+		report.setReleaseType(DictionaryUtil.RELEASE_TYPE_03);
+		report.setDescription(description);
+		report.setUserId(Long.parseLong(userId));
+		report.setAccountType(accountType);
+		report.setCreateTime(new Date());
+		report.setFlag(DictionaryUtil.DETELE_FLAG_00);
+		replyService.saveReport(report);
+		
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//信息关闭
+	@SuppressWarnings("unchecked")
+	public void close() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		JSONObject jsonObject=new JSONObject();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String id = valueMap.get("id");	//消息id
+		
+		PubActivities activity = activitiesService.loadActivities(Long.parseLong(id));
+		if(activity!=null){
+			activity.setStatus(DictionaryUtil.RELEASE_MSG_STATE_01);
+			activity.setCloseTime(new Date());
+			activitiesService.updateActivities(activity);
+		}
+		
+		jsonObject.put("value", "SUCCESS!");
 		out.print(jsonObject.toString());
 		
 	}

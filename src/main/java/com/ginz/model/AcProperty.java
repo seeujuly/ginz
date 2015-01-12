@@ -59,6 +59,9 @@ public class AcProperty implements Serializable {
 	@Column(name="thumbnail_url")
 	private String thumbnailUrl;
 	
+	@Column(name="background")
+	private String background;
+	
 	@Column(name="device_token")
 	private String deviceToken;
 	
@@ -177,6 +180,14 @@ public class AcProperty implements Serializable {
 
 	public void setThumbnailUrl(String thumbnailUrl) {
 		this.thumbnailUrl = thumbnailUrl;
+	}
+
+	public String getBackground() {
+		return background;
+	}
+
+	public void setBackground(String background) {
+		this.background = background;
 	}
 
 	public String getDeviceToken() {

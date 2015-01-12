@@ -59,9 +59,10 @@ public class LoginAction extends BaseAction {
 		JSONObject jsonObject=new JSONObject();
 		String result = "";
 		String accountType = "";
-		Long id = null;
-		String headUrl = "";
-		String name = "";
+		Long id = null;		//用户id
+		String headUrl = "";	//头像地址
+		String name = "";	//用户名(昵称)
+		String userName = "";	//随机生成的用户名,10位数字
 		if(StringUtils.isNotEmpty(mobile)){	//个人用户
 			AcUser user = new AcUser();
 			user.setMobile(mobile);
@@ -74,6 +75,7 @@ public class LoginAction extends BaseAction {
 		    			result = "1";
 		    			id = u2.getId();
 		    			name = u2.getNickName();
+		    			userName = u2.getUserName();
 		    			headUrl = u2.getThumbnailUrl();
 		    		}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_01, u2.getStatus())){
 		    			result = "2";
@@ -99,6 +101,7 @@ public class LoginAction extends BaseAction {
 		    			result = "1";
 		    			id = p.getId();
 		    			name = p.getPropertyName();
+		    			userName = p.getUserName();
 		    			headUrl = p.getThumbnailUrl();
 		    		}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_01, p.getStatus())){
 		    			result = "2";
@@ -118,6 +121,7 @@ public class LoginAction extends BaseAction {
 		    			result = "1";
 		    			id = m.getId();
 		    			name = m.getMerchantName();
+		    			userName = m.getUserName();
 		    			headUrl = m.getThumbnailUrl();
 		    		}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_01, m.getStatus())){
 		    			result = "2";
@@ -137,6 +141,7 @@ public class LoginAction extends BaseAction {
 	    	jsonObject.put("value", "欢迎回来!");
 	    	jsonObject.put("id", id);
 	    	jsonObject.put("name", name);
+	    	jsonObject.put("userName", userName);
 	    	jsonObject.put("headUrl", headUrl);
 		}else if(StringUtils.equals("2", result)){
 			jsonObject.put("result", "2");
@@ -166,24 +171,26 @@ public class LoginAction extends BaseAction {
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String id = valueMap.get("id");
 		String accountType = valueMap.get("accountType");
-		String deviceToken = valueMap.get("devicetoken");
+		String deviceToken = valueMap.get("deviceToken");
 		String deviceAccount = valueMap.get("deviceAccount");
 		
-		if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_01)){
-			AcUser user = accountService.loadUser(Long.parseLong(id));
-			user.setDeviceAccount(deviceAccount);
-			user.setDeviceToken(deviceToken);
-			accountService.saveUser(user);
-		}else if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_02)){
-			AcProperty property = accountService.loadProperty(Long.parseLong(id));
-			property.setDeviceAccount(deviceAccount);
-			property.setDeviceToken(deviceToken);
-			accountService.saveProperty(property);
-		}else if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_03)){
-			AcMerchant merchant = accountService.loadMerchant(Long.parseLong(id));
-			merchant.setDeviceAccount(deviceAccount);
-			merchant.setDeviceToken(deviceToken);
-			accountService.saveMerchant(merchant);
+		if(StringUtils.isNotEmpty(deviceToken)&&StringUtils.isNotEmpty(deviceAccount)){
+			if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_01)){
+				AcUser user = accountService.loadUser(Long.parseLong(id));
+				user.setDeviceAccount(deviceAccount);
+				user.setDeviceToken(deviceToken);
+				accountService.updateUser(user);
+			}else if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_02)){
+				AcProperty property = accountService.loadProperty(Long.parseLong(id));
+				property.setDeviceAccount(deviceAccount);
+				property.setDeviceToken(deviceToken);
+				accountService.updateProperty(property);
+			}else if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_03)){
+				AcMerchant merchant = accountService.loadMerchant(Long.parseLong(id));
+				merchant.setDeviceAccount(deviceAccount);
+				merchant.setDeviceToken(deviceToken);
+				accountService.updateMerchant(merchant);
+			}	
 		}
 		
 		JSONObject jsonObject=new JSONObject();

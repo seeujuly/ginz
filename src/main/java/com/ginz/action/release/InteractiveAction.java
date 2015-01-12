@@ -156,7 +156,7 @@ public class InteractiveAction extends BaseAction{
 					picture.setFileName(fileName);
 					picture.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
 					picture.setUserId(user.getId());
-					picture.setIsHeadPortrait(DictionaryUtil.STATE_NO);
+					picture.setPicType(DictionaryUtil.PIC_TYPE_RELEASE);
 					picture.setCreateTime(nowDate);
 					picture.setFlag(DictionaryUtil.DETELE_FLAG_00);
 					Picture picture2 = pictureService.savePicture(picture);

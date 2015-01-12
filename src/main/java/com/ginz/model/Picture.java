@@ -37,14 +37,8 @@ public class Picture implements Serializable {
 	@Column(name="file_name")
 	private String fileName;
 	
-	@Column(name="isHeadPortrait")
-	private String isHeadPortrait;
-	
-	@Column(name="release_type")
-	private String releaseType;
-	
-	@Column(name="release_id")
-	private Long releaseId;
+	@Column(name="pic_type")
+	private String picType;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="createTime")
@@ -109,28 +103,12 @@ public class Picture implements Serializable {
 		this.fileName = fileName;
 	}
 
-	public String getIsHeadPortrait() {
-		return isHeadPortrait;
+	public String getPicType() {
+		return picType;
 	}
 
-	public void setIsHeadPortrait(String isHeadPortrait) {
-		this.isHeadPortrait = isHeadPortrait;
-	}
-
-	public String getReleaseType() {
-		return releaseType;
-	}
-
-	public void setReleaseType(String releaseType) {
-		this.releaseType = releaseType;
-	}
-
-	public Long getReleaseId() {
-		return releaseId;
-	}
-
-	public void setReleaseId(Long releaseId) {
-		this.releaseId = releaseId;
+	public void setPicType(String picType) {
+		this.picType = picType;
 	}
 
 	public Date getCreateTime() {

@@ -93,19 +93,19 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public void saveUser(AcUser user) {
+	public AcUser saveUser(AcUser user) {
 		AcUser u = new AcUser();
 		BeanUtils.copyProperties(user, u, new String[] { "password" });
 		if (user.getCreateTime() == null) {
 			u.setCreateTime(new Date());
 		}
 		u.setPassword(Encrypt.e(user.getPassword()));
-		userDao.save(u);
+		return userDao.save(u);
 	}
 
 	@Override
-	public void updateUser(AcUser user) {
-		userDao.update(user);
+	public AcUser updateUser(AcUser user) {
+		return userDao.update(user);
 	}
 
 	@Override
@@ -128,13 +128,13 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public void saveUserDetail(AcUserDetail userDetail) {
-		userDetailDao.save(userDetail);
+	public AcUserDetail saveUserDetail(AcUserDetail userDetail) {
+		return userDetailDao.save(userDetail);
 	}
 
 	@Override
-	public void updateUserDetail(AcUserDetail userDetail) {
-		userDetailDao.saveOrUpdate(userDetail);
+	public AcUserDetail updateUserDetail(AcUserDetail userDetail) {
+		return userDetailDao.saveOrUpdate(userDetail);
 	}
 
 	@Override
@@ -183,19 +183,19 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public void saveProperty(AcProperty property) {
+	public AcProperty saveProperty(AcProperty property) {
 		AcProperty p = new AcProperty();
 		BeanUtils.copyProperties(property, p, new String[] { "password" });
 		if (property.getCreateTime() == null) {
 			p.setCreateTime(new Date());
 		}
 		p.setPassword(Encrypt.e(property.getPassword()));
-		propertyDao.save(p);
+		return propertyDao.save(p);
 	}
 
 	@Override
-	public void updateProperty(AcProperty property) {
-		propertyDao.update(property);
+	public AcProperty updateProperty(AcProperty property) {
+		return propertyDao.update(property);
 	}
 
 	@Override
@@ -244,7 +244,7 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public void saveMerchant(AcMerchant merchant) {
+	public AcMerchant saveMerchant(AcMerchant merchant) {
 		AcMerchant m = new AcMerchant();
 		BeanUtils.copyProperties(merchant, m, new String[] { "password" });
 		if (merchant.getCreateTime() == null) {
@@ -252,12 +252,12 @@ public class AccountServiceImpl implements AccountService {
 		}
 		
 		m.setPassword(Encrypt.e(merchant.getPassword()));
-		merchantDao.save(m);
+		return merchantDao.save(m);
 	}
 
 	@Override
-	public void updateMerchant(AcMerchant merchant) {
-		merchantDao.update(merchant);
+	public AcMerchant updateMerchant(AcMerchant merchant) {
+		return merchantDao.update(merchant);
 	}
 
 	@Override

@@ -31,12 +31,22 @@ public class PubEvent implements Serializable {
 	@Column(name="content")
 	private String content;
 	
+	@Column(name="label")
+	private String label;	//标签，最多10个标签，每个标签长度不超过5个汉字
+	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="createTime")
 	private Date createTime;
 	
+	@Temporal(TemporalType.TIMESTAMP)
+	@Column(name="closeTime")
+	private Date closeTime;	//关闭时间
+	
 	@Column(name="picIds")
 	private String picIds;
+	
+	@Column(name="status")
+	private String status;	//信息状态
 	
 	@Column(name="flag")
 	private String flag;
@@ -76,6 +86,14 @@ public class PubEvent implements Serializable {
 	public void setContent(String content) {
 		this.content = content;
 	}
+	
+	public String getLabel() {
+		return label;
+	}
+
+	public void setLabel(String label) {
+		this.label = label;
+	}
 
 	public Date getCreateTime() {
 		return createTime;
@@ -84,6 +102,14 @@ public class PubEvent implements Serializable {
 	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
 	}
+	
+	public Date getCloseTime() {
+		return closeTime;
+	}
+
+	public void setCloseTime(Date closeTime) {
+		this.closeTime = closeTime;
+	}
 
 	public String getPicIds() {
 		return picIds;
@@ -91,6 +117,14 @@ public class PubEvent implements Serializable {
 
 	public void setPicIds(String picIds) {
 		this.picIds = picIds;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
 	}
 
 	public String getFlag() {

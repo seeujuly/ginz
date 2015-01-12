@@ -32,16 +32,18 @@ import com.ginz.model.Picture;
 import com.ginz.model.PubComments;
 import com.ginz.model.PubEvent;
 import com.ginz.model.PubPraise;
+import com.ginz.model.Reports;
 import com.ginz.service.AccountService;
 import com.ginz.service.EventService;
 import com.ginz.service.PictureService;
 import com.ginz.service.ReplyService;
+import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.DictionaryUtil;
 import com.ginz.util.base.JsonUtil;
 import com.ginz.util.base.ThumbnailUtil;
 import com.ginz.util.push.PushIOS;
 
-//用户动态
+//社区生活
 @Namespace("/")
 @Action(value = "eventAction")
 public class EventAction extends BaseAction {
@@ -103,6 +105,7 @@ public class EventAction extends BaseAction {
 		String id = valueMap.get("id");	//个人用户id
 		String subject = valueMap.get("subject");
 		String content = valueMap.get("content");
+		String label = valueMap.get("label");
 		
 		AcUser user = accountService.loadUser(Long.parseLong(id));
 		
@@ -147,7 +150,7 @@ public class EventAction extends BaseAction {
 					picture.setFileName(fileName);
 					picture.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
 					picture.setUserId(user.getId());
-					picture.setIsHeadPortrait(DictionaryUtil.STATE_NO);
+					picture.setPicType(DictionaryUtil.PIC_TYPE_RELEASE);
 					picture.setCreateTime(nowDate);
 					picture.setFlag(DictionaryUtil.DETELE_FLAG_00);
 					Picture picture2 = pictureService.savePicture(picture);
@@ -165,6 +168,7 @@ public class EventAction extends BaseAction {
 		event.setUserId(Long.parseLong(id));
 		event.setSubject(subject);
 		event.setContent(content);
+		event.setLabel(label);
 		event.setPicIds(picIds);
 		event.setCreateTime(new Date());
 		event.setFlag(DictionaryUtil.DETELE_FLAG_00);
@@ -195,18 +199,19 @@ public class EventAction extends BaseAction {
 		PubEvent event = eventService.loadEvent(Long.parseLong(id));
 		if(event != null){
 			if(StringUtils.equals(event.getUserId().toString(),userId)){
-				eventService.deleteEvent(Long.parseLong(id));
-			}
-			List<PubPraise> praiseList = replyService.findPraise(" and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "' and releaseId = " + event.getId());
-			if(praiseList.size()>0){
-				for(PubPraise praise:praiseList){
-					replyService.deletePraise(praise.getId());
+				eventService.deleteEvent(Long.parseLong(id));	//删除个人动态信息
+				
+				List<PubPraise> praiseList = replyService.findPraise(" and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "' and releaseId = " + event.getId());
+				if(praiseList.size()>0){	//删除个人动态信息的点赞
+					for(PubPraise praise:praiseList){
+						replyService.deletePraise(praise.getId());
+					}
 				}
-			}
-			List<PubComments> commentsList = replyService.findComments(" and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "' and releaseId = " + event.getId());
-			if(commentsList.size()>0){
-				for(PubComments comment:commentsList){
-					replyService.deleteComments(comment.getId());
+				List<PubComments> commentsList = replyService.findComments(" and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "' and releaseId = " + event.getId());
+				if(commentsList.size()>0){	//删除个人动态信息的相关评论
+					for(PubComments comment:commentsList){
+						replyService.deleteComments(comment.getId());
+					}
 				}
 			}
 		}
@@ -243,8 +248,8 @@ public class EventAction extends BaseAction {
 			
 			if(eventList.size()>0){
 				for(PubEvent event:eventList){
-					int praiseNum = replyService.countPraise(" and releaseId = " + event.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "'");
-					int commentNum = replyService.countComment(" and releaseId = " + event.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "'");
+					int praiseNum = replyService.countPraise(" and releaseId = " + event.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
+					int commentNum = replyService.countComment(" and releaseId = " + event.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
 					JSONObject json = new JSONObject();
 					json.put("id", event.getId());
 					json.put("subject", event.getSubject());
@@ -262,6 +267,7 @@ public class EventAction extends BaseAction {
 					
 					AcUser u = accountService.loadUser(event.getUserId());
 					if(u != null){
+						json.put("userId", u.getId());
 						json.put("name", u.getNickName());
 						json.put("headUrl", u.getHeadPortrait());
 					}
@@ -297,17 +303,26 @@ public class EventAction extends BaseAction {
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String id = valueMap.get("id");	//个人动态信息id
+		String userId = valueMap.get("userId");	//用户id
 		
 		JSONObject json = new JSONObject();
 		
 		PubEvent event = eventService.loadEvent(Long.parseLong(id));
 		if(event != null){
 			json = JSONObject.fromObject(event);
-			
+			String createTime = DateFormatUtil.dateToStringM(event.getCreateTime());
+			json.remove("createTime");
+			json.put("createTime", createTime);
 			AcUser user = accountService.loadUser(event.getUserId());
 			if(user!=null){
 				json.put("name", user.getNickName());
-				json.put("headUrl", user.getThumbnailUrl());
+				json.put("headUrl", user.getHeadPortrait());
+			}
+			List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "' and userId = " + userId);
+			if(list.size()>0){	//判断是否已赞过..
+				json.put("isPraise", "1");
+			}else{
+				json.put("isPraise", "0");
 			}
 			String picIds = event.getPicIds();
 			if(picIds!=null&&!picIds.equals("")){
@@ -319,7 +334,6 @@ public class EventAction extends BaseAction {
 							json.put("image"+(i+1), picture.getThumbnailUrl());
 						}
 					}
-					
 				}
 			}
 		}
@@ -345,35 +359,41 @@ public class EventAction extends BaseAction {
 		String userId = valueMap.get("userId");	//点赞操作的用户id-个人用户
 		String id = valueMap.get("id");	//个人动态信息id
 		
-		List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "' and userId = " + userId);
-		if(list.size()>0){	//判断是否已赞过..
+		int num = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
+		List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "' and userId = " + userId);
+		if(list.size()>0){	//判断是否已赞过..删除点赞记录(取消点赞)
+			replyService.deletePraise(list.get(0).getId());
+			num--;
 			jsonObject.put("result", "2");
-			jsonObject.put("value", "您已赞过!");
+			jsonObject.put("number", num+"");	//更新点赞数量
 		}else{
 			PubPraise praise = new PubPraise();
 			praise.setReleaseId(Long.parseLong(id));
-			praise.setReleaseType(DictionaryUtil.RELEASE_TYPE_00);
+			praise.setReleaseType(DictionaryUtil.RELEASE_TYPE_02);
 			praise.setUserId(Long.parseLong(userId));
 			praise.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
 			praise.setCreateTime(new Date());
 			praise.setFlag(DictionaryUtil.DETELE_FLAG_00);
 			replyService.savePraise(praise);
 			
-			int num = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "'");
+			num++;
 			jsonObject.put("result", "1");
-			jsonObject.put("value", "SUCCESS!");
 			jsonObject.put("number", num);	//更新点赞数量
 			
 			//发推送消息给发布该个人动态信息的个人用户
 			PubEvent event = eventService.loadEvent(Long.parseLong(id));
 			if(event != null){
 				Long uId = event.getUserId();
-				AcUser u = accountService.loadUser(uId);
-				if(u!=null){
-					AcUser user = accountService.loadUser(Long.parseLong(userId));
-					if(user != null){
-						PushIOS.pushSingleDevice(user.getNickName() + "赞了你的信息", u.getDeviceToken());	//通知个人用户有人点赞..
-						
+				if(!userId.equals(uId)){	//如果是本人点赞，不发推送消息
+					AcUser u = accountService.loadUser(uId);
+					if(u!=null){
+						if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
+							AcUser user = accountService.loadUser(Long.parseLong(userId));
+							if(user != null){
+								PushIOS.pushSingleDevice(user.getNickName() + "赞了你的信息", u.getDeviceToken());	//通知个人用户有人点赞..
+								
+							}
+						}
 					}
 				}
 			}
@@ -402,7 +422,7 @@ public class EventAction extends BaseAction {
 		
 		PubComments comment = new PubComments();
 		comment.setReleaseId(Long.parseLong(id));
-		comment.setReleaseType(DictionaryUtil.RELEASE_TYPE_00);
+		comment.setReleaseType(DictionaryUtil.RELEASE_TYPE_02);
 		comment.setContent(content);
 		comment.setUserId(Long.parseLong(userId));
 		comment.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
@@ -410,7 +430,7 @@ public class EventAction extends BaseAction {
 		comment.setFlag(DictionaryUtil.DETELE_FLAG_00);
 		replyService.saveComments(comment);
 		
-		int num = replyService.countComment(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "'");
+		int num = replyService.countComment(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
 		jsonObject.put("result", "1");
 		jsonObject.put("value", "SUCCESS!");
 		jsonObject.put("number", num);	//更新评论数量
@@ -421,11 +441,15 @@ public class EventAction extends BaseAction {
 		PubEvent event = eventService.loadEvent(Long.parseLong(id));
 		if(event != null){
 			Long uId = event.getUserId();
-			AcUser u = accountService.loadUser(uId);
-			if(u!=null){
-				AcUser user = accountService.loadUser(Long.parseLong(userId));
-				if(user != null){
-					PushIOS.pushSingleDevice(user.getNickName() + "评论了你的信息", u.getDeviceToken());	//通知个人用户有人评论
+			if(!userId.equals(uId)){	//如果是本人评论，不发推送消息
+				AcUser u = accountService.loadUser(uId);
+				if(u!=null){
+					if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
+						AcUser user = accountService.loadUser(Long.parseLong(userId));
+						if(user != null){
+							PushIOS.pushSingleDevice(user.getNickName() + "评论了你的信息", u.getDeviceToken());	//通知个人用户有人评论
+						}
+					}
 				}
 			}
 		}
@@ -450,7 +474,7 @@ public class EventAction extends BaseAction {
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String id = valueMap.get("id");	//积分互动信息id
 		
-		List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "' order by createTime desc ");
+		List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "' order by createTime desc ");
 		if(list.size()>0){
 			for(PubPraise praise:list){
 				JSONObject json = new JSONObject();
@@ -492,14 +516,15 @@ public class EventAction extends BaseAction {
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String id = valueMap.get("id");	//公告id
 		String page = valueMap.get("page");
-		int rows = 5;
+		int rows = 50;
 		
-		List<PubComments> list = replyService.findComments(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_00 + "' order by createTime desc ", Integer.parseInt(page), rows);
+		List<PubComments> list = replyService.findComments(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "' order by createTime desc ", Integer.parseInt(page), rows);
 		if(list.size()>0){
 			for(PubComments comment:list){
 				JSONObject json = new JSONObject();
 				json.put("content", comment.getContent());
-				json.put("createTime", comment.getCreateTime());
+				String createTime = DateFormatUtil.dateToStringM(comment.getCreateTime());
+				json.put("createTime", createTime);
 				AcUser user = accountService.loadUser(comment.getUserId());
 				if(user != null){
 					json.put("id", user.getId());
@@ -518,6 +543,71 @@ public class EventAction extends BaseAction {
 			jsonObject.put("number", 0);
 		}
 		
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//举报
+	@SuppressWarnings("unchecked")
+	public void report() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		JSONObject jsonObject=new JSONObject();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String id = valueMap.get("id");	//消息id
+		String userId = valueMap.get("userId");
+		String accountType = valueMap.get("accountType");
+		String description = valueMap.get("description");
+		
+		Reports report = new Reports();
+		
+		report.setReleaseId(Long.parseLong(id));
+		report.setReleaseType(DictionaryUtil.RELEASE_TYPE_02);
+		report.setDescription(description);
+		report.setUserId(Long.parseLong(userId));
+		report.setAccountType(accountType);
+		report.setCreateTime(new Date());
+		report.setFlag(DictionaryUtil.DETELE_FLAG_00);
+		replyService.saveReport(report);
+		
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//信息关闭
+	@SuppressWarnings("unchecked")
+	public void close() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		JSONObject jsonObject=new JSONObject();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String id = valueMap.get("id");	//消息id
+		
+		PubEvent event = eventService.loadEvent(Long.parseLong(id));
+		if(event!=null){
+			event.setStatus(DictionaryUtil.RELEASE_MSG_STATE_01);
+			event.setCloseTime(new Date());
+			eventService.updateEvent(event);
+		}
+		
+		jsonObject.put("value", "SUCCESS!");
 		out.print(jsonObject.toString());
 		
 	}

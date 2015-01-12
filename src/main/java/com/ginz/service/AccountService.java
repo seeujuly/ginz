@@ -14,9 +14,9 @@ public interface AccountService {
 	
 	public AcUser loadUser(Long id);
 
-	public void saveUser(AcUser user);
+	public AcUser saveUser(AcUser user);
 	
-	public void updateUser(AcUser user);
+	public AcUser updateUser(AcUser user);
 	
 	public void deleteUser(Long id);
 	
@@ -25,9 +25,9 @@ public interface AccountService {
 	//个人用户明细部分
 	public AcUserDetail loadUserDetail(Long id);
 
-	public void saveUserDetail(AcUserDetail userDetail);
+	public AcUserDetail saveUserDetail(AcUserDetail userDetail);
 	
-	public void updateUserDetail(AcUserDetail userDetail);
+	public AcUserDetail updateUserDetail(AcUserDetail userDetail);
 	
 	public void deleteUserDetail(Long id);
 	
@@ -38,9 +38,9 @@ public interface AccountService {
 	
 	public AcProperty loadProperty(Long id);
 
-	public void saveProperty(AcProperty property);
+	public AcProperty saveProperty(AcProperty property);
 	
-	public void updateProperty(AcProperty property);
+	public AcProperty updateProperty(AcProperty property);
 	
 	public void deleteProperty(Long id);
 	
@@ -51,9 +51,9 @@ public interface AccountService {
 	
 	public AcMerchant loadMerchant(Long id);
 
-	public void saveMerchant(AcMerchant merchant);
+	public AcMerchant saveMerchant(AcMerchant merchant);
 	
-	public void updateMerchant(AcMerchant merchant);
+	public AcMerchant updateMerchant(AcMerchant merchant);
 	
 	public void deleteMerchant(Long id);
 	
