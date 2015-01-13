@@ -299,6 +299,7 @@ public class UserSettingAction extends BaseAction {
 			
 			HashMap<String,Object> rethm = eventService.listRelease(Long.parseLong(userId), 1, 10);
 			List<Object> list = (List<Object>) rethm.get("list");
+			
 			if(list != null && !list.isEmpty()){
 				Iterator iterator = list.iterator();
 				while(iterator.hasNext()){
@@ -321,6 +322,7 @@ public class UserSettingAction extends BaseAction {
 					
 				}
 			}
+			jsonObject.put("releaseNum", rethm.get("cnt"));
 			jsonObject.put("value", jsonArray);
 		}else{
 			

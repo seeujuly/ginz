@@ -59,6 +59,26 @@ public class EventServiceImpl implements EventService {
 		return eventDao.find(hql, (page - 1) * rows + 1, rows);
 	}
 	
+	//个人用户查看社区生活页面————使用用户的个人兴趣爱好作为关键字，搜索相关连的信息（主题，内容，标签）
+	@Override
+	public HashMap<String, Object> seachEvents(String in, String notIn, int page, int rows) {
+		
+		HashMap<String, Object> hm = new HashMap<String, Object>();
+		StringBuffer sb = new StringBuffer();
+		sb.append(" select t.id,t.subject,t.createTime,t.userId,t.picIds from pub_event t ");
+		sb.append(" where 1=1 ");
+		if(in!=null&&!in.equals("")){
+			sb.append(" and (subject REGEXP '" + in + "' OR content REGEXP '" + in + "' OR label REGEXP '" + in + "') ");
+		}
+		if(notIn!=null&&!notIn.equals("")){
+			sb.append(" and subject not REGEXP '" + notIn + "' and content not REGEXP '" + notIn + "' and label not REGEXP '" + notIn + "' ");
+		}
+		sb.append(" and status not REGEXP '1' order by createTime desc ");
+		hm.put("list", eventDao.queryBySql(sb.toString(), (page-1)*rows+1, rows));
+		return hm;
+		
+	}
+	
 	//进入个人主页时显示个人发布的所有信息
 	public HashMap<String, Object> listRelease(Long userId, int page, int rows){
 		
@@ -71,6 +91,7 @@ public class EventServiceImpl implements EventService {
 		sb.append(" ORDER BY createTime DESC ");	
 		hm.put("list", eventDao.queryBySql(sb.toString()));
 		//hm.put("list", eventDao.queryBySql(sb.toString(), (page-1)*rows+1, rows));
+		hm.put("cnt", eventDao.queryBySql(sb.toString()).size());
 		return hm;
 		
 	}

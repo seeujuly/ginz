@@ -314,6 +314,12 @@ public class NoticeAction extends BaseAction{
 						}
 						json.put("praiseNum", praiseNum+"");
 						json.put("commentNum", commentNum+"");
+						List<PubPraise> listPraise = replyService.findPraise(" and releaseId = " + notice.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "' and userId = " + userId);
+						if(listPraise.size()>0){	//判断是否已赞过..
+							json.put("isPraise", "1");
+						}else{
+							json.put("isPraise", "0");
+						}
 						jsonArray.add(json);
 					}
 					jsonObject.put("result", "1");

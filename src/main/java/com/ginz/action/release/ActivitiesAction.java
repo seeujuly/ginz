@@ -329,6 +329,12 @@ public class ActivitiesAction extends BaseAction {
 						json.put("praiseNum", praiseNum+"");
 						json.put("commentNum", commentNum+"");
 					}
+					List<PubPraise> listPraise = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' and userId = " + userId);
+					if(listPraise.size()>0){	//判断是否已赞过..
+						json.put("isPraise", "1");
+					}else{
+						json.put("isPraise", "0");
+					}
 					jsonArray.add(json);
 				}
 				
@@ -425,7 +431,6 @@ public class ActivitiesAction extends BaseAction {
 							json.put("image"+(i+1), picture.getThumbnailUrl());
 						}
 					}
-					
 				}
 			}
 		}

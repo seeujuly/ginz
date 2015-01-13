@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -28,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ginz.action.BaseAction;
 import com.ginz.model.AcUser;
+import com.ginz.model.AcUserDetail;
 import com.ginz.model.Picture;
 import com.ginz.model.PubComments;
 import com.ginz.model.PubEvent;
@@ -222,7 +225,7 @@ public class EventAction extends BaseAction {
 	}
 	
 	//个人用户获取个人动态信息列表
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void getEventList() throws IOException{
 		
 		HttpServletResponse response = ServletActionContext.getResponse();
@@ -244,17 +247,34 @@ public class EventAction extends BaseAction {
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		
 		if(user!=null){
-			List<PubEvent> eventList = eventService.findEvent(" and userId = " + userId + " order by createTime desc ", Integer.parseInt(page), rows);
+			if(Integer.parseInt(page)>1){
+				rows = 5;
+			}
 			
-			if(eventList.size()>0){
-				for(PubEvent event:eventList){
-					int praiseNum = replyService.countPraise(" and releaseId = " + event.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
-					int commentNum = replyService.countComment(" and releaseId = " + event.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
+			String valueString = getHobbies(Long.parseLong(userId));
+			String in = "";
+			String notIn = "";
+			if(!valueString.equals("")){
+				in = valueString.substring(0, valueString.indexOf("|"));;
+				in = in.replace(",", "|");
+				notIn = valueString.substring(valueString.indexOf("|")+1,valueString.length());
+				notIn = notIn.replace(",", "|");
+			}
+			
+			HashMap<String,Object> rethm = eventService.seachEvents(in, notIn, Integer.parseInt(page), rows);
+			List<Object> list = (List<Object>) rethm.get("list");
+			if(list != null && !list.isEmpty()){
+				Iterator iterator = list.iterator();
+				while(iterator.hasNext()){
+					Object[] obj = (Object[]) iterator.next();
 					JSONObject json = new JSONObject();
-					json.put("id", event.getId());
-					json.put("subject", event.getSubject());
+					String id = String.valueOf(obj[0]==null?"":obj[0]);
 					
-					String picIds = event.getPicIds();
+					json.put("id", id);
+					json.put("subject", String.valueOf(obj[1]==null?"":obj[1]));
+					json.put("createTime", String.valueOf(obj[2]==null?"":obj[2]));
+					String uId = String.valueOf(obj[3]==null?"":obj[3]);
+					String picIds = String.valueOf(obj[4]==null?"":obj[4]);
 					if(picIds!=null&&!picIds.equals("")){
 						String[] ids = picIds.split(",");
 						if(ids.length>0){
@@ -264,17 +284,30 @@ public class EventAction extends BaseAction {
 							}
 						}
 					}
-					
-					AcUser u = accountService.loadUser(event.getUserId());
-					if(u != null){
-						json.put("userId", u.getId());
-						json.put("name", u.getNickName());
-						json.put("headUrl", u.getHeadPortrait());
+					if(uId!=null&&!uId.equals("")){
+						AcUser u = accountService.loadUser(Long.parseLong(uId));
+						if(u != null){
+							json.put("userId", uId);
+							json.put("name", u.getNickName());
+							json.put("headUrl", u.getHeadPortrait());
+						}
 					}
-					json.put("praiseNum", praiseNum);
-					json.put("commentNum", commentNum);
+					if(id!=null&&!id.equals("")){
+						int praiseNum = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
+						int commentNum = replyService.countComment(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
+						json.put("praiseNum", praiseNum+"");
+						json.put("commentNum", commentNum+"");
+					}
+					List<PubPraise> listPraise = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "' and userId = " + userId);
+					if(listPraise.size()>0){	//判断是否已赞过..
+						json.put("isPraise", "1");
+					}else{
+						json.put("isPraise", "0");
+					}
 					jsonArray.add(json);
+					
 				}
+				
 				jsonObject.put("result", "1");
 				jsonObject.put("page", page);
 				jsonObject.put("value", jsonArray);
@@ -287,6 +320,42 @@ public class EventAction extends BaseAction {
 		}
 		out.print(jsonObject.toString());
 		
+	}
+	
+	//拼接兴趣喜好关键字
+	public String getHobbies(Long userId){
+		
+		String valueString = "";
+		AcUserDetail userDetail = accountService.loadUserDetail(userId);
+		if(userDetail != null){
+			if(userDetail.getCatering()!=null&&!userDetail.getCatering().equals("")){
+				valueString += "," + userDetail.getCatering();
+			}
+			if(userDetail.getSocialContact()!=null&&!userDetail.getSocialContact().equals("")){
+				valueString += "," + userDetail.getSocialContact();
+			}
+			if(userDetail.getTravel()!=null&&!userDetail.getTravel().equals("")){
+				valueString += "," + userDetail.getTravel();
+			}
+			if(userDetail.getSports()!=null&&!userDetail.getSports().equals("")){
+				valueString += "," + userDetail.getSports();
+			}
+			if(userDetail.getMusic()!=null&&!userDetail.getMusic().equals("")){
+				valueString += "," + userDetail.getMusic();
+			}
+			if(userDetail.getOthers()!=null&&!userDetail.getOthers().equals("")){
+				valueString += "," + userDetail.getOthers();
+			}
+			if(userDetail.getCommunityNeed()!=null&&!userDetail.getCommunityNeed().equals("")){
+				valueString += "," + userDetail.getCommunityNeed();
+			}
+			if(userDetail.getDislike()!=null&&!userDetail.getDislike().equals("")){
+				valueString += "|" + userDetail.getDislike();
+			}
+			
+		}
+		
+		return valueString;
 	}
 	
 	//个人用户获取个人动态信息详细内容
