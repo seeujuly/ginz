@@ -21,6 +21,7 @@ import net.sf.json.JSONObject;
 
 import org.apache.commons.fileupload.servlet.ServletFileUpload;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.ServletActionContext;
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Namespace;
@@ -30,9 +31,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.ginz.action.BaseAction;
 import com.ginz.model.AcUser;
 import com.ginz.model.AcUserDetail;
+import com.ginz.model.MsgFriend;
 import com.ginz.model.Picture;
 import com.ginz.service.AccountService;
 import com.ginz.service.EventService;
+import com.ginz.service.FriendService;
 import com.ginz.service.PictureService;
 import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.DictionaryUtil;
@@ -46,6 +49,7 @@ public class UserSettingAction extends BaseAction {
 	private AccountService accountService;
 	private PictureService pictureService;
 	private EventService eventService;
+	private FriendService friendService;
 
 	public AccountService getAccountService() {
 		return accountService;
@@ -72,6 +76,15 @@ public class UserSettingAction extends BaseAction {
 	@Autowired
 	public void setEventService(EventService eventService) {
 		this.eventService = eventService;
+	}
+	
+	public FriendService getFriendService() {
+		return friendService;
+	}
+
+	@Autowired
+	public void setFriendService(FriendService friendService) {
+		this.friendService = friendService;
 	}
 
 	//上传头像
@@ -288,8 +301,12 @@ public class UserSettingAction extends BaseAction {
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		
-		String userId = valueMap.get("userId");
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		String userId = valueMap.get("userId");	//用户id
+		String accountType = valueMap.get("accountType");	//账户类型
+		String tUserId = valueMap.get("tUserId");	//目标用户id
+		String tAccountType = valueMap.get("tAccountType");	//目标账户类型
+		
+		AcUser user = accountService.loadUser(Long.parseLong(tUserId));
 		
 		if(user!=null){
 			jsonObject.put("result", "1");
@@ -297,7 +314,7 @@ public class UserSettingAction extends BaseAction {
 			jsonObject.put("headUrl", user.getHeadPortrait());
 			jsonObject.put("bgUrl", user.getBackground());
 			
-			HashMap<String,Object> rethm = eventService.listRelease(Long.parseLong(userId), 1, 10);
+			HashMap<String,Object> rethm = eventService.listRelease(Long.parseLong(tUserId));
 			List<Object> list = (List<Object>) rethm.get("list");
 			
 			if(list != null && !list.isEmpty()){
@@ -322,7 +339,21 @@ public class UserSettingAction extends BaseAction {
 					
 				}
 			}
-			jsonObject.put("releaseNum", rethm.get("cnt"));
+			if(!StringUtils.equals(userId, tUserId)||!StringUtils.equals(accountType, tAccountType)){	//查看自己的主页是不判断
+				String condition = "";
+				condition = "and (userId = " + userId + " and account_type = '" + accountType + "' and friend_userId = " + tUserId + " AND friend_account_type = '" + tAccountType + "') ";
+				condition += "OR (userId = " + tUserId + " and account_type = '" + tAccountType + "' and friend_userId = " + userId + " AND friend_account_type = '" + accountType + "')";
+				List<MsgFriend> friendList = friendService.listFriends(condition);
+				if(friendList.size()>0){
+					jsonObject.put("isFriend", "0");	//是好友关系
+				}else{
+					jsonObject.put("isFriend", "1");	//不是好友关系
+				}
+			}
+			
+			HashMap<String,Object> rethMap = friendService.listFriends(Long.parseLong(tUserId), tAccountType);
+			jsonObject.put("friendNum", rethMap.get("cnt"));	//好友数
+			jsonObject.put("releaseNum", rethm.get("cnt"));		//发布的消息数
 			jsonObject.put("value", jsonArray);
 		}else{
 			

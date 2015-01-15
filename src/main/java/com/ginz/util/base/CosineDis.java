@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * 计算文本相似度
+ */
 public class CosineDis {
 
 	public static double getSimilarity(ArrayList<String> doc1,

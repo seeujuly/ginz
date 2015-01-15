@@ -113,7 +113,6 @@ public class ActivitiesAction extends BaseAction {
 		String cost = valueMap.get("cost");
 		String startTime = valueMap.get("startTime");
 		String endTime = valueMap.get("endTime");
-		String limit = valueMap.get("limit");
 		String label = valueMap.get("label");
 		
 		AcUser user = accountService.loadUser(Long.parseLong(id));
@@ -183,7 +182,6 @@ public class ActivitiesAction extends BaseAction {
 		activity.setLabel(label);
 		activity.setPlace(place);
 		activity.setCost(cost);
-		activity.setNumberLimit(limit);
 		activity.setPicIds(picIds);
 		activity.setCreateTime(nowDate);
 		activity.setStatus(DictionaryUtil.RELEASE_MSG_STATE_00);
@@ -301,11 +299,17 @@ public class ActivitiesAction extends BaseAction {
 					Object[] obj = (Object[]) iterator.next();
 					JSONObject json = new JSONObject();
 					String id = String.valueOf(obj[0]==null?"":obj[0]);
-					json.put("id", id);
-					json.put("subject", String.valueOf(obj[1]==null?"":obj[1]));
-					json.put("createTime", String.valueOf(obj[2]==null?"":obj[2]));
+					String subject = String.valueOf(obj[1]==null?"":obj[1]);
+					String createTime = String.valueOf(obj[2]==null?"":obj[2]);
 					String uId = String.valueOf(obj[3]==null?"":obj[3]);
 					String picIds = String.valueOf(obj[4]==null?"":obj[4]);
+					String content = String.valueOf(obj[5]==null?"":obj[5]);
+					String label = String.valueOf(obj[6]==null?"":obj[6]);
+					
+					json.put("id", id);
+					json.put("subject", subject);
+					json.put("createTime", createTime);
+					
 					if(picIds!=null&&!picIds.equals("")){
 						String[] ids = picIds.split(",");
 						if(ids.length>0){

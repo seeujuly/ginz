@@ -24,5 +24,5 @@ public interface EventService {
 	public HashMap<String, Object> seachEvents(String in, String notIn, int page, int rows);
 	
 	//进入个人主页时显示个人发布的所有信息
-	public HashMap<String, Object> listRelease(Long userId, int page, int rows);
+	public HashMap<String, Object> listRelease(Long userId);
 }

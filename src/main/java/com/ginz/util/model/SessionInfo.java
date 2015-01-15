@@ -5,6 +5,8 @@ package com.ginz.util.model;
  */
 public class SessionInfo implements java.io.Serializable {
 
+	private static final long serialVersionUID = 5600794671730448179L;
+	
 	private String userId;// 用户ID
 	private String loginName;// 用户登录名称
 	private String loginPassword;// 登录密码

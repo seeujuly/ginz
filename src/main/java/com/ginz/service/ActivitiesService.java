@@ -26,6 +26,6 @@ public interface ActivitiesService {
 	public HashMap<String, Object> seachActivities(String in, String notIn, int page, int rows);
 	
 	//用户发布信息之后搜索相关的个人用户群体,推送消息给他们(以发布信息的主题,内容,标签为关键字,搜索目标为个人的喜好)
-	//public HashMap<String,Object> seachUsers();
+	public HashMap<String,Object> seachUsers();
 	
 }

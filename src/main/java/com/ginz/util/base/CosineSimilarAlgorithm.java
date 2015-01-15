@@ -5,6 +5,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+/**
+ * 计算文本相似度，只计算中文，不包含其他字符
+ */
 public class CosineSimilarAlgorithm {
 	
 	public static void main(String[] args){

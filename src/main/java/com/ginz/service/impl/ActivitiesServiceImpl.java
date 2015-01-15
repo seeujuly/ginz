@@ -75,7 +75,7 @@ private BaseDao<PubActivities> activitiesDao;
 	public HashMap<String, Object> seachActivities(String in, String notIn, int page, int rows){
 		HashMap<String, Object> hm = new HashMap<String, Object>();
 		StringBuffer sb = new StringBuffer();
-		sb.append(" select t.id,t.subject,t.createTime,t.userId,t.picIds from pub_activities t ");
+		sb.append(" select t.id,t.subject,t.createTime,t.userId,t.picIds,t.content,t.label from pub_activities t ");
 		sb.append(" where 1=1 ");
 		if(in!=null&&!in.equals("")){
 			sb.append(" and (subject REGEXP '" + in + "' OR content REGEXP '" + in + "' OR label REGEXP '" + in + "') ");
@@ -86,6 +86,21 @@ private BaseDao<PubActivities> activitiesDao;
 		sb.append(" and status not REGEXP '1' order by createTime desc ");
 		hm.put("list", activitiesDao.queryBySql(sb.toString(), (page-1)*rows+1, rows));
 		return hm;
+	}
+	
+	//用户发布信息之后搜索相关的个人用户群体,推送消息给他们(以发布信息的主题,内容,标签为关键字,搜索目标为个人的喜好)
+	public HashMap<String,Object> seachUsers(){
+		
+		HashMap<String, Object> hm = new HashMap<String, Object>();
+		StringBuffer sb = new StringBuffer();
+		sb.append("  ");
+		
+		
+		
+		
+		hm.put("list", activitiesDao.queryBySql(sb.toString()));
+		return hm;
+		
 	}
 		
 }

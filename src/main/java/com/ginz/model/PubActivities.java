@@ -55,9 +55,6 @@ public class PubActivities implements Serializable {
 	@Column(name="endTime")
 	private Date endTime;
 	
-	@Column(name="number_limit")
-	private String numberLimit;	//人数限制
-	
 	@Column(name="signUp")
 	private String signUp;	//报名用户
 	
@@ -168,14 +165,6 @@ public class PubActivities implements Serializable {
 
 	public void setEndTime(Date endTime) {
 		this.endTime = endTime;
-	}
-
-	public String getNumberLimit() {
-		return numberLimit;
-	}
-
-	public void setNumberLimit(String numberLimit) {
-		this.numberLimit = numberLimit;
 	}
 
 	public String getSignUp() {

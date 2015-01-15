@@ -80,7 +80,7 @@ public class EventServiceImpl implements EventService {
 	}
 	
 	//进入个人主页时显示个人发布的所有信息
-	public HashMap<String, Object> listRelease(Long userId, int page, int rows){
+	public HashMap<String, Object> listRelease(Long userId){
 		
 		HashMap<String, Object> hm = new HashMap<String, Object>();
 		StringBuffer sb = new StringBuffer();
