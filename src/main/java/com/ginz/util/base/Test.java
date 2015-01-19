@@ -13,8 +13,9 @@ public class Test {
 		ccc = aaa.substring(aaa.indexOf("|")+1,aaa.length());
 		System.out.println(ccc);
 		*/
-		
-		System.out.println(StringUtils.isEmpty("11"));
+		long aa = 100000L;
+		long bb = 500L;
+		System.out.println(aa-bb);
 	}
 	
 }

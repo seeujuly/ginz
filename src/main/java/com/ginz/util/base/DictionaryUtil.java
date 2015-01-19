@@ -53,4 +53,18 @@ public class DictionaryUtil {
 	public static final String PIC_TYPE_BG = "2";	//背景图片
 	public static final String PIC_TYPE_RELEASE = "3";	//信息插图
 	
+	//通知收件箱消息类型
+	public static final String MESSAGE_TYPE_FRIEND = "1";	//申请好友
+	public static final String MESSAGE_TYPE_SYS = "2";	//系统通知
+	public static final String MESSAGE_TYPE_CONSUME = "3";	//充值/消费
+	
+	//通知收件箱消息读取状态
+	public static final String MESSAGE_UNREAD = "0";	//未读
+	public static final String MESSAGE_READ = "1";	//已读
+	
+	//交易类型
+	public static final String TRANSACTION_NORMAL = "1";	//普通交易，各类型用户之间的交易
+	public static final String TRANSACTION_RECHARGE = "2";	//充值
+	public static final String TRANSACTION_SYSDELIVERY = "3";	//系统派送(系统官方活动赠送积分)
+	
 }

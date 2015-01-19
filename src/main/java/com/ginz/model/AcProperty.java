@@ -53,6 +53,9 @@ public class AcProperty implements Serializable {
 	@Column(name="createTime")
 	private Date createTime;
 	
+	@Column(name="point")
+	private Long point;
+	
 	@Column(name="pic_url")
 	private String picUrl;
 	
@@ -164,6 +167,14 @@ public class AcProperty implements Serializable {
 
 	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
+	}
+
+	public Long getPoint() {
+		return point;
+	}
+
+	public void setPoint(Long point) {
+		this.point = point;
 	}
 
 	public String getPicUrl() {

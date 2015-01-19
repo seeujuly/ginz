@@ -31,6 +31,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.ginz.action.BaseAction;
 import com.ginz.model.AcUser;
 import com.ginz.model.AcUserDetail;
+import com.ginz.model.MsgMessageBox;
+import com.ginz.model.MsgMessageInfo;
 import com.ginz.model.Picture;
 import com.ginz.model.PubActivities;
 import com.ginz.model.PubComments;
@@ -38,6 +40,7 @@ import com.ginz.model.PubPraise;
 import com.ginz.model.Reports;
 import com.ginz.service.AccountService;
 import com.ginz.service.ActivitiesService;
+import com.ginz.service.MessageService;
 import com.ginz.service.PictureService;
 import com.ginz.service.ReplyService;
 import com.ginz.util.base.DateFormatUtil;
@@ -55,6 +58,7 @@ public class ActivitiesAction extends BaseAction {
 	private AccountService accountService;
 	private ReplyService replyService;
 	private PictureService pictureService;
+	private MessageService messageService;
 
 	public ActivitiesService getActivitiesService() {
 		return activitiesService;
@@ -90,6 +94,15 @@ public class ActivitiesAction extends BaseAction {
 	@Autowired
 	public void setPictureService(PictureService pictureService) {
 		this.pictureService = pictureService;
+	}
+	
+	public MessageService getMessageService() {
+		return messageService;
+	}
+
+	@Autowired
+	public void setMessageService(MessageService messageService) {
+		this.messageService = messageService;
 	}
 	
 	//发布活动
@@ -595,11 +608,32 @@ public class ActivitiesAction extends BaseAction {
 				if(!userId.equals(uId)){	//如果是本人点赞，不发推送消息
 					AcUser u = accountService.loadUser(uId);
 					if(u != null){
-						if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
-							AcUser user = accountService.loadUser(Long.parseLong(userId));
-							if(user != null){
-								PushIOS.pushSingleDevice(user.getNickName() + "赞了你的信息", u.getDeviceToken());	//通知用户有人点赞..
+						AcUser user = accountService.loadUser(Long.parseLong(userId));
+						if(user != null){
+							if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
+								PushIOS.pushSingleDevice(user.getNickName() + "赞了你的信息!", u.getDeviceToken());	//通知用户有人点赞..
 							}
+							
+							//发送系统消息给目标用户
+							MsgMessageInfo messageInfo = new MsgMessageInfo();
+							messageInfo.setUserId(Long.parseLong(userId));
+							messageInfo.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+							messageInfo.setTargetUserId(u.getId());
+							messageInfo.setTargetAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+							messageInfo.setCreateTime(new Date());
+							messageInfo.setContent(user.getNickName() + "赞了你的信息!");
+							messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_SYS);
+							messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
+							MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
+							
+							MsgMessageBox messageBox = new MsgMessageBox();
+							messageBox.setMessageId(messageInfo2.getId());
+							messageBox.setUserId(u.getId());
+							messageBox.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+							messageBox.setReceiveDate(new Date());
+							messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
+							messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
+							messageService.saveMessageBox(messageBox);
 						}
 					}
 				}
@@ -651,11 +685,33 @@ public class ActivitiesAction extends BaseAction {
 			if(!userId.equals(uId)){	//如果是本人评论，不发推送消息
 				AcUser u = accountService.loadUser(uId);
 				if(u != null){
-					if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
-						AcUser user = accountService.loadUser(Long.parseLong(userId));
-						if(user != null){
-							PushIOS.pushSingleDevice(user.getNickName() + "评论了你的信息", u.getDeviceToken());	//通知社区用户有人评论..
+					
+					AcUser user = accountService.loadUser(Long.parseLong(userId));
+					if(user != null){
+						if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
+							PushIOS.pushSingleDevice(user.getNickName() + "评论了你的信息!", u.getDeviceToken());	//通知社区用户有人评论..
 						}
+						
+						//发送系统消息给目标用户
+						MsgMessageInfo messageInfo = new MsgMessageInfo();
+						messageInfo.setUserId(Long.parseLong(userId));
+						messageInfo.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+						messageInfo.setTargetUserId(u.getId());
+						messageInfo.setTargetAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+						messageInfo.setCreateTime(new Date());
+						messageInfo.setContent(user.getNickName() + "评论了你的信息!");
+						messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_SYS);
+						messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
+						MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
+						
+						MsgMessageBox messageBox = new MsgMessageBox();
+						messageBox.setMessageId(messageInfo2.getId());
+						messageBox.setUserId(u.getId());
+						messageBox.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+						messageBox.setReceiveDate(new Date());
+						messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
+						messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
+						messageService.saveMessageBox(messageBox);
 					}
 				}
 			}

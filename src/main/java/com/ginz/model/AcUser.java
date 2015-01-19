@@ -46,14 +46,14 @@ public class AcUser implements Serializable {
 	@Column(name="community_id")
 	private Long communityId;
 	
-	@Column(name="blood_type")
-	private String bloodType;
-	
 	@Column(name="head_portrait")
 	private String headPortrait;
 	
 	@Column(name="thumbnail_url")
 	private String thumbnailUrl;
+	
+	@Column(name="point")
+	private Long point;
 	
 	@Column(name="background")
 	private String background;
@@ -153,14 +153,6 @@ public class AcUser implements Serializable {
 		this.communityId = communityId;
 	}
 
-	public String getBloodType() {
-		return bloodType;
-	}
-
-	public void setBloodType(String bloodType) {
-		this.bloodType = bloodType;
-	}
-
 	public String getHeadPortrait() {
 		return headPortrait;
 	}
@@ -175,6 +167,14 @@ public class AcUser implements Serializable {
 
 	public void setThumbnailUrl(String thumbnailUrl) {
 		this.thumbnailUrl = thumbnailUrl;
+	}
+
+	public Long getPoint() {
+		return point;
+	}
+
+	public void setPoint(Long point) {
+		this.point = point;
 	}
 
 	public String getBackground() {

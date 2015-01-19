@@ -30,12 +30,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.ginz.action.BaseAction;
 import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
+import com.ginz.model.MsgMessageBox;
+import com.ginz.model.MsgMessageInfo;
 import com.ginz.model.Picture;
 import com.ginz.model.PubComments;
 import com.ginz.model.PubNotice;
 import com.ginz.model.PubPraise;
 import com.ginz.service.AccountService;
 import com.ginz.service.CommunityService;
+import com.ginz.service.MessageService;
 import com.ginz.service.NoticeService;
 import com.ginz.service.PictureService;
 import com.ginz.service.ReplyService;
@@ -55,6 +58,7 @@ public class NoticeAction extends BaseAction{
 	private ReplyService replyService;
 	private CommunityService communityService;
 	private PictureService pictureService;
+	private MessageService messageService;
 
 	public NoticeService getNoticeService() {
 		return noticeService;
@@ -99,6 +103,15 @@ public class NoticeAction extends BaseAction{
 	@Autowired
 	public void setPictureService(PictureService pictureService) {
 		this.pictureService = pictureService;
+	}
+	
+	public MessageService getMessageService() {
+		return messageService;
+	}
+
+	@Autowired
+	public void setMessageService(MessageService messageService) {
+		this.messageService = messageService;
 	}
 	
 	//发布公告
@@ -208,6 +221,27 @@ public class NoticeAction extends BaseAction{
 					String account =  user.getDeviceAccount();
 					accountList.add(account);
 				}
+				
+				//发送系统消息给目标用户
+				MsgMessageInfo messageInfo = new MsgMessageInfo();
+				messageInfo.setUserId(Long.parseLong(id));
+				messageInfo.setAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
+				messageInfo.setTargetUserId(user.getId());
+				messageInfo.setTargetAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+				messageInfo.setCreateTime(new Date());
+				messageInfo.setContent(content);
+				messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_SYS);
+				messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
+				MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
+				
+				MsgMessageBox messageBox = new MsgMessageBox();
+				messageBox.setMessageId(messageInfo2.getId());
+				messageBox.setUserId(user.getId());
+				messageBox.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+				messageBox.setReceiveDate(new Date());
+				messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
+				messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
+				messageService.saveMessageBox(messageBox);
 			}
 		}
 		PushIOS.pushAccountList(subject, accountList);
@@ -439,11 +473,32 @@ public class NoticeAction extends BaseAction{
 				if(!userId.equals(propertyId)){	//如果是本人点赞，不发推送消息
 					AcProperty property = accountService.loadProperty(propertyId);
 					if(property != null){
-						if(property.getDeviceToken()!=null&&!property.getDeviceToken().equals("")){
-							AcUser user = accountService.loadUser(Long.parseLong(userId));
-							if(user != null){
-								PushIOS.pushSingleDevice(user.getNickName() + "赞了你的信息", property.getDeviceToken());	//通知社区用户有人点赞..
+						AcUser user = accountService.loadUser(Long.parseLong(userId));
+						if(user != null){
+							if(property.getDeviceToken()!=null&&!property.getDeviceToken().equals("")){
+								PushIOS.pushSingleDevice(user.getNickName() + "赞了你的信息!", property.getDeviceToken());	//通知社区用户有人点赞..
 							}
+							
+							//发送系统消息给目标用户
+							MsgMessageInfo messageInfo = new MsgMessageInfo();
+							messageInfo.setUserId(Long.parseLong(userId));
+							messageInfo.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+							messageInfo.setTargetUserId(propertyId);
+							messageInfo.setTargetAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
+							messageInfo.setCreateTime(new Date());
+							messageInfo.setContent(user.getNickName() + "赞了你的信息!");
+							messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_SYS);
+							messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
+							MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
+							
+							MsgMessageBox messageBox = new MsgMessageBox();
+							messageBox.setMessageId(messageInfo2.getId());
+							messageBox.setUserId(propertyId);
+							messageBox.setAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
+							messageBox.setReceiveDate(new Date());
+							messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
+							messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
+							messageService.saveMessageBox(messageBox);
 						}
 					}
 				}
@@ -495,11 +550,32 @@ public class NoticeAction extends BaseAction{
 			if(!userId.equals(propertyId)){	//如果是本人评论，不发推送消息
 				AcProperty property = accountService.loadProperty(propertyId);
 				if(property != null){
-					if(property.getDeviceToken()!=null&&!property.getDeviceToken().equals("")){
-						AcUser user = accountService.loadUser(Long.parseLong(userId));
-						if(user != null){
-							PushIOS.pushSingleDevice(user.getNickName() + "评论了你的信息", property.getDeviceToken());	//通知社区用户有人评论..
+					AcUser user = accountService.loadUser(Long.parseLong(userId));
+					if(user != null){
+						if(property.getDeviceToken()!=null&&!property.getDeviceToken().equals("")){
+							PushIOS.pushSingleDevice(user.getNickName() + "评论了你的信息!", property.getDeviceToken());	//通知社区用户有人评论..
 						}
+						
+						//发送系统消息给目标用户
+						MsgMessageInfo messageInfo = new MsgMessageInfo();
+						messageInfo.setUserId(Long.parseLong(userId));
+						messageInfo.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+						messageInfo.setTargetUserId(propertyId);
+						messageInfo.setTargetAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
+						messageInfo.setCreateTime(new Date());
+						messageInfo.setContent(user.getNickName() + "评论了你的信息!");
+						messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_FRIEND);
+						messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
+						MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
+						
+						MsgMessageBox messageBox = new MsgMessageBox();
+						messageBox.setMessageId(messageInfo2.getId());
+						messageBox.setUserId(propertyId);
+						messageBox.setAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
+						messageBox.setReceiveDate(new Date());
+						messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
+						messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
+						messageService.saveMessageBox(messageBox);
 					}
 				}
 			}
