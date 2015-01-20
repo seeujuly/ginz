@@ -2,6 +2,7 @@ package com.ginz.action.account;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -20,7 +21,10 @@ import com.ginz.action.BaseAction;
 import com.ginz.model.AcMerchant;
 import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
+import com.ginz.model.MsgMessageBox;
+import com.ginz.model.MsgMessageInfo;
 import com.ginz.service.AccountService;
+import com.ginz.service.MessageService;
 import com.ginz.util.base.DictionaryUtil;
 import com.ginz.util.base.JsonUtil;
 
@@ -29,6 +33,7 @@ import com.ginz.util.base.JsonUtil;
 public class LoginAction extends BaseAction {
 
 	private AccountService accountService;
+	private MessageService messageService;
 
 	public AccountService getAccountService() {
 		return accountService;
@@ -39,6 +44,15 @@ public class LoginAction extends BaseAction {
 		this.accountService = accountService;
 	}
 	
+	public MessageService getMessageService() {
+		return messageService;
+	}
+
+	@Autowired
+	public void setMessageService(MessageService messageService) {
+		this.messageService = messageService;
+	}
+
 	//个人用户登录
 	@SuppressWarnings("unchecked")
 	public void login() throws IOException{
@@ -143,6 +157,29 @@ public class LoginAction extends BaseAction {
 	    	jsonObject.put("name", name);
 	    	jsonObject.put("userName", userName);
 	    	jsonObject.put("headUrl", headUrl);
+	    	
+	    	Date nowDate = new Date();
+	    	
+	    	//发送系统消息给目标用户
+			MsgMessageInfo messageInfo = new MsgMessageInfo();
+			messageInfo.setTargetUserId(id);
+			messageInfo.setTargetAccountType(accountType);
+			messageInfo.setCreateTime(nowDate);
+			messageInfo.setSubject("亲爱的" + name + "您好,欢迎回到知应!");
+			messageInfo.setContent("亲爱的" + name + "您好,欢迎回到知应!");
+			messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_SYS);
+			messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
+			MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
+			
+			MsgMessageBox messageBox = new MsgMessageBox();
+			messageBox.setMessageId(messageInfo2.getId());
+			messageBox.setUserId(id);
+			messageBox.setAccountType(accountType);
+			messageBox.setReceiveDate(nowDate);
+			messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
+			messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
+			messageService.saveMessageBox(messageBox);
+	    	
 		}else if(StringUtils.equals("2", result)){
 			jsonObject.put("result", "2");
 	    	jsonObject.put("value", "账户异常");
