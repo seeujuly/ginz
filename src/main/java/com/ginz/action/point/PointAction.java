@@ -131,7 +131,7 @@ public class PointAction extends BaseAction {
 				sendMessage(Long.parseLong(tUserId),tAccountType,Long.parseLong(userId),accountType,"操作失败，您的账户积分不足，剩余积分为:" + user.getPoint() + "点!");
 	
 				jsonObject.put("result", "2");
-				jsonObject.put("value", "操作失败，您的积分余额不足!");
+				jsonObject.put("value", "操作失败，您的剩余积分不足!");
 			}
 			
 		}
@@ -222,7 +222,7 @@ public class PointAction extends BaseAction {
 				jsonObject.put("result", "1");
 				jsonObject.put("value", jsonArray);
 			}else{
-				jsonObject.put("result", "1");
+				jsonObject.put("result", "2");
 				jsonObject.put("value", "没有任何的交易信息!");
 			}
 		}

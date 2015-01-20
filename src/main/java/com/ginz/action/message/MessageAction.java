@@ -22,6 +22,7 @@ import com.ginz.model.MsgMessageBox;
 import com.ginz.model.MsgMessageInfo;
 import com.ginz.service.AccountService;
 import com.ginz.service.MessageService;
+import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.DictionaryUtil;
 import com.ginz.util.base.JsonUtil;
 
@@ -133,8 +134,9 @@ public class MessageAction extends BaseAction {
 				jsonObject.put("name", user.getNickName());
 				jsonObject.put("headUrl", user.getHeadPortrait());
 			}
-			jsonObject.put("messageId", messageId);
-			jsonObject.put("content", messageInfo.getContent());
+			String createTime = DateFormatUtil.dateToStringM(messageInfo.getCreateTime());
+			jsonObject.put("createTime", createTime);
+			jsonObject.put("messageType", messageInfo.getMessageType());
 		}
 		out.print(jsonObject.toString());
 		
@@ -153,17 +155,20 @@ public class MessageAction extends BaseAction {
 		
 		Map<String,String[]> map = request.getParameterMap();
 		String a[] = map.get("json");
-		String jsonString = a[0];
-		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String messageId = valueMap.get("messageId");	//消息id
 		
-		List<MsgMessageBox> list = messageService.listMessageBox(" and messageId = " + Long.parseLong(messageId));
-		if(list.size()>0){
-			MsgMessageBox messageBox = list.get(0);
-			messageService.deleteMessageBox(messageBox.getId());
+		if(a.length>0){
+			for(int i=0;i<a.length;i++){
+				String messageId = a[i];
+				
+				List<MsgMessageBox> list = messageService.listMessageBox(" and messageId = " + Long.parseLong(messageId));
+				if(list.size()>0){
+					MsgMessageBox messageBox = list.get(0);
+					messageService.deleteMessageBox(messageBox.getId());
+				}
+				messageService.deleteMessageInfo(Long.parseLong(messageId));
+				
+			}
 		}
-		messageService.deleteMessageInfo(Long.parseLong(messageId));
-		
 		jsonObject.put("value", "SUCCESS!");
 		out.print(jsonObject.toString());
 		

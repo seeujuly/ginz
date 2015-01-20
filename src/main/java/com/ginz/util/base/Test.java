@@ -1,6 +1,6 @@
 package com.ginz.util.base;
 
-import org.apache.commons.lang.StringUtils;
+import java.util.Date;
 
 public class Test {
 
@@ -13,9 +13,8 @@ public class Test {
 		ccc = aaa.substring(aaa.indexOf("|")+1,aaa.length());
 		System.out.println(ccc);
 		*/
-		long aa = 100000L;
-		long bb = 500L;
-		System.out.println(aa-bb);
+		Date nowDate = new Date();
+		System.out.println(nowDate.toString());
 	}
 	
 }
