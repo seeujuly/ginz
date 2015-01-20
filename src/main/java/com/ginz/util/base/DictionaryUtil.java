@@ -54,9 +54,13 @@ public class DictionaryUtil {
 	public static final String PIC_TYPE_RELEASE = "3";	//信息插图
 	
 	//通知收件箱消息类型
-	public static final String MESSAGE_TYPE_FRIEND = "1";	//申请好友
-	public static final String MESSAGE_TYPE_SYS = "2";	//系统通知
-	public static final String MESSAGE_TYPE_CONSUME = "3";	//充值/消费
+	public static final String MESSAGE_TYPE_FRIEND_REQUEST = "1";	//申请好友通知
+	public static final String MESSAGE_TYPE_FRIEND_PASS = "2";	//通过好友申请
+	public static final String MESSAGE_TYPE_PRAISE = "3";	//点赞通知
+	public static final String MESSAGE_TYPE_COMMENTS = "4";	//评论通知
+	public static final String MESSAGE_TYPE_CONSUME = "5";	//充值/消费
+	public static final String MESSAGE_TYPE_SYS = "6";	//系统通知
+	public static final String MESSAGE_TYPE_PUSH = "7";	//消息推送通知
 	
 	//通知收件箱消息读取状态
 	public static final String MESSAGE_UNREAD = "0";	//未读

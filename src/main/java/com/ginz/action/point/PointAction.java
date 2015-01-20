@@ -115,10 +115,10 @@ public class PointAction extends BaseAction {
 				record.setFlag(DictionaryUtil.DETELE_FLAG_00);
 				
 				//发送系统消息给发起用户
-				sendMessage(Long.parseLong(tUserId),tAccountType,Long.parseLong(userId),accountType,"操作成功，已成功转给用户:" + tUser.getNickName() + point + "积分!");
+				sendMessage(Long.parseLong(userId),accountType,"操作成功，已成功转给用户:" + tUser.getNickName() + point + "积分!");
 				
 				//发送系统消息给目标用户
-				sendMessage(Long.parseLong(userId),accountType,Long.parseLong(tUserId),tAccountType,"收到用户:" + user.getNickName() + "转来的积分:" + point + "点!");
+				sendMessage(Long.parseLong(tUserId),tAccountType,"收到用户:" + user.getNickName() + "转来的积分:" + point + "点!");
 				//发送推送消息给目标用户
 				if(tUser.getDeviceToken()!=null&&!tUser.getDeviceToken().equals("")){
 					PushIOS.pushSingleDevice("收到用户:" + user.getNickName() + "转来的积分:" + point + "点!", tUser.getDeviceToken());	//通知社区用户有人评论..
@@ -128,7 +128,7 @@ public class PointAction extends BaseAction {
 				jsonObject.put("value", "SUCCESS!");
 			}else{
 				//发送系统消息给发起用户
-				sendMessage(Long.parseLong(tUserId),tAccountType,Long.parseLong(userId),accountType,"操作失败，您的账户积分不足，剩余积分为:" + user.getPoint() + "点!");
+				sendMessage(Long.parseLong(userId),accountType,"操作失败，您的账户积分不足，剩余积分为:" + user.getPoint() + "点!");
 	
 				jsonObject.put("result", "2");
 				jsonObject.put("value", "操作失败，您的剩余积分不足!");
@@ -141,16 +141,15 @@ public class PointAction extends BaseAction {
 	}
 	
 	//发送通知
-	public void sendMessage(long userId,String accountType,long tUserId,String tAccountType,String content){
+	public void sendMessage(long tUserId,String tAccountType,String content){
 
 		Date nowDate = new Date();
 		
 		MsgMessageInfo messageInfo = new MsgMessageInfo();
-		messageInfo.setUserId(userId);
-		messageInfo.setAccountType(accountType);
 		messageInfo.setTargetUserId(tUserId);
 		messageInfo.setTargetAccountType(tAccountType);
 		messageInfo.setCreateTime(nowDate);
+		messageInfo.setSubject(content);
 		messageInfo.setContent(content);
 		messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_CONSUME);
 		messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);

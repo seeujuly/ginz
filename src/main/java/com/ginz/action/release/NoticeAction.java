@@ -207,7 +207,7 @@ public class NoticeAction extends BaseAction{
 			notice.setEndTime(DateFormatUtil.toDate(endTime));
 		}
 		notice.setFlag(DictionaryUtil.DETELE_FLAG_00);
-		noticeService.saveNotice(notice);
+		PubNotice notice2 = noticeService.saveNotice(notice);
 			
 		jsonObject.put("value", "SUCCESS!");
 		out.print(jsonObject.toString());
@@ -224,13 +224,14 @@ public class NoticeAction extends BaseAction{
 				
 				//发送系统消息给目标用户
 				MsgMessageInfo messageInfo = new MsgMessageInfo();
-				messageInfo.setUserId(Long.parseLong(id));
-				messageInfo.setAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
 				messageInfo.setTargetUserId(user.getId());
 				messageInfo.setTargetAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
 				messageInfo.setCreateTime(new Date());
-				messageInfo.setContent(content);
-				messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_SYS);
+				messageInfo.setSubject(subject);
+				messageInfo.setContent(subject);
+				messageInfo.setReleaseId(notice2.getId());
+				messageInfo.setReleaseType(DictionaryUtil.RELEASE_TYPE_01);
+				messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_PUSH);
 				messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
 				MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
 				
@@ -481,13 +482,14 @@ public class NoticeAction extends BaseAction{
 							
 							//发送系统消息给目标用户
 							MsgMessageInfo messageInfo = new MsgMessageInfo();
-							messageInfo.setUserId(Long.parseLong(userId));
-							messageInfo.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
 							messageInfo.setTargetUserId(propertyId);
 							messageInfo.setTargetAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
 							messageInfo.setCreateTime(new Date());
+							messageInfo.setSubject(user.getNickName() + "赞了你的信息!");
 							messageInfo.setContent(user.getNickName() + "赞了你的信息!");
-							messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_SYS);
+							messageInfo.setReleaseId(Long.parseLong(id));
+							messageInfo.setReleaseType(DictionaryUtil.RELEASE_TYPE_01);
+							messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_PRAISE);
 							messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
 							MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
 							
@@ -558,13 +560,14 @@ public class NoticeAction extends BaseAction{
 						
 						//发送系统消息给目标用户
 						MsgMessageInfo messageInfo = new MsgMessageInfo();
-						messageInfo.setUserId(Long.parseLong(userId));
-						messageInfo.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
 						messageInfo.setTargetUserId(propertyId);
 						messageInfo.setTargetAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
 						messageInfo.setCreateTime(new Date());
+						messageInfo.setSubject(user.getNickName() + "评论了你的信息!");
 						messageInfo.setContent(user.getNickName() + "评论了你的信息!");
-						messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_FRIEND);
+						messageInfo.setReleaseId(Long.parseLong(id));
+						messageInfo.setReleaseType(DictionaryUtil.RELEASE_TYPE_01);
+						messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 						messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
 						MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
 						

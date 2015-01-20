@@ -85,7 +85,8 @@ public class MessageAction extends BaseAction {
 					MsgMessageInfo messageInfo = messageService.loadMessageInfo(messageId);
 					if(messageInfo!=null){
 						json.put("messageId", messageId);
-						json.put("content", messageInfo.getContent());
+						json.put("subject", messageInfo.getSubject());
+						json.put("messageType", messageInfo.getMessageType());
 						long uId = messageInfo.getUserId();
 						AcUser u = accountService.loadUser(uId);
 						if(u!=null){
@@ -126,6 +127,7 @@ public class MessageAction extends BaseAction {
 		MsgMessageInfo messageInfo = messageService.loadMessageInfo(Long.parseLong(messageId));
 		if(messageInfo!=null){
 			jsonObject.put("messageId", messageId);
+			jsonObject.put("subject", messageInfo.getSubject());
 			jsonObject.put("content", messageInfo.getContent());
 			long userId = messageInfo.getUserId();
 			AcUser user = accountService.loadUser(userId);
@@ -155,11 +157,11 @@ public class MessageAction extends BaseAction {
 		
 		Map<String,String[]> map = request.getParameterMap();
 		String a[] = map.get("json");
-		
-		if(a.length>0){
-			for(int i=0;i<a.length;i++){
-				String messageId = a[i];
-				
+		String jsonString = a[0];
+		String ids[] = jsonString.split(",");
+		if(ids.length>0){
+			for(int i=0;i<ids.length;i++){
+				String messageId = ids[i];
 				List<MsgMessageBox> list = messageService.listMessageBox(" and messageId = " + Long.parseLong(messageId));
 				if(list.size()>0){
 					MsgMessageBox messageBox = list.get(0);

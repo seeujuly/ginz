@@ -108,34 +108,35 @@ public class FriendAction extends BaseAction {
 				friend.setCreateTime(new Date());
 				friend.setFlag(DictionaryUtil.DETELE_FLAG_00);
 				friendService.saveFriend(friend);
+				
+				//发送推送消息给目标用户
+				if(tUser.getDeviceToken()!=null&&!tUser.getDeviceToken().equals("")){
+					PushIOS.pushSingleDevice(user.getNickName() + "请求添加您为好友!",tUser.getDeviceToken());
+				}
+				
+				//发送系统消息给目标用户
+				MsgMessageInfo messageInfo = new MsgMessageInfo();
+				messageInfo.setUserId(Long.parseLong(userId));
+				messageInfo.setAccountType(accountType);
+				messageInfo.setTargetUserId(Long.parseLong(tUserId));
+				messageInfo.setTargetAccountType(tAccountType);
+				messageInfo.setCreateTime(new Date());
+				messageInfo.setSubject(user.getNickName() + "请求添加您为好友!");
+				messageInfo.setContent(user.getNickName() + "请求添加您为好友!附加消息：" + message);
+				messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_FRIEND_REQUEST);
+				messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
+				MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
+				
+				MsgMessageBox messageBox = new MsgMessageBox();
+				messageBox.setMessageId(messageInfo2.getId());
+				messageBox.setUserId(Long.parseLong(tUserId));
+				messageBox.setAccountType(tAccountType);
+				messageBox.setReceiveDate(new Date());
+				messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
+				messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
+				messageService.saveMessageBox(messageBox);
+				
 			}
-			
-			//发送推送消息给目标用户
-			if(tUser.getDeviceToken()!=null&&!tUser.getDeviceToken().equals("")){
-				PushIOS.pushSingleDevice(user.getNickName() + "请求添加您为好友!",tUser.getDeviceToken());
-			}
-			
-			//发送系统消息给目标用户
-			MsgMessageInfo messageInfo = new MsgMessageInfo();
-			messageInfo.setUserId(Long.parseLong(userId));
-			messageInfo.setAccountType(accountType);
-			messageInfo.setTargetUserId(Long.parseLong(tUserId));
-			messageInfo.setTargetAccountType(tAccountType);
-			messageInfo.setCreateTime(new Date());
-			messageInfo.setContent(message);
-			messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_FRIEND);
-			messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
-			MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
-			
-			MsgMessageBox messageBox = new MsgMessageBox();
-			messageBox.setMessageId(messageInfo2.getId());
-			messageBox.setUserId(Long.parseLong(tUserId));
-			messageBox.setAccountType(tAccountType);
-			messageBox.setReceiveDate(new Date());
-			messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
-			messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
-			messageService.saveMessageBox(messageBox);
-			
 			
 			jsonObject.put("value", "SUCCESS!");
 			out.print(jsonObject.toString());
@@ -188,8 +189,9 @@ public class FriendAction extends BaseAction {
 					messageInfo.setTargetUserId(Long.parseLong(tUserId));
 					messageInfo.setTargetAccountType(tAccountType);
 					messageInfo.setCreateTime(new Date());
+					messageInfo.setSubject(user.getNickName() + "接受了您的添加请求并添加您为好友!");
 					messageInfo.setContent(user.getNickName() + "接受了您的添加请求并添加您为好友!");
-					messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_FRIEND);
+					messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_FRIEND_PASS);
 					messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
 					MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
 					
@@ -242,27 +244,6 @@ public class FriendAction extends BaseAction {
 			if(list.size()>0){
 				MsgFriend friend = list.get(0);
 				friendService.deleteFriend(friend.getId());
-				
-				/*//发送系统消息给目标用户
-				MsgMessageInfo messageInfo = new MsgMessageInfo();
-				messageInfo.setUserId(Long.parseLong(userId));
-				messageInfo.setAccountType(accountType);
-				messageInfo.setTargetUserId(Long.parseLong(tUserId));
-				messageInfo.setTargetAccountType(tAccountType);
-				messageInfo.setCreateTime(new Date());
-				messageInfo.setContent(user.getNickName() + "拒绝了您的好友申请!");
-				messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_FRIEND);
-				messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
-				MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
-				
-				MsgMessageBox messageBox = new MsgMessageBox();
-				messageBox.setMessageId(messageInfo2.getId());
-				messageBox.setUserId(Long.parseLong(tUserId));
-				messageBox.setAccountType(tAccountType);
-				messageBox.setReceiveDate(new Date());
-				messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
-				messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
-				messageService.saveMessageBox(messageBox);*/
 				
 				jsonObject.put("value", "SUCCESS!");
 				out.print(jsonObject.toString());

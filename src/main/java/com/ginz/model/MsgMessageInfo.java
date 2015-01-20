@@ -38,11 +38,20 @@ public class MsgMessageInfo implements Serializable {
 	@Column(name="createTime")
 	private Date createTime;
 	
+	@Column(name="subject")
+	private String subject;
+	
 	@Column(name="content")
 	private String content;
 	
 	@Column(name="picIds")
 	private String picIds;
+	
+	@Column(name="releaseId")
+	private Long releaseId;
+	
+	@Column(name="releaseType")
+	private String releaseType;
 	
 	@Column(name="message_type")
 	private String messageType;
@@ -133,5 +142,29 @@ public class MsgMessageInfo implements Serializable {
 	public void setFlag(String flag) {
 		this.flag = flag;
 	}
-	
+
+	public String getSubject() {
+		return subject;
+	}
+
+	public void setSubject(String subject) {
+		this.subject = subject;
+	}
+
+	public Long getReleaseId() {
+		return releaseId;
+	}
+
+	public void setReleaseId(Long releaseId) {
+		this.releaseId = releaseId;
+	}
+
+	public String getReleaseType() {
+		return releaseType;
+	}
+
+	public void setReleaseType(String releaseType) {
+		this.releaseType = releaseType;
+	}
+
 }
