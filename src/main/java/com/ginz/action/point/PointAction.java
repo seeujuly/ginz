@@ -19,6 +19,8 @@ import org.apache.struts2.convention.annotation.Namespace;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ginz.action.BaseAction;
+import com.ginz.model.AcMerchant;
+import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
 import com.ginz.model.MsgMessageBox;
 import com.ginz.model.MsgMessageInfo;
@@ -225,6 +227,49 @@ public class PointAction extends BaseAction {
 				jsonObject.put("value", "没有任何的交易信息!");
 			}
 		}
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//查询积分
+	@SuppressWarnings("unchecked")
+	public void query() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		JSONObject jsonObject=new JSONObject();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");	//用户id
+		String accountType = valueMap.get("accountType");	//账户类型
+
+		String point = "";
+		if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_01)){
+			AcUser user = accountService.loadUser(Long.parseLong(userId));
+			if(user!=null){
+				point = user.getPoint().toString();
+			}
+		}else if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_02)){
+			AcProperty property = accountService.loadProperty(Long.parseLong(userId));
+			if(property!=null){
+				point = property.getPoint().toString();
+			}
+		}else if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_03)){
+			AcMerchant merchant = accountService.loadMerchant(Long.parseLong(userId));
+			if(merchant!=null){
+				point = merchant.getPoint().toString();
+			}
+		}
+		
+		jsonObject.put("value", "SUCCESS!");
+		jsonObject.put("point", point);
+			
 		out.print(jsonObject.toString());
 		
 	}

@@ -229,62 +229,6 @@ public class UserSettingAction extends BaseAction {
 		
 	}
 	
-	//保存个人基本信息
-	@SuppressWarnings("unchecked")
-	public void save() throws IOException{
-		
-		HttpServletResponse response = ServletActionContext.getResponse();
-		HttpServletRequest request = ServletActionContext.getRequest();
-		response.setContentType("text/html;charset=utf-8");
-		PrintWriter out = response.getWriter();
-		
-		Map<String,String[]> map = request.getParameterMap();
-		String a[] = map.get("json");
-		String jsonString = a[0];
-		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		
-		String email = valueMap.get("email");
-		String mobile = valueMap.get("mobile");
-		String gender = valueMap.get("gender");
-		String realName = valueMap.get("realName");
-		String nickName = valueMap.get("nickName");
-		String birthday = valueMap.get("birthday");
-		
-		//根据生日计算星座
-		Date date = DateFormatUtil.stringToDate(birthday);
-		int month = DateFormatUtil.getMonth(date);
-		int day = DateFormatUtil.getDay(date);
-		String constellation = DateFormatUtil.getAstro(month,day);
-		
-		List<AcUser> userList = accountService.findUser(" and mobile = '" + mobile + "' ");
-		if(userList.size()>0){
-			AcUser user = userList.get(0);
-			user.setEmail(email);
-			user.setRealName(realName);
-			user.setNickName(nickName);
-			accountService.updateUser(user);
-			
-			AcUserDetail userDetail;
-			List<AcUserDetail> detailList = accountService.findUserDetail(" and user = " + user.getId());
-			if(detailList.size()>0){
-				userDetail = detailList.get(0);
-			}else{
-				userDetail = new AcUserDetail();
-				userDetail.setUserId(user.getId());
-			}
-			userDetail.setGender(gender);
-			userDetail.setConstellation(constellation);
-			userDetail.setBirthday(DateFormatUtil.stringToDate(birthday));
-			userDetail.setAge(DateFormatUtil.getAgeByBirthday(DateFormatUtil.stringToDate(birthday)));
-			accountService.updateUserDetail(userDetail);
-		}
-		
-		JSONObject jsonObject=new JSONObject();
-		jsonObject.put("value", "SUCCESS!");
-		out.print(jsonObject.toString());
-		
-	}
-	
 	//初始化myprofile页面
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void init() throws IOException{
@@ -365,4 +309,518 @@ public class UserSettingAction extends BaseAction {
 		
 	}
 	
+	/**
+	 * 保存个人信息
+	 */
+	//保存邮箱
+	@SuppressWarnings("unchecked")
+	public void saveEmail() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String email = valueMap.get("email");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			user.setEmail(email);
+			accountService.updateUser(user);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//保存昵称
+	@SuppressWarnings("unchecked")
+	public void saveNickName() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String nickName = valueMap.get("nickName");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			user.setNickName(nickName);
+			accountService.updateUser(user);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//保存地址
+	@SuppressWarnings("unchecked")
+	public void saveAddress() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String address = valueMap.get("address");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			user.setAddress(address);
+			accountService.updateUser(user);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+
+	//保存性别
+	@SuppressWarnings("unchecked")
+	public void saveGender() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String gender = valueMap.get("gender");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			AcUserDetail userDetail = getUserDetail(userId);
+			userDetail.setGender(gender);
+			accountService.updateUserDetail(userDetail);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//保存生日，年龄，星座
+	@SuppressWarnings("unchecked")
+	public void saveBirthDay() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		
+		String userId = valueMap.get("userId");
+		String birthday = valueMap.get("birthday");
+		
+		//根据生日计算星座
+		Date date = DateFormatUtil.stringToDate(birthday);
+		int month = DateFormatUtil.getMonth(date);
+		int day = DateFormatUtil.getDay(date);
+		String constellation = DateFormatUtil.getAstro(month,day);
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			AcUserDetail userDetail = getUserDetail(userId);
+			userDetail.setConstellation(constellation);
+			userDetail.setBirthday(DateFormatUtil.stringToDate(birthday));
+			userDetail.setAge(DateFormatUtil.getAgeByBirthday(DateFormatUtil.stringToDate(birthday)));
+			accountService.updateUserDetail(userDetail);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//保存情感状况
+	@SuppressWarnings("unchecked")
+	public void saveEmotionalState() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String emotionalState = valueMap.get("emotionalState");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			AcUserDetail userDetail = getUserDetail(userId);
+			userDetail.setEmotionalState(emotionalState);
+			accountService.updateUserDetail(userDetail);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//保存职业
+	@SuppressWarnings("unchecked")
+	public void saveCareer() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String career = valueMap.get("career");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			AcUserDetail userDetail = getUserDetail(userId);
+			userDetail.setCareer(career);
+			accountService.updateUserDetail(userDetail);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//保存公司
+	@SuppressWarnings("unchecked")
+	public void saveCompany() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String company = valueMap.get("company");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			AcUserDetail userDetail = getUserDetail(userId);
+			userDetail.setCompany(company);
+			accountService.updateUserDetail(userDetail);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//保存学校
+	@SuppressWarnings("unchecked")
+	public void saveSchool() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String school = valueMap.get("school");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			AcUserDetail userDetail = getUserDetail(userId);
+			userDetail.setSchool(school);
+			accountService.updateUserDetail(userDetail);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+
+	//保存餐饮喜好
+	@SuppressWarnings("unchecked")
+	public void saveCatering() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String catering = valueMap.get("catering");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			AcUserDetail userDetail = getUserDetail(userId);
+			userDetail.setCatering(catering);
+			accountService.updateUserDetail(userDetail);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//保存社交喜好
+	@SuppressWarnings("unchecked")
+	public void saveSocialContact() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String socialContact = valueMap.get("socialContact");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			AcUserDetail userDetail = getUserDetail(userId);
+			userDetail.setSocialContact(socialContact);
+			accountService.updateUserDetail(userDetail);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//保存旅游喜好
+	@SuppressWarnings("unchecked")
+	public void saveTravel() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String travel = valueMap.get("travel");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			AcUserDetail userDetail = getUserDetail(userId);
+			userDetail.setTravel(travel);
+			accountService.updateUserDetail(userDetail);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//保存运动喜好
+	@SuppressWarnings("unchecked")
+	public void saveSports() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String sports = valueMap.get("sports");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			AcUserDetail userDetail = getUserDetail(userId);
+			userDetail.setSports(sports);
+			accountService.updateUserDetail(userDetail);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//保存音乐喜好
+	@SuppressWarnings("unchecked")
+	public void saveMusic() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String music = valueMap.get("music");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			AcUserDetail userDetail = getUserDetail(userId);
+			userDetail.setMusic(music);
+			accountService.updateUserDetail(userDetail);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//保存其他喜好
+	@SuppressWarnings("unchecked")
+	public void saveOthers() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String others = valueMap.get("others");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			AcUserDetail userDetail = getUserDetail(userId);
+			userDetail.setOthers(others);
+			accountService.updateUserDetail(userDetail);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//保存社区需求
+	@SuppressWarnings("unchecked")
+	public void saveCommunityNeed() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String communityNeed = valueMap.get("communityNeed");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			AcUserDetail userDetail = getUserDetail(userId);
+			userDetail.setCommunityNeed(communityNeed);
+			accountService.updateUserDetail(userDetail);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//保存不喜欢
+	@SuppressWarnings("unchecked")
+	public void saveDislike() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String dislike = valueMap.get("dislike");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			AcUserDetail userDetail = getUserDetail(userId);
+			userDetail.setDislike(dislike);
+			accountService.updateUserDetail(userDetail);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//通用方法
+	public AcUserDetail getUserDetail(String userId){
+		AcUserDetail userDetail = new AcUserDetail();
+		List<AcUserDetail> detailList = accountService.findUserDetail(" and userId = " + Long.parseLong(userId));
+		if(detailList.size()>0){
+			userDetail = detailList.get(0);
+		}else{
+			userDetail.setUserId(Long.parseLong(userId));
+		}
+		return userDetail;
+	}
+
 }
