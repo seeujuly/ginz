@@ -20,12 +20,12 @@ public interface ActivitiesService {
 	public List<PubActivities> findActivities(String condition, int page, int rows);
 	
 	//个人用户主动搜索————用输入的关键字，搜索相关连的信息（主题，内容，标签）
-	public HashMap<String, Object> seachActivities(String keyWord, int page, int rows);
+	public HashMap<String, Object> searchActivities(String keyWord, int page, int rows);
 	
 	//个人用户查看活动页面————使用用户的个人兴趣爱好作为关键字，搜索相关连的信息（主题，内容，标签）
-	public HashMap<String, Object> seachActivities(String in, String notIn, int page, int rows);
+	public HashMap<String, Object> searchActivities(String in, String notIn, int page, int rows);
 	
 	//用户发布信息之后搜索相关的个人用户群体,推送消息给他们(以发布信息的主题,内容,标签为关键字,搜索目标为个人的喜好)
-	public HashMap<String,Object> seachUsers();
+	public HashMap<String,Object> searchUsers();
 	
 }

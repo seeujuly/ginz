@@ -300,8 +300,18 @@
 			<version>${shiro.version}</version>
 			<scope>compile</scope>
 		</dependency>
-		
-		
+
+
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-analyzers</artifactId>
+			<version>3.6.2</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.lucene</groupId>
+			<artifactId>lucene-core</artifactId>
+			<version>4.10.3</version>
+		</dependency>
 	</dependencies>
 
 	<description>ginz</description>

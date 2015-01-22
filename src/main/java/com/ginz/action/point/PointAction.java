@@ -100,10 +100,10 @@ public class PointAction extends BaseAction {
 			if(user.getPoint()>=Long.parseLong(point)){
 				
 				user.setPoint(user.getPoint() - Long.parseLong(point));
-				accountService.saveUser(user);
+				accountService.updateUser(user);
 				
 				tUser.setPoint(tUser.getPoint() + Long.parseLong(point));
-				accountService.saveUser(tUser);
+				accountService.updateUser(tUser);
 				
 				TransactionRecords record = new TransactionRecords();
 				record.setUserId(Long.parseLong(userId));

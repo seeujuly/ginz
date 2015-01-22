@@ -210,6 +210,8 @@ public class ActivitiesAction extends BaseAction {
 		jsonObject.put("value", "SUCCESS!");
 		out.print(jsonObject.toString());
 		
+		
+		
 		//推送给匹配的用户
 		/*List<String> accountList = new ArrayList<String>();
 		List<AcUser> userList = accountService.findUser(" and communityId = " + communityId);
@@ -304,7 +306,7 @@ public class ActivitiesAction extends BaseAction {
 				notIn = notIn.replace(",", "|");
 			}
 		
-			HashMap<String,Object> rethm = activitiesService.seachActivities(in, notIn, Integer.parseInt(page), rows);
+			HashMap<String,Object> rethm = activitiesService.searchActivities(in, notIn, Integer.parseInt(page), rows);
 			List<Object> list = (List<Object>) rethm.get("list");
 			if(list != null && !list.isEmpty()){
 				Iterator iterator = list.iterator();

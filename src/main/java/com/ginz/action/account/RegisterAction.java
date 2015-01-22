@@ -57,9 +57,9 @@ public class RegisterAction extends BaseAction {
 			
 			String accountType = valueMap.get("accounttype");
 			String password = valueMap.get("password");
+			String mobile = valueMap.get("mobile");
 			
 			if(StringUtils.equals(DictionaryUtil.ACCOUNT_TYPE_01, accountType)){	//个人用户注册
-				String mobile = valueMap.get("mobile");
 				
 				AcUser user = new AcUser();
 				user.setMobile(mobile);
@@ -76,6 +76,10 @@ public class RegisterAction extends BaseAction {
 				user.setFlag(DictionaryUtil.DETELE_FLAG_00);
 				accountService.saveUser(user);
 			}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_TYPE_02, accountType)){	//社区用户(物业)注册
+				AcProperty property = new AcProperty();
+				property.setMobile(mobile);
+				property.setPassword(password);
+				
 				
 			}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_TYPE_03, accountType)){	//商户注册
 				

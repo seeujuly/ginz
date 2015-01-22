@@ -1,5 +1,6 @@
 package com.ginz.service;
 
+import java.util.HashMap;
 import java.util.List;
 
 import com.ginz.model.AcMerchant;
@@ -21,6 +22,9 @@ public interface AccountService {
 	public void deleteUser(Long id);
 	
 	public List<AcUser> findUser(String condition);
+	
+	//搜索界面-搜索个人用户
+	public HashMap<String, Object> searchUser(String userCondition, String detailCondition, int page, int rows);
 	
 	//个人用户明细部分
 	public AcUserDetail loadUserDetail(Long id);

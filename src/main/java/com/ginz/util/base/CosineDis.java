@@ -6,7 +6,7 @@ import java.util.Iterator;
 import java.util.Map;
 
 /**
- * 计算文本相似度
+ * 余弦计算文本相似度
  */
 public class CosineDis {
 

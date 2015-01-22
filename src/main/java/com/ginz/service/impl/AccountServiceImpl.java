@@ -2,6 +2,7 @@ package com.ginz.service.impl;
 
 import java.text.MessageFormat;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -122,6 +123,22 @@ public class AccountServiceImpl implements AccountService {
 		return userDao.find(hql);
 	}
 	
+	//搜索界面-搜索个人用户
+	public HashMap<String, Object> searchUser(String userCondition, String detailCondition, int page, int rows){
+		
+		HashMap<String, Object> hm = new HashMap<String, Object>();
+		StringBuffer sb = new StringBuffer();
+		sb.append("  ");
+		
+		
+		
+		
+		hm.put("list", userDao.queryBySql(sb.toString()));
+		return hm;
+		
+	}
+	
+	//个人用户详细部分
 	@Override
 	public AcUserDetail loadUserDetail(Long id) {
 		return userDetailDao.get(AcUserDetail.class, id);
