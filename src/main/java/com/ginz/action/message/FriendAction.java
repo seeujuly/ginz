@@ -91,9 +91,16 @@ public class FriendAction extends BaseAction {
 		AcUser tUser = accountService.loadUser(Long.parseLong(tUserId));
 		
 		if(user!=null&&tUser!=null){
-			List<MsgFriend> list = friendService.listFriends(" and userId = " + userId + " and accountType = '" + accountType + "' and friendUserId = " + tUserId + " AND friendAccountType = '" + tAccountType + "' ");
+			
+			String condition = "";
+			condition = "and (userId = " + userId + " and accountType = '" + accountType + "' and friendUserId = " + tUserId + " AND friendAccountType = '" + tAccountType + "') ";
+			condition += "OR (userId = " + tUserId + " and accountType = '" + tAccountType + "' and friendUserId = " + userId + " AND friendAccountType = '" + accountType + "')";
+			List<MsgFriend> list = friendService.listFriends(condition);
+			
+			//List<MsgFriend> list = friendService.listFriends(" and userId = " + userId + " and accountType = '" + accountType + "' and friendUserId = " + tUserId + " AND friendAccountType = '" + tAccountType + "' ");
 			if(list.size()>0){
-				
+				jsonObject.put("result", "1");
+				jsonObject.put("value", "你们已经是好友了!");
 			}else{
 				MsgFriend friend = new MsgFriend();
 				friend.setUserId(Long.parseLong(userId));
@@ -136,12 +143,12 @@ public class FriendAction extends BaseAction {
 				messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
 				messageService.saveMessageBox(messageBox);
 				
+				jsonObject.put("result", "2");
+				jsonObject.put("value", "SUCCESS!");
+				
 			}
-			
-			jsonObject.put("value", "SUCCESS!");
-			out.print(jsonObject.toString());
 		}
-		
+		out.print(jsonObject.toString());
 	}
 	
 	//添加好友-同意他人的添加好友申请

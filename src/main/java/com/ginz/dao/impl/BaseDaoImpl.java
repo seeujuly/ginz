@@ -233,13 +233,11 @@ public class BaseDaoImpl<T> implements BaseDao<T> {
 		return query.list();
 	}
 	
-	@Override
 	public int executeSql(String sql) {
 		this.getCurrentSession().flush();
 		return this.getCurrentSession().createSQLQuery(sql).executeUpdate();
 	}
 
-	@Override
 	@Transactional(propagation=Propagation.REQUIRED)
 	public void merge(T o) {
 		//this.getCurrentSession().clear();

@@ -2,7 +2,6 @@ package com.ginz.action;
 
 import java.io.IOException;
 
-import org.apache.log4j.Logger;
 import org.apache.struts2.ServletActionContext;
 import org.apache.struts2.convention.annotation.Namespace;
 import org.apache.struts2.convention.annotation.ParentPackage;
@@ -16,8 +15,6 @@ import com.alibaba.fastjson.JSON;
 @Namespace("/")
 public class BaseAction {
 	
-	private static final Logger logger = Logger.getLogger(BaseAction.class);
-
 	/**
 	 * 将对象转换成JSON字符串，并响应回前台
 	 * 
@@ -40,4 +37,5 @@ public class BaseAction {
 			e.printStackTrace();
 		}
 	}
+	
 }

@@ -69,6 +69,18 @@ public class PointAction extends BaseAction {
 		this.pointService = pointService;
 	}
 	
+	//获取服务器当前时间
+	public void getTime() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		Date nowDate = new Date();
+		String time = DateFormatUtil.dateToStringS(nowDate);
+		out.print(time);
+		
+	}
+	
 	//转账
 	@SuppressWarnings("unchecked")
 	public void transferAccounts() throws IOException{
@@ -115,6 +127,7 @@ public class PointAction extends BaseAction {
 				record.setDescription("");
 				record.setCreateTime(nowDate);
 				record.setFlag(DictionaryUtil.DETELE_FLAG_00);
+				pointService.saveTransactionRecords(record);
 				
 				//发送系统消息给发起用户
 				sendMessage(Long.parseLong(userId),accountType,"操作成功，已成功转给用户:" + tUser.getNickName() + point + "积分!");

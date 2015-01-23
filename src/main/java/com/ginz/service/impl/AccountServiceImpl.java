@@ -63,7 +63,6 @@ public class AccountServiceImpl implements AccountService {
 	}
 	
 	//个人用户部分
-	@Override
 	public AcUser loginUser(AcUser user) {
 		final String HQL_FIND = " from AcUser t where 1=1 {0} ";
 		String condition = "";
@@ -124,15 +123,13 @@ public class AccountServiceImpl implements AccountService {
 	}
 	
 	//搜索界面-搜索个人用户
-	public HashMap<String, Object> searchUser(String userCondition, String detailCondition, int page, int rows){
+	public HashMap<String, Object> searchUser(String userCondition, String detailCondition){
 		
 		HashMap<String, Object> hm = new HashMap<String, Object>();
 		StringBuffer sb = new StringBuffer();
-		sb.append("  ");
-		
-		
-		
-		
+		sb.append(" SELECT id,nick_name,head_portrait from ac_user where id in ( ");
+		sb.append(" SELECT id as userId FROM ac_user where 1=1 " + userCondition);
+		sb.append(" UNION  SELECT userId FROM ac_user_detail where 1=1 " + detailCondition + " )");
 		hm.put("list", userDao.queryBySql(sb.toString()));
 		return hm;
 		

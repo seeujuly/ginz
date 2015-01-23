@@ -23,22 +23,18 @@ public class CommunityServiceImpl implements CommunityService {
 		this.communityDao = communityDao;
 	}
 	
-	@Override
 	public Community load(Long id) {
 		return communityDao.get(Community.class, id);
 	}
 
-	@Override
 	public void save(Community community) {
 		communityDao.save(community);
 	}
 
-	@Override
 	public void update(Community community) {
 		communityDao.update(community);
 	}
 
-	@Override
 	public void delete(Long id) {
 		Community c = communityDao.get(Community.class, id);
 		if (c != null) {
@@ -46,7 +42,6 @@ public class CommunityServiceImpl implements CommunityService {
 		}
 	}
 
-	@Override
 	public List<Community> find(String condition) {
 		String hql = "from Community where 1=1" + condition;
 		return communityDao.find(hql);

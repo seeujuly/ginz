@@ -24,7 +24,7 @@ public interface AccountService {
 	public List<AcUser> findUser(String condition);
 	
 	//搜索界面-搜索个人用户
-	public HashMap<String, Object> searchUser(String userCondition, String detailCondition, int page, int rows);
+	public HashMap<String, Object> searchUser(String userCondition, String detailCondition);
 	
 	//个人用户明细部分
 	public AcUserDetail loadUserDetail(Long id);

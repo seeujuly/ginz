@@ -72,6 +72,7 @@ public class RegisterAction extends BaseAction {
 				}
 				user.setUserName(userName);
 				user.setNickName(userName);
+				user.setCommunityId(1L);
 				user.setStatus(DictionaryUtil.ACCOUNT_STATUS_00);
 				user.setFlag(DictionaryUtil.DETELE_FLAG_00);
 				accountService.saveUser(user);

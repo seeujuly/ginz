@@ -158,7 +158,7 @@ public class LoginAction extends BaseAction {
 	    	jsonObject.put("userName", userName);
 	    	jsonObject.put("headUrl", headUrl);
 	    	
-	    	Date nowDate = new Date();
+	    	/*Date nowDate = new Date();
 	    	
 	    	//发送系统消息给目标用户
 			MsgMessageInfo messageInfo = new MsgMessageInfo();
@@ -178,7 +178,7 @@ public class LoginAction extends BaseAction {
 			messageBox.setReceiveDate(nowDate);
 			messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
 			messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
-			messageService.saveMessageBox(messageBox);
+			messageService.saveMessageBox(messageBox);*/
 	    	
 		}else if(StringUtils.equals("2", result)){
 			jsonObject.put("result", "2");

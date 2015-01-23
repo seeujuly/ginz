@@ -312,6 +312,34 @@ public class UserSettingAction extends BaseAction {
 	/**
 	 * 保存个人信息
 	 */
+	//添加社区
+	@SuppressWarnings("unchecked")
+	public void saveCommunity() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String communityId = valueMap.get("communityId");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			user.setCommunityId(Long.parseLong(communityId));
+			accountService.updateUser(user);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
 	//保存邮箱
 	@SuppressWarnings("unchecked")
 	public void saveEmail() throws IOException{
