@@ -13,8 +13,8 @@ public class Test {
 		ccc = aaa.substring(aaa.indexOf("|")+1,aaa.length());
 		System.out.println(ccc);
 		*/
-		Date nowDate = new Date();
-		System.out.println(nowDate.toString());
+		Long aa = null;
+		System.out.print(aa.toString());
 	}
 	
 }

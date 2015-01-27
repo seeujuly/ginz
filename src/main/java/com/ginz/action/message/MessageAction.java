@@ -74,35 +74,43 @@ public class MessageAction extends BaseAction {
 		String accountType = valueMap.get("accountType");	//账户类型
 		
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
-		if(user!=null){
-			String condition = " and userId = " + userId + " and accountType = '" + accountType + "' and readFlag = '" + DictionaryUtil.MESSAGE_UNREAD + "' ";
-			List<MsgMessageBox> list = messageService.listMessageBox(condition);
-			if(list.size()>0){
-				JSONArray jsonArray = new JSONArray();
-				for(MsgMessageBox message:list){		//（消息id，发送人id/，头像url，内容）
-					JSONObject json = new JSONObject();
-					long messageId = message.getMessageId();
-					MsgMessageInfo messageInfo = messageService.loadMessageInfo(messageId);
-					if(messageInfo!=null){
-						json.put("messageId", messageId);
-						json.put("subject", messageInfo.getSubject());
-						json.put("messageType", messageInfo.getMessageType());
-						long uId = messageInfo.getUserId();
-						AcUser u = accountService.loadUser(uId);
-						if(u!=null){
-							json.put("userId", uId);
-							json.put("name", u.getNickName());
-							json.put("headUrl", u.getHeadPortrait());
+		try {
+			if(user!=null){
+				String condition = " and userId = " + userId + " and accountType = '" + accountType + "' and readFlag = '" + DictionaryUtil.MESSAGE_UNREAD + "' ";
+				List<MsgMessageBox> list = messageService.listMessageBox(condition);
+				if(list.size()>0){
+					JSONArray jsonArray = new JSONArray();
+					for(MsgMessageBox message:list){		//（消息id，发送人id/，头像url，内容）
+						JSONObject json = new JSONObject();
+						long messageId = message.getMessageId();
+						MsgMessageInfo messageInfo = messageService.loadMessageInfo(messageId);
+						if(messageInfo!=null){
+							json.put("messageId", messageInfo.getId());
+							json.put("subject", messageInfo.getSubject());
+							json.put("messageType", messageInfo.getMessageType());
+							json.put("releaseType", messageInfo.getReleaseType());
+							json.put("releaseId", messageInfo.getReleaseId());
+							if(messageInfo.getUserId()!=null){
+								long uId = messageInfo.getUserId();
+								AcUser u = accountService.loadUser(uId);
+								if(u!=null){
+									json.put("userId", uId);
+									json.put("name", u.getNickName());
+									json.put("headUrl", u.getHeadPortrait());
+								}
+							}
 						}
+						jsonArray.add(json);
 					}
-					jsonArray.add(json);
+					jsonObject.put("result", "1");
+					jsonObject.put("value", jsonArray);
+				}else{
+					jsonObject.put("result", "2");
+					jsonObject.put("value", "目前没有通知消息!");
 				}
-				jsonObject.put("result", "1");
-				jsonObject.put("value", jsonArray);
-			}else{
-				jsonObject.put("result", "2");
-				jsonObject.put("value", "目前没有通知消息!");
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		out.print(jsonObject.toString());
 	}
@@ -129,6 +137,7 @@ public class MessageAction extends BaseAction {
 			jsonObject.put("messageId", messageId);
 			jsonObject.put("subject", messageInfo.getSubject());
 			jsonObject.put("content", messageInfo.getContent());
+			jsonObject.put("accountType", messageInfo.getAccountType());
 			long userId = messageInfo.getUserId();
 			AcUser user = accountService.loadUser(userId);
 			if(user!=null){

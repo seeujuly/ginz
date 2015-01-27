@@ -25,6 +25,8 @@ import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
 import com.ginz.model.Community;
 import com.ginz.model.Picture;
+import com.ginz.model.PubActivities;
+import com.ginz.model.PubEvent;
 import com.ginz.model.PubNotice;
 import com.ginz.service.AccountService;
 import com.ginz.service.ActivitiesService;
@@ -247,10 +249,127 @@ public class SearchAction extends BaseAction {
 	}
 		
 	//搜信息-活动/交易
-	
+	@SuppressWarnings("unchecked")
+	public void searchActivity() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		JSONObject jsonObject = new JSONObject();
+		JSONArray jsonArray = new JSONArray();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");	//用户id
+		String keyWord = valueMap.get("keyWord");	//关键字
+		
+		keyWord = AnalyzerUtil.analyze(keyWord);
+		String[] keys = keyWord.split("|");
+		String condition = "";
+		if(keys.length>0){
+			for(int i=0;i<keys.length;i++){
+				condition += " and CONCAT(subject,',',content,','label,',',place) REGEXP '" + keys[i] + "'";
+			}
+		}
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			List<PubActivities> list = activitiesService.findActivities(condition);
+			if(list.size()>0){
+				for(PubActivities activity : list){
+					JSONObject json = new JSONObject();
+					json.put("id", activity.getId());
+					json.put("subject", activity.getSubject());
+					String createTime = DateFormatUtil.dateToStringM(activity.getCreateTime());
+					json.put("createTime", createTime);
+					
+					String picIds = activity.getPicIds();
+					if(picIds!=null&&!picIds.equals("")){
+						String[] ids = picIds.split(",");
+						if(ids.length>0){
+							Picture picture = pictureService.loadPicture(Long.parseLong(ids[0]));
+							if(picture!=null){
+								json.put("picUrl", picture.getThumbnailUrl());
+							}
+						}
+					}
+					jsonArray.add(json);
+				}
+				jsonObject.put("result", "1");
+				jsonObject.put("result", jsonArray);
+			}else{
+				jsonObject.put("result", "2");
+				jsonObject.put("result", "无!");
+			}
+		}
+		
+		out.print(jsonObject.toString());
+		
+	}
 	
 	//搜信息-社区生活
-	
+	@SuppressWarnings("unchecked")
+	public void searchEvent() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		JSONObject jsonObject = new JSONObject();
+		JSONArray jsonArray = new JSONArray();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");	//用户id
+		String keyWord = valueMap.get("keyWord");	//关键字
+		
+		keyWord = AnalyzerUtil.analyze(keyWord);
+		String[] keys = keyWord.split("|");
+		String condition = "";
+		if(keys.length>0){
+			for(int i=0;i<keys.length;i++){
+				condition += " and CONCAT(subject,',',content,','label,',',place) REGEXP '" + keys[i] + "'";
+			}
+		}
+
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			List<PubEvent> list = eventService.findEvent(condition);
+			if(list.size()>0){
+				for(PubEvent event : list){
+					JSONObject json = new JSONObject();
+					json.put("id", event.getId());
+					json.put("subject", event.getSubject());
+					String createTime = DateFormatUtil.dateToStringM(event.getCreateTime());
+					json.put("createTime", createTime);
+					
+					String picIds = event.getPicIds();
+					if(picIds!=null&&!picIds.equals("")){
+						String[] ids = picIds.split(",");
+						if(ids.length>0){
+							Picture picture = pictureService.loadPicture(Long.parseLong(ids[0]));
+							if(picture!=null){
+								json.put("picUrl", picture.getThumbnailUrl());
+							}
+						}
+					}
+					jsonArray.add(json);
+				}
+				jsonObject.put("result", "1");
+				jsonObject.put("result", jsonArray);
+			}else{
+				jsonObject.put("result", "2");
+				jsonObject.put("result", "无!");
+			}
+		}
+		
+		out.print(jsonObject.toString());
+		
+	}
 	
 	//搜信息-公告
 	@SuppressWarnings("unchecked")
@@ -267,8 +386,8 @@ public class SearchAction extends BaseAction {
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String userId = valueMap.get("userId");	//关键字
-		String accountType = valueMap.get("accountType");	//关键字
+		String userId = valueMap.get("userId");	//用户id
+		String accountType = valueMap.get("accountType");	//账户类型
 		String keyWord = valueMap.get("keyWord");	//关键字
 		
 		keyWord = AnalyzerUtil.analyze(keyWord);
@@ -276,7 +395,7 @@ public class SearchAction extends BaseAction {
 		String condition = "";
 		if(keys.length>0){
 			for(int i=0;i<keys.length;i++){
-				condition += " and  subject REGEXP '" + keys[i] + "' and  content REGEXP '" + keys[i] + "'";
+				condition += " and CONCAT(subject,',',content) REGEXP '" + keys[i] + "'";
 			}
 		}
 		

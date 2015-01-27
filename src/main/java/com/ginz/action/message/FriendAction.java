@@ -95,9 +95,9 @@ public class FriendAction extends BaseAction {
 			String condition = "";
 			condition = "and (userId = " + userId + " and accountType = '" + accountType + "' and friendUserId = " + tUserId + " AND friendAccountType = '" + tAccountType + "') ";
 			condition += "OR (userId = " + tUserId + " and accountType = '" + tAccountType + "' and friendUserId = " + userId + " AND friendAccountType = '" + accountType + "')";
+			condition += " and state = 1 ";
 			List<MsgFriend> list = friendService.listFriends(condition);
 			
-			//List<MsgFriend> list = friendService.listFriends(" and userId = " + userId + " and accountType = '" + accountType + "' and friendUserId = " + tUserId + " AND friendAccountType = '" + tAccountType + "' ");
 			if(list.size()>0){
 				jsonObject.put("result", "1");
 				jsonObject.put("value", "你们已经是好友了!");
@@ -182,7 +182,7 @@ public class FriendAction extends BaseAction {
 					jsonObject.put("value", "你们已经是好友了!");
 				}else{
 					friend.setState("1");
-					friendService.saveFriend(friend);
+					friendService.updateFriend(friend);
 					
 					//发送推送消息给目标用户
 					if(tUser.getDeviceToken()!=null&&!tUser.getDeviceToken().equals("")){
@@ -216,6 +216,18 @@ public class FriendAction extends BaseAction {
 					
 				}
 			}
+			
+			String condition = "";
+			condition = "and (userId = " + userId + " and accountType = '" + accountType + "' and friendUserId = " + tUserId + " AND friendAccountType = '" + tAccountType + "') ";
+			condition += "OR (userId = " + tUserId + " and accountType = '" + tAccountType + "' and friendUserId = " + userId + " AND friendAccountType = '" + accountType + "')";
+			condition += " and state = 0 ";
+			List<MsgFriend> listFriends = friendService.listFriends(condition);
+			if(list.size()>0){
+				for(MsgFriend friend : listFriends){
+					friendService.deleteFriend(friend.getId());
+				}
+			}
+			
 		}
 		out.print(jsonObject.toString());
 		
@@ -246,12 +258,14 @@ public class FriendAction extends BaseAction {
 		if(user!=null&&tUser!=null){
 			
 			String condition = "";
-			condition = "and userId = " + tUserId + " and accountType = '" + tAccountType + "' and friendUserId = " + userId + " AND friendAccountType = '" + accountType + "')";
+			condition = "and (userId = " + userId + " and accountType = '" + accountType + "' and friendUserId = " + tUserId + " AND friendAccountType = '" + tAccountType + "') ";
+			condition += "OR (userId = " + tUserId + " and accountType = '" + tAccountType + "' and friendUserId = " + userId + " AND friendAccountType = '" + accountType + "')";
 			List<MsgFriend> list = friendService.listFriends(condition);
+			
 			if(list.size()>0){
-				MsgFriend friend = list.get(0);
-				friendService.deleteFriend(friend.getId());
-				
+				for(MsgFriend friend : list){
+					friendService.deleteFriend(friend.getId());
+				}
 				jsonObject.put("value", "SUCCESS!");
 				out.print(jsonObject.toString());
 			}
@@ -289,9 +303,9 @@ public class FriendAction extends BaseAction {
 			List<MsgFriend> list = friendService.listFriends(condition);
 			
 			if(list.size()>0){
-				MsgFriend friend = list.get(0);
-				friendService.deleteFriend(friend.getId());
-				
+				for(MsgFriend friend : list){
+					friendService.deleteFriend(friend.getId());
+				}
 				jsonObject.put("value", "SUCCESS!");
 				out.print(jsonObject.toString());
 			}
