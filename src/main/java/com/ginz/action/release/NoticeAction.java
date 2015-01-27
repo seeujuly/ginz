@@ -45,6 +45,7 @@ import com.ginz.service.ReplyService;
 import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.DictionaryUtil;
 import com.ginz.util.base.JsonUtil;
+import com.ginz.util.base.StringUtil;
 import com.ginz.util.base.ThumbnailUtil;
 import com.ginz.util.push.PushIOS;
 
@@ -281,6 +282,36 @@ public class NoticeAction extends BaseAction{
 				if(commentsList.size()>0){	//删除个人动态信息的相关评论
 					for(PubComments comment:commentsList){
 						replyService.deleteComments(comment.getId());
+					}
+				}
+				
+				InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("config.properties");   
+				Properties p = new Properties();   
+				p.load(inputStream);   
+				String path = p.getProperty("server_dir");	//读取服务器上图片存放目录
+				
+				String picIds = notice.getPicIds();
+				if(picIds!=null&&!picIds.equals("")){	//删除信息中的图片(删除数据表中的记录)
+					String[] ids = picIds.split(",");
+					if(ids.length>0){
+						for(int i=0;i<ids.length;i++){
+							Picture picture = pictureService.loadPicture(Long.parseLong(ids[i]));
+							String url = picture.getUrl();
+							String thumbnailUrl = picture.getThumbnailUrl();
+							
+							int index = StringUtil.getCharacterPosition(3,"/",url);	//获取url中第3个“/”的位置
+							url = path + url.substring(index, url.length());
+							thumbnailUrl = path + thumbnailUrl.substring(index, thumbnailUrl.length());
+							File file = new File(url);
+							if(file != null){
+								FileUtils.forceDelete(file);
+							}
+							File thumbnailFile = new File(thumbnailUrl);
+							if(thumbnailFile != null){
+								FileUtils.forceDelete(thumbnailFile);
+							}
+							pictureService.deletePicture(Long.parseLong(ids[i]));
+						}
 					}
 				}
 			}

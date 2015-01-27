@@ -16,7 +16,7 @@ public class CosineSimilarAlgorithm {
 		StringBuffer t2 = new StringBuffer();
 		StringBuffer t3 = new StringBuffer();
 		
-		t1.append("足球,");
+		t1.append("足球|");
 		t1.append("爬山,");
 		t1.append("音乐,");
 		t1.append("旅行");

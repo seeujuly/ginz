@@ -4,7 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -43,10 +47,13 @@ import com.ginz.service.ActivitiesService;
 import com.ginz.service.MessageService;
 import com.ginz.service.PictureService;
 import com.ginz.service.ReplyService;
+import com.ginz.util.base.CosineSimilarAlgorithm;
 import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.DictionaryUtil;
 import com.ginz.util.base.JsonUtil;
+import com.ginz.util.base.StringUtil;
 import com.ginz.util.base.ThumbnailUtil;
+import com.ginz.util.model.ReleaseDemo;
 import com.ginz.util.push.PushIOS;
 
 //活动/交易
@@ -259,6 +266,37 @@ public class ActivitiesAction extends BaseAction {
 						replyService.deleteComments(comment.getId());
 					}
 				}
+				
+				InputStream inputStream = this.getClass().getClassLoader().getResourceAsStream("config.properties");   
+				Properties p = new Properties();   
+				p.load(inputStream);   
+				String path = p.getProperty("server_dir");	//读取服务器上图片存放目录
+				
+				String picIds = activity.getPicIds();
+				if(picIds!=null&&!picIds.equals("")){	//删除信息中的图片(删除数据表中的记录)
+					String[] ids = picIds.split(",");
+					if(ids.length>0){
+						for(int i=0;i<ids.length;i++){
+							Picture picture = pictureService.loadPicture(Long.parseLong(ids[i]));
+							String url = picture.getUrl();
+							String thumbnailUrl = picture.getThumbnailUrl();
+							
+							int index = StringUtil.getCharacterPosition(3,"/",url);	//获取url中第3个“/”的位置
+							url = path + url.substring(index, url.length());
+							thumbnailUrl = path + thumbnailUrl.substring(index, thumbnailUrl.length());
+							File file = new File(url);
+							if(file != null){
+								FileUtils.forceDelete(file);
+							}
+							File thumbnailFile = new File(thumbnailUrl);
+							if(thumbnailFile != null){
+								FileUtils.forceDelete(thumbnailFile);
+							}
+							pictureService.deletePicture(Long.parseLong(ids[i]));
+						}
+					}
+				}
+				
 			}
 		}
 		
@@ -292,79 +330,113 @@ public class ActivitiesAction extends BaseAction {
 			user = accountService.loadUser(Long.parseLong(userId));
 		}
 	
-		if(user!=null){
-			if(Integer.parseInt(page)>1){
-				rows = 5;
-			}
-			String valueString = getHobbies(Long.parseLong(userId));
-			String in = "";
-			String notIn = "";
-			if(!valueString.equals("")){
-				in = valueString.substring(0, valueString.indexOf("|"));;
-				in = in.replace(",", "|");
-				notIn = valueString.substring(valueString.indexOf("|")+1,valueString.length());
-				notIn = notIn.replace(",", "|");
-			}
-		
-			HashMap<String,Object> rethm = activitiesService.searchActivities(in, notIn, Integer.parseInt(page), rows);
-			List<Object> list = (List<Object>) rethm.get("list");
-			if(list != null && !list.isEmpty()){
-				Iterator iterator = list.iterator();
-				while(iterator.hasNext()){
-					Object[] obj = (Object[]) iterator.next();
-					JSONObject json = new JSONObject();
-					String id = String.valueOf(obj[0]==null?"":obj[0]);
-					String subject = String.valueOf(obj[1]==null?"":obj[1]);
-					String createTime = String.valueOf(obj[2]==null?"":obj[2]);
-					String uId = String.valueOf(obj[3]==null?"":obj[3]);
-					String picIds = String.valueOf(obj[4]==null?"":obj[4]);
-					String content = String.valueOf(obj[5]==null?"":obj[5]);
-					String label = String.valueOf(obj[6]==null?"":obj[6]);
+		try {
+			if(user!=null){
+				if(Integer.parseInt(page)>1){
+					rows = 5;
+				}
+				String valueString = getHobbies(Long.parseLong(userId));
+				String in = "";
+				String notIn = "";
+				if(!valueString.equals("")){
+					in = valueString.substring(0, valueString.indexOf("|"));;
+					in = in.replace(",", "|");
+					notIn = valueString.substring(valueString.indexOf("|")+1,valueString.length());
+					notIn = notIn.replace(",", "|");
+				}
+			
+				List<ReleaseDemo> releaseList = new ArrayList();
+				HashMap<String,Object> rethm = activitiesService.searchActivities(in, notIn, Integer.parseInt(page), rows);
+				List<Object> list = (List<Object>) rethm.get("list");	//查询内容与用户兴趣爱好接近的信息
+				if(list != null && !list.isEmpty()){
+					Iterator iterator = list.iterator();
+					while(iterator.hasNext()){	//遍历后放入零时对象ReleaseDemo中，形成零时的releaseList
+						Object[] obj = (Object[]) iterator.next();
+						String subject = String.valueOf(obj[1]==null?"":obj[1]);
+						String content = String.valueOf(obj[5]==null?"":obj[5]);
+						String label = String.valueOf(obj[6]==null?"":obj[6]);
+						
+						ReleaseDemo release = new ReleaseDemo();
+						release.setId(String.valueOf(obj[0]==null?"":obj[0]));
+						release.setSubject(subject);
+						release.setCreateTime(String.valueOf(obj[2]==null?"":obj[2]));
+						release.setUserId(String.valueOf(obj[3]==null?"":obj[3]));
+						release.setPicIds(String.valueOf(obj[4]==null?"":obj[4]));
+						release.setContent(content);
+						release.setLabel(label);
+						
+						if(StringUtils.isEmpty(in)){
+							release.setSimilarity(0);
+						}else{
+							double similarity =	CosineSimilarAlgorithm.getSimilarity(subject + content + label, in);	//计算信息主题内容标签和用户兴趣爱好的相似度
+							release.setSimilarity(similarity);
+						}
+						releaseList.add(release);
+					}
 					
-					json.put("id", id);
-					json.put("subject", subject);
-					json.put("createTime", createTime);
-					
-					if(picIds!=null&&!picIds.equals("")){
-						String[] ids = picIds.split(",");
-						if(ids.length>0){
-							Picture picture = pictureService.loadPicture(Long.parseLong(ids[0]));
-							if(picture!=null){
-								json.put("picUrl", picture.getThumbnailUrl());
+					Collections.sort(releaseList, new Comparator<ReleaseDemo>() {	//按相似度重新排序releaseList
+			            public int compare(ReleaseDemo arg0, ReleaseDemo arg1) {
+			            	BigDecimal data = new BigDecimal(arg0.getSimilarity());
+			            	BigDecimal data1 = new BigDecimal(arg1.getSimilarity());
+			                return data1.compareTo(data);	//按相似度从高到低排序
+			            }
+			        });
+			         
+			        for (ReleaseDemo release : releaseList) {	//遍历添加到jsonArray中输出
+			        	JSONObject json = new JSONObject();
+			        	
+			        	String id = release.getId();
+						String uId = release.getUserId();
+						String picIds = release.getPicIds();
+						
+			        	json.put("id", id);
+						json.put("subject", release.getSubject());
+						json.put("createTime", release.getCreateTime());
+						
+						if(picIds!=null&&!picIds.equals("")){
+							String[] ids = picIds.split(",");
+							if(ids.length>0){
+								Picture picture = pictureService.loadPicture(Long.parseLong(ids[0]));
+								if(picture!=null){
+									json.put("picUrl", picture.getThumbnailUrl());
+								}
 							}
 						}
-					}
-					if(uId!=null&&!uId.equals("")){
-						AcUser u = accountService.loadUser(Long.parseLong(uId));
-						if(u != null){
-							json.put("userId", uId);
-							json.put("name", u.getNickName());
-							json.put("headUrl", u.getHeadPortrait());
+						if(uId!=null&&!uId.equals("")){
+							AcUser u = accountService.loadUser(Long.parseLong(uId));
+							if(u != null){
+								json.put("userId", uId);
+								json.put("name", u.getNickName());
+								json.put("headUrl", u.getHeadPortrait());
+							}
 						}
-					}
-					if(id!=null&&!id.equals("")){
-						int praiseNum = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "'");
-						int commentNum = replyService.countComment(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "'");
-						json.put("praiseNum", praiseNum+"");
-						json.put("commentNum", commentNum+"");
-					}
-					List<PubPraise> listPraise = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' and userId = " + userId);
-					if(listPraise.size()>0){	//判断是否已赞过..
-						json.put("isPraise", "1");
-					}else{
-						json.put("isPraise", "0");
-					}
-					jsonArray.add(json);
+						if(id!=null&&!id.equals("")){
+							int praiseNum = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "'");
+							int commentNum = replyService.countComment(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "'");
+							json.put("praiseNum", praiseNum+"");
+							json.put("commentNum", commentNum+"");
+						}
+						List<PubPraise> listPraise = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' and userId = " + userId);
+						if(listPraise.size()>0){	//判断是否已赞过..
+							json.put("isPraise", "1");
+						}else{
+							json.put("isPraise", "0");
+						}
+						jsonArray.add(json);
+			        }
+					
+					jsonObject.put("result", "1");
+					jsonObject.put("page", page);
+					jsonObject.put("value", jsonArray);
+				}else{
+					jsonObject.put("result", "2");
+					jsonObject.put("page", page);
+					jsonObject.put("value", "没有更多的活动信息!");
 				}
 				
-				jsonObject.put("result", "1");
-				jsonObject.put("page", page);
-				jsonObject.put("value", jsonArray);
-			}else{
-				jsonObject.put("result", "2");
-				jsonObject.put("page", page);
-				jsonObject.put("value", "没有更多的活动信息!");
 			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		out.print(jsonObject.toString());
 		

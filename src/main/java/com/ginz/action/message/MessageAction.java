@@ -138,12 +138,14 @@ public class MessageAction extends BaseAction {
 			jsonObject.put("subject", messageInfo.getSubject());
 			jsonObject.put("content", messageInfo.getContent());
 			jsonObject.put("accountType", messageInfo.getAccountType());
-			long userId = messageInfo.getUserId();
-			AcUser user = accountService.loadUser(userId);
-			if(user!=null){
-				jsonObject.put("userId", userId+"");
-				jsonObject.put("name", user.getNickName());
-				jsonObject.put("headUrl", user.getHeadPortrait());
+			if(messageInfo.getUserId()!=null){
+				long userId = messageInfo.getUserId();
+				AcUser user = accountService.loadUser(userId);
+				if(user!=null){
+					jsonObject.put("userId", userId+"");
+					jsonObject.put("name", user.getNickName());
+					jsonObject.put("headUrl", user.getHeadPortrait());
+				}
 			}
 			String createTime = DateFormatUtil.dateToStringM(messageInfo.getCreateTime());
 			jsonObject.put("createTime", createTime);
