@@ -2,6 +2,7 @@ package com.ginz.util.push;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.json.JSONObject;
 
@@ -52,11 +53,12 @@ public class PushIOS {
 	}
 	
 	//多个账号下发通知消息
-	public static JSONObject pushAccountList(String content, List<String> accountList) {
+	public static JSONObject pushAccountList(String content, Map<String,Object> custom, List<String> accountList) {
 		
 		MessageIOS message = new MessageIOS();
 		message.setAlert(content);
 		message.setExpireTime(259200);
+		message.setCustom(custom);
 		/*message.setBadge(1);
 		message.setSound("beep.wav");
 		List<String> accountList = new ArrayList<String>();

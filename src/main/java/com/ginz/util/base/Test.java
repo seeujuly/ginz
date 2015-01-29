@@ -1,29 +1,30 @@
 package com.ginz.util.base;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.io.File;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 
 public class Test {
 
-	public static void main(String[] args){
-		
-		String url = "http://10.0.0.11/activity/20141230154218_7f2108bd-06ca-4c4a-9e0e-699e9dd4ebb1.jpg";
-		//url = url.substring(url.indexOf("/", 3), url.length());
-		
-		Matcher slashMatcher = Pattern.compile("/").matcher(url);
-		int mIdx = 0;
-		while(slashMatcher.find()) {
-		   mIdx++;
-		   //当"/"符号第三次出现的位置
-		   if(mIdx == 3){
-		      break;
-		   }
-		}
-		
-		url = url.substring(slashMatcher.start(), url.length());
-		System.out.println(url);
+	public static void main(String[] args) {
+		changeFileName(new File("E:/document/20世纪中文小说100强"));
 	}
-	
+
+	public static void changeFileName(File file) {
+		String dirPath = file.getAbsolutePath();// 目录路径
+		System.out.println(dirPath);
+		if (file.isDirectory()) {
+			File[] files = file.listFiles();
+			for (File f : files) {
+				String originalName = f.getName();
+				String path = dirPath + "\\";
+				//String newName = originalName.substring(0, StringUtil.getCharacterPosition(4, "0", originalName)-1) + ".mobi";
+				String newName = originalName.substring(0, originalName.lastIndexOf(".")-1) + ".mobi";
+				File finalName = new File(path + newName);
+				f.renameTo(finalName);
+			}
+		}
+	}
+
 }
-
-

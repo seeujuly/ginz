@@ -127,9 +127,24 @@ public class AccountServiceImpl implements AccountService {
 		
 		HashMap<String, Object> hm = new HashMap<String, Object>();
 		StringBuffer sb = new StringBuffer();
-		sb.append(" SELECT id,nick_name,head_portrait from ac_user where id in ( ");
+		sb.append(" SELECT id,nick_name,head_portrait,device_account from ac_user where id in ( ");
 		sb.append(" SELECT id as userId FROM ac_user where 1=1 " + userCondition);
 		sb.append(" UNION  SELECT userId FROM ac_user_detail where 1=1 " + detailCondition + " )");
+		hm.put("list", userDao.queryBySql(sb.toString()));
+		return hm;
+		
+	}
+	
+	//用户发布信息之后搜索相关的个人用户群体,推送消息给他们(以发布信息的主题,内容,标签为关键字,搜索目标为个人的喜好)
+	public HashMap<String, Object> searchUsers(String condition){
+		
+		HashMap<String, Object> hm = new HashMap<String, Object>();
+		StringBuffer sb = new StringBuffer();
+		sb.append("  ");
+		
+		
+		
+		
 		hm.put("list", userDao.queryBySql(sb.toString()));
 		return hm;
 		

@@ -65,13 +65,14 @@ public class EventServiceImpl implements EventService {
 		
 		HashMap<String, Object> hm = new HashMap<String, Object>();
 		StringBuffer sb = new StringBuffer();
-		sb.append(" select t.id,t.subject,t.createTime,t.userId,t.picIds from pub_event t ");
+		sb.append(" select t.id,t.subject,t.createTime,t.userId,t.picIds,t.content,t.label from pub_event t ");
 		sb.append(" where 1=1 ");
 		if(in!=null&&!in.equals("")){
-			sb.append(" and (subject REGEXP '" + in + "' OR content REGEXP '" + in + "' OR label REGEXP '" + in + "') ");
+			sb.append(" and CONCAT(subject,',',content,',',label) REGEXP '" + in + "' ");
 		}
 		if(notIn!=null&&!notIn.equals("")){
-			sb.append(" and subject not REGEXP '" + notIn + "' and content not REGEXP '" + notIn + "' and label not REGEXP '" + notIn + "' ");
+			//sb.append(" and subject not REGEXP '" + notIn + "' and content not REGEXP '" + notIn + "' and label not REGEXP '" + notIn + "' ");
+			sb.append(" and CONCAT(subject,',',content,',',label) not REGEXP '" + notIn + "' ");
 		}
 		sb.append(" and status not REGEXP '1' order by createTime desc ");
 		hm.put("list", eventDao.queryBySql(sb.toString(), (page-1)*rows+1, rows));
@@ -86,11 +87,10 @@ public class EventServiceImpl implements EventService {
 		StringBuffer sb = new StringBuffer();
 		sb.append(" select t.id,t.subject,t.picIds,3 releaseType, t.createTime ");
 		sb.append("  from pub_activities t where t.userId = " + userId);
-		sb.append(" UNION SELECT t1.id,t1.subject,t1.picIds,0 releaseType,");
+		sb.append(" UNION SELECT t1.id,t1.subject,t1.picIds,2 releaseType,");
 		sb.append(" t1.createTime from pub_event t1 WHERE t1.userId = " + userId);
 		sb.append(" ORDER BY createTime DESC ");	
 		hm.put("list", eventDao.queryBySql(sb.toString()));
-		//hm.put("list", eventDao.queryBySql(sb.toString(), (page-1)*rows+1, rows));
 		hm.put("cnt", eventDao.queryBySql(sb.toString()).size());
 		return hm;
 		

@@ -47,6 +47,7 @@ import com.ginz.service.ActivitiesService;
 import com.ginz.service.MessageService;
 import com.ginz.service.PictureService;
 import com.ginz.service.ReplyService;
+import com.ginz.util.base.AnalyzerUtil;
 import com.ginz.util.base.CosineSimilarAlgorithm;
 import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.DictionaryUtil;
@@ -113,7 +114,7 @@ public class ActivitiesAction extends BaseAction {
 	}
 	
 	//发布活动
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void releaseActivity() throws IOException{
 		
 		HttpServletResponse response = ServletActionContext.getResponse();
@@ -126,7 +127,7 @@ public class ActivitiesAction extends BaseAction {
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String id = valueMap.get("id");	//用户id
+		String userId = valueMap.get("id");	//用户id
 		String subject = valueMap.get("subject");
 		String content = valueMap.get("content");
 		String place = valueMap.get("place");
@@ -135,7 +136,7 @@ public class ActivitiesAction extends BaseAction {
 		String endTime = valueMap.get("endTime");
 		String label = valueMap.get("label");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(id));
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		
 		String picIds = "";
 		SimpleDateFormat sdf=new SimpleDateFormat("yyyyMMddHHmmss");
@@ -196,7 +197,7 @@ public class ActivitiesAction extends BaseAction {
 		}
 		
 		PubActivities activity = new PubActivities();
-		activity.setUserId(Long.parseLong(id));
+		activity.setUserId(Long.parseLong(userId));
 		activity.setSubject(subject);
 		activity.setContent(content);
 		activity.setLabel(label);
@@ -212,23 +213,53 @@ public class ActivitiesAction extends BaseAction {
 			activity.setEndTime(DateFormatUtil.toDate2(endTime));
 		}
 		activity.setFlag(DictionaryUtil.DETELE_FLAG_00);
-		activitiesService.saveActivities(activity);
+		PubActivities activity2 = activitiesService.saveActivities(activity);
 			
 		jsonObject.put("value", "SUCCESS!");
 		out.print(jsonObject.toString());
 		
-		
-		
 		//推送给匹配的用户
-		/*List<String> accountList = new ArrayList<String>();
-		List<AcUser> userList = accountService.findUser(" and communityId = " + communityId);
-		if(userList.size()>0){
-			for(AcUser user:userList){
-				String account =  user.getDeviceAccount();
+		String keyWord = subject + label;	//利用消息的subject和label作为关键词
+		keyWord = AnalyzerUtil.analyze(keyWord);
+		String[] keys = keyWord.split("|");
+		
+		List<String> keyList = new ArrayList<String>();  //删除key数组中的重复项
+		if(keys.length>0){
+			for (int i=0; i<keys.length; i++) {  
+	            if(!keyList.contains(keys[i])) {  
+	            	keyList.add(keys[i]);  
+	            }  
+	        }	
+		}
+        
+        String userCondition = "";
+		String detailCondition = "";
+		if(keyList.size()>0){
+			for(int i=0;i<keyList.size();i++){
+				userCondition += " and nick_name REGEXP '" + keyList.get(i) + "'";
+			}
+			for(int i=0;i<keys.length;i++){
+				detailCondition += " and CONCAT(catering,',',social_contact,',',travel,',',sports,',',music,',',others,',',community_need) REGEXP '" + keyList.get(i) + "'";
+			}
+		}
+		
+		List<String> accountList = new ArrayList<String>();
+		HashMap<String,Object> rethm = accountService.searchUser(userCondition, detailCondition);
+		List<Object> list = (List<Object>) rethm.get("list");
+		if(list != null && !list.isEmpty()){
+			Iterator iterator = list.iterator();
+			while(iterator.hasNext()){
+				Object[] obj = (Object[]) iterator.next();
+				String account = String.valueOf(obj[2]==null?"":obj[2]);
 				accountList.add(account);
 			}
 		}
-		PushIOS.pushAccountList(subject, accountList);*/
+		
+		Map<String,Object> keyMap = new HashMap<String, Object>();
+		keyMap.put("id", activity2.getId());
+		keyMap.put("userId", userId);
+		keyMap.put("accountType", DictionaryUtil.ACCOUNT_TYPE_01);
+		PushIOS.pushAccountList(subject, keyMap, accountList);
 		
 	}
 	
@@ -350,7 +381,7 @@ public class ActivitiesAction extends BaseAction {
 				List<Object> list = (List<Object>) rethm.get("list");	//查询内容与用户兴趣爱好接近的信息
 				if(list != null && !list.isEmpty()){
 					Iterator iterator = list.iterator();
-					while(iterator.hasNext()){	//遍历后放入零时对象ReleaseDemo中，形成零时的releaseList
+					while(iterator.hasNext()){	//遍历后放入临时对象ReleaseDemo中，形成临时的releaseList
 						Object[] obj = (Object[]) iterator.next();
 						String subject = String.valueOf(obj[1]==null?"":obj[1]);
 						String content = String.valueOf(obj[5]==null?"":obj[5]);
@@ -425,6 +456,21 @@ public class ActivitiesAction extends BaseAction {
 						jsonArray.add(json);
 			        }
 					
+			        /*int pageNum = Integer.parseInt(page);
+			        if(pageNum == 1){
+						if(jsonArray.size()<rows){
+							jsonObject.put("value", jsonArray);
+						}else{
+							jsonObject.put("value", jsonArray.subList(0,10));
+						}
+					}else if(pageNum > 1){
+						if((jsonArray.size()>(pageNum-1)*rows)&&jsonArray.size()<pageNum*rows){
+							jsonObject.put("value", jsonArray.subList((pageNum-1)*rows, jsonArray.size()));
+						}else{
+							jsonObject.put("value", jsonArray.subList((pageNum-1)*rows, pageNum*rows));
+						}
+					}*/
+			        
 					jsonObject.put("result", "1");
 					jsonObject.put("page", page);
 					jsonObject.put("value", jsonArray);

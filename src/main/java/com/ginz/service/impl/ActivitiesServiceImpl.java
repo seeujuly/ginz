@@ -78,19 +78,4 @@ private BaseDao<PubActivities> activitiesDao;
 		return hm;
 	}
 	
-	//用户发布信息之后搜索相关的个人用户群体,推送消息给他们(以发布信息的主题,内容,标签为关键字,搜索目标为个人的喜好)
-	public HashMap<String,Object> searchUsers(){
-		
-		HashMap<String, Object> hm = new HashMap<String, Object>();
-		StringBuffer sb = new StringBuffer();
-		sb.append("  ");
-		
-		
-		
-		
-		hm.put("list", activitiesDao.queryBySql(sb.toString()));
-		return hm;
-		
-	}
-		
 }

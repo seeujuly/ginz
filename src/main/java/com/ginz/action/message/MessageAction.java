@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
+import org.apache.commons.lang.StringUtils;
 import org.apache.struts2.ServletActionContext;
 import org.apache.struts2.convention.annotation.Action;
 import org.apache.struts2.convention.annotation.Namespace;
@@ -20,8 +21,16 @@ import com.ginz.action.BaseAction;
 import com.ginz.model.AcUser;
 import com.ginz.model.MsgMessageBox;
 import com.ginz.model.MsgMessageInfo;
+import com.ginz.model.Picture;
+import com.ginz.model.PubActivities;
+import com.ginz.model.PubEvent;
+import com.ginz.model.PubNotice;
 import com.ginz.service.AccountService;
+import com.ginz.service.ActivitiesService;
+import com.ginz.service.EventService;
 import com.ginz.service.MessageService;
+import com.ginz.service.NoticeService;
+import com.ginz.service.PictureService;
 import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.DictionaryUtil;
 import com.ginz.util.base.JsonUtil;
@@ -36,6 +45,10 @@ public class MessageAction extends BaseAction {
 
 	private AccountService accountService;
 	private MessageService messageService;
+	private NoticeService noticeService;
+	private EventService eventService;
+	private ActivitiesService activitiesService;
+	private PictureService pictureService;
 	
 	public AccountService getAccountService() {
 		return accountService;
@@ -54,7 +67,43 @@ public class MessageAction extends BaseAction {
 	public void setMessageService(MessageService messageService) {
 		this.messageService = messageService;
 	}
-	
+
+	public NoticeService getNoticeService() {
+		return noticeService;
+	}
+
+	@Autowired
+	public void setNoticeService(NoticeService noticeService) {
+		this.noticeService = noticeService;
+	}
+
+	public EventService getEventService() {
+		return eventService;
+	}
+
+	@Autowired
+	public void setEventService(EventService eventService) {
+		this.eventService = eventService;
+	}
+
+	public ActivitiesService getActivitiesService() {
+		return activitiesService;
+	}
+
+	@Autowired
+	public void setActivitiesService(ActivitiesService activitiesService) {
+		this.activitiesService = activitiesService;
+	}
+
+	public PictureService getPictureService() {
+		return pictureService;
+	}
+
+	@Autowired
+	public void setPictureService(PictureService pictureService) {
+		this.pictureService = pictureService;
+	}
+
 	//显示通知列表
 	@SuppressWarnings("unchecked")
 	public void listMessages() throws IOException{
@@ -90,6 +139,36 @@ public class MessageAction extends BaseAction {
 							json.put("messageType", messageInfo.getMessageType());
 							json.put("releaseType", messageInfo.getReleaseType());
 							json.put("releaseId", messageInfo.getReleaseId());
+							
+							if(StringUtils.isNotEmpty(messageInfo.getReleaseType())&&messageInfo.getReleaseId()!=null){
+								String picIds = "";
+								if(StringUtils.equals(messageInfo.getReleaseType(), DictionaryUtil.RELEASE_TYPE_01)){	//社区公告
+									PubNotice notice = noticeService.loadNotice(messageInfo.getReleaseId());
+									if(notice != null){
+										picIds = notice.getPicIds();
+									}
+								}else if(StringUtils.equals(messageInfo.getReleaseType(), DictionaryUtil.RELEASE_TYPE_02)){		//社区生活
+									PubEvent event = eventService.loadEvent(messageInfo.getReleaseId());
+									if(event != null){
+										picIds = event.getPicIds(); 
+									}
+								}else if(StringUtils.equals(messageInfo.getReleaseType(), DictionaryUtil.RELEASE_TYPE_03)){		//活动/交易
+									PubActivities activity = activitiesService.loadActivities(messageInfo.getReleaseId());
+									if(activity != null){
+										picIds = activity.getPicIds(); 
+									}
+								}
+								if(picIds!=null&&!picIds.equals("")){
+									String[] ids = picIds.split(",");
+									if(ids.length>0){
+										Picture picture = pictureService.loadPicture(Long.parseLong(ids[0]));
+										if(picture!=null){
+											json.put("picUrl", picture.getThumbnailUrl());
+										}
+									}
+								}
+							}
+							
 							if(messageInfo.getUserId()!=null){
 								long uId = messageInfo.getUserId();
 								AcUser u = accountService.loadUser(uId);

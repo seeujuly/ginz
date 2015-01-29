@@ -7,6 +7,7 @@ import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -129,14 +130,14 @@ public class NoticeAction extends BaseAction{
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String id = valueMap.get("id");	//社区用户id
+		String userId = valueMap.get("id");	//社区用户id
 		String communityId = valueMap.get("communityId");
 		String subject = valueMap.get("subject");
 		String content = valueMap.get("content");
 		String startTime = valueMap.get("startTime");
 		String endTime = valueMap.get("endTime");
 		
-		AcProperty property = accountService.loadProperty(Long.parseLong(id));
+		AcProperty property = accountService.loadProperty(Long.parseLong(userId));
 		
 		String picIds = "";
 		SimpleDateFormat sdf=new SimpleDateFormat("yyyyMMddHHmmss");
@@ -195,7 +196,7 @@ public class NoticeAction extends BaseAction{
 		}
 		
 		PubNotice notice = new PubNotice();
-		notice.setPropertyId(Long.parseLong(id));
+		notice.setPropertyId(Long.parseLong(userId));
 		notice.setCommunityId(Long.parseLong(communityId));
 		notice.setSubject(subject);
 		notice.setContent(content);
@@ -246,7 +247,11 @@ public class NoticeAction extends BaseAction{
 				messageService.saveMessageBox(messageBox);
 			}
 		}
-		PushIOS.pushAccountList(subject, accountList);
+		Map<String,Object> keyMap = new HashMap<String, Object>();
+		keyMap.put("id", notice2.getId());
+		keyMap.put("userId", userId);
+		keyMap.put("accountType", DictionaryUtil.ACCOUNT_TYPE_02);
+		PushIOS.pushAccountList(subject, keyMap, accountList);
 		
 	}
 	

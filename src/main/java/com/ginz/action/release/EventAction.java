@@ -4,7 +4,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -43,11 +47,13 @@ import com.ginz.service.EventService;
 import com.ginz.service.MessageService;
 import com.ginz.service.PictureService;
 import com.ginz.service.ReplyService;
+import com.ginz.util.base.CosineSimilarAlgorithm;
 import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.DictionaryUtil;
 import com.ginz.util.base.JsonUtil;
 import com.ginz.util.base.StringUtil;
 import com.ginz.util.base.ThumbnailUtil;
+import com.ginz.util.model.ReleaseDemo;
 import com.ginz.util.push.PushIOS;
 
 //社区生活
@@ -305,20 +311,55 @@ public class EventAction extends BaseAction {
 				notIn = notIn.replace(",", "|");
 			}
 			
+			List<ReleaseDemo> releaseList = new ArrayList();
 			HashMap<String,Object> rethm = eventService.seachEvents(in, notIn, Integer.parseInt(page), rows);
-			List<Object> list = (List<Object>) rethm.get("list");
+			List<Object> list = (List<Object>) rethm.get("list");	//查询内容与用户兴趣爱好接近的信息
 			if(list != null && !list.isEmpty()){
 				Iterator iterator = list.iterator();
-				while(iterator.hasNext()){
+				while(iterator.hasNext()){	//遍历后放入临时对象ReleaseDemo中，形成临时的releaseList
 					Object[] obj = (Object[]) iterator.next();
-					JSONObject json = new JSONObject();
-					String id = String.valueOf(obj[0]==null?"":obj[0]);
+					String subject = String.valueOf(obj[1]==null?"":obj[1]);
+					String content = String.valueOf(obj[5]==null?"":obj[5]);
+					String label = String.valueOf(obj[6]==null?"":obj[6]);
 					
-					json.put("id", id);
-					json.put("subject", String.valueOf(obj[1]==null?"":obj[1]));
-					json.put("createTime", String.valueOf(obj[2]==null?"":obj[2]));
-					String uId = String.valueOf(obj[3]==null?"":obj[3]);
-					String picIds = String.valueOf(obj[4]==null?"":obj[4]);
+					ReleaseDemo release = new ReleaseDemo();
+					release.setId(String.valueOf(obj[0]==null?"":obj[0]));
+					release.setSubject(subject);
+					release.setCreateTime(String.valueOf(obj[2]==null?"":obj[2]));
+					release.setUserId(String.valueOf(obj[3]==null?"":obj[3]));
+					release.setPicIds(String.valueOf(obj[4]==null?"":obj[4]));
+					release.setContent(content);
+					release.setLabel(label);
+					
+					if(StringUtils.isEmpty(in)){
+						release.setSimilarity(0);
+					}else{
+						double similarity =	CosineSimilarAlgorithm.getSimilarity(subject + content + label, in);	//计算信息主题内容标签和用户兴趣爱好的相似度
+						release.setSimilarity(similarity);
+					}
+					releaseList.add(release);
+					
+				}
+				
+				Collections.sort(releaseList, new Comparator<ReleaseDemo>() {	//按相似度重新排序releaseList
+		            public int compare(ReleaseDemo arg0, ReleaseDemo arg1) {
+		            	BigDecimal data = new BigDecimal(arg0.getSimilarity());
+		            	BigDecimal data1 = new BigDecimal(arg1.getSimilarity());
+		                return data1.compareTo(data);	//按相似度从高到低排序
+		            }
+		        });
+		         
+		        for (ReleaseDemo release : releaseList) {	//遍历添加到jsonArray中输出
+		        	JSONObject json = new JSONObject();
+		        	
+		        	String id = release.getId();
+					String uId = release.getUserId();
+					String picIds = release.getPicIds();
+					
+		        	json.put("id", id);
+					json.put("subject", release.getSubject());
+					json.put("createTime", release.getCreateTime());
+					
 					if(picIds!=null&&!picIds.equals("")){
 						String[] ids = picIds.split(",");
 						if(ids.length>0){
@@ -349,8 +390,7 @@ public class EventAction extends BaseAction {
 						json.put("isPraise", "0");
 					}
 					jsonArray.add(json);
-					
-				}
+		        }
 				
 				jsonObject.put("result", "1");
 				jsonObject.put("page", page);
