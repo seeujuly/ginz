@@ -136,6 +136,7 @@ public class NoticeAction extends BaseAction{
 		String content = valueMap.get("content");
 		String startTime = valueMap.get("startTime");
 		String endTime = valueMap.get("endTime");
+		String isOpen = valueMap.get("isOpen");
 		
 		AcProperty property = accountService.loadProperty(Long.parseLong(userId));
 		
@@ -215,43 +216,45 @@ public class NoticeAction extends BaseAction{
 		out.print(jsonObject.toString());
 		
 		//推送给该社区内的所有用户
-		List<String> accountList = new ArrayList<String>();
-		List<AcUser> userList = accountService.findUser(" and communityId = " + communityId);
-		if(userList.size()>0){
-			for(AcUser user:userList){
-				if(user.getDeviceToken()!=null&&!user.getDeviceToken().equals("")){
-					String account =  user.getDeviceAccount();
-					accountList.add(account);
+		if(StringUtils.equals(isOpen, "1")){	//是否公开：0不公开，1公开
+			List<String> accountList = new ArrayList<String>();
+			List<AcUser> userList = accountService.findUser(" and communityId = " + communityId);
+			if(userList.size()>0){
+				for(AcUser user:userList){
+					if(user.getDeviceToken()!=null&&!user.getDeviceToken().equals("")){
+						String account =  user.getDeviceAccount();
+						accountList.add(account);
+					}
+					
+					//发送系统消息给目标用户
+					MsgMessageInfo messageInfo = new MsgMessageInfo();
+					messageInfo.setTargetUserId(user.getId());
+					messageInfo.setTargetAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+					messageInfo.setCreateTime(new Date());
+					messageInfo.setSubject(subject);
+					messageInfo.setContent(subject);
+					messageInfo.setReleaseId(notice2.getId());
+					messageInfo.setReleaseType(DictionaryUtil.RELEASE_TYPE_01);
+					messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_PUSH);
+					messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
+					MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
+					
+					MsgMessageBox messageBox = new MsgMessageBox();
+					messageBox.setMessageId(messageInfo2.getId());
+					messageBox.setUserId(user.getId());
+					messageBox.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+					messageBox.setReceiveDate(new Date());
+					messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
+					messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
+					messageService.saveMessageBox(messageBox);
 				}
-				
-				//发送系统消息给目标用户
-				MsgMessageInfo messageInfo = new MsgMessageInfo();
-				messageInfo.setTargetUserId(user.getId());
-				messageInfo.setTargetAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
-				messageInfo.setCreateTime(new Date());
-				messageInfo.setSubject(subject);
-				messageInfo.setContent(subject);
-				messageInfo.setReleaseId(notice2.getId());
-				messageInfo.setReleaseType(DictionaryUtil.RELEASE_TYPE_01);
-				messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_PUSH);
-				messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
-				MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
-				
-				MsgMessageBox messageBox = new MsgMessageBox();
-				messageBox.setMessageId(messageInfo2.getId());
-				messageBox.setUserId(user.getId());
-				messageBox.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
-				messageBox.setReceiveDate(new Date());
-				messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
-				messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
-				messageService.saveMessageBox(messageBox);
 			}
+			Map<String,Object> keyMap = new HashMap<String, Object>();
+			keyMap.put("id", notice2.getId());
+			keyMap.put("userId", userId);
+			keyMap.put("accountType", DictionaryUtil.ACCOUNT_TYPE_02);
+			PushIOS.pushAccountList(subject, keyMap, accountList);
 		}
-		Map<String,Object> keyMap = new HashMap<String, Object>();
-		keyMap.put("id", notice2.getId());
-		keyMap.put("userId", userId);
-		keyMap.put("accountType", DictionaryUtil.ACCOUNT_TYPE_02);
-		PushIOS.pushAccountList(subject, keyMap, accountList);
 		
 	}
 	

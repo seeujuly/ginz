@@ -79,53 +79,32 @@ public class AcUserDetail implements Serializable {
 	@Column(name="isOpen_school")
 	private String isOpenSchool;
 	
+	@Column(name="personal_tag")
+	private String personalTag;
+	
 	@Column(name="catering")
 	private String catering;	//餐饮喜好
-	
-	@Column(name="isOpen_catering")
-	private String isOpenCatering;
 	
 	@Column(name="social_contact")
 	private String socialContact;	//社交喜好
 	
-	@Column(name="isOpen_social_contact")
-	private String isOpenSocialContact;
-	
 	@Column(name="travel")
 	private String travel;	//旅游喜好
-	
-	@Column(name="isOpen_travel")
-	private String isOpenTravel;
 	
 	@Column(name="sports")
 	private String sports;	//运动喜好
 	
-	@Column(name="isOpen_sports")
-	private String isOpenSports;
-	
 	@Column(name="music")
 	private String music;	//音乐喜好
-	
-	@Column(name="isOpen_music")
-	private String isOpenMusic;
 	
 	@Column(name="others")
 	private String others;	//其他喜好
 	
-	@Column(name="isOpen_others")
-	private String isOpenOthers;
-	
 	@Column(name="community_need")
 	private String communityNeed;	//社区需要
 	
-	@Column(name="isOpen_community_need")
-	private String isOpenCommunityNeed;
-	
 	@Column(name="dislike")
 	private String dislike;	//不喜欢
-	
-	@Column(name="isOpen_dislike")
-	private String isOpenDislike;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="createTime")
@@ -290,20 +269,20 @@ public class AcUserDetail implements Serializable {
 		this.isOpenSchool = isOpenSchool;
 	}
 
+	public String getPersonalTag() {
+		return personalTag;
+	}
+
+	public void setPersonalTag(String personalTag) {
+		this.personalTag = personalTag;
+	}
+
 	public String getCatering() {
 		return catering;
 	}
 
 	public void setCatering(String catering) {
 		this.catering = catering;
-	}
-
-	public String getIsOpenCatering() {
-		return isOpenCatering;
-	}
-
-	public void setIsOpenCatering(String isOpenCatering) {
-		this.isOpenCatering = isOpenCatering;
 	}
 
 	public String getSocialContact() {
@@ -314,28 +293,12 @@ public class AcUserDetail implements Serializable {
 		this.socialContact = socialContact;
 	}
 
-	public String getIsOpenSocialContact() {
-		return isOpenSocialContact;
-	}
-
-	public void setIsOpenSocialContact(String isOpenSocialContact) {
-		this.isOpenSocialContact = isOpenSocialContact;
-	}
-
 	public String getTravel() {
 		return travel;
 	}
 
 	public void setTravel(String travel) {
 		this.travel = travel;
-	}
-
-	public String getIsOpenTravel() {
-		return isOpenTravel;
-	}
-
-	public void setIsOpenTravel(String isOpenTravel) {
-		this.isOpenTravel = isOpenTravel;
 	}
 
 	public String getSports() {
@@ -346,28 +309,12 @@ public class AcUserDetail implements Serializable {
 		this.sports = sports;
 	}
 
-	public String getIsOpenSports() {
-		return isOpenSports;
-	}
-
-	public void setIsOpenSports(String isOpenSports) {
-		this.isOpenSports = isOpenSports;
-	}
-
 	public String getMusic() {
 		return music;
 	}
 
 	public void setMusic(String music) {
 		this.music = music;
-	}
-
-	public String getIsOpenMusic() {
-		return isOpenMusic;
-	}
-
-	public void setIsOpenMusic(String isOpenMusic) {
-		this.isOpenMusic = isOpenMusic;
 	}
 
 	public String getOthers() {
@@ -378,28 +325,12 @@ public class AcUserDetail implements Serializable {
 		this.others = others;
 	}
 
-	public String getIsOpenOthers() {
-		return isOpenOthers;
-	}
-
-	public void setIsOpenOthers(String isOpenOthers) {
-		this.isOpenOthers = isOpenOthers;
-	}
-
 	public String getCommunityNeed() {
 		return communityNeed;
 	}
 
 	public void setCommunityNeed(String communityNeed) {
 		this.communityNeed = communityNeed;
-	}
-
-	public String getIsOpenCommunityNeed() {
-		return isOpenCommunityNeed;
-	}
-
-	public void setIsOpenCommunityNeed(String isOpenCommunityNeed) {
-		this.isOpenCommunityNeed = isOpenCommunityNeed;
 	}
 
 	public String getDislike() {
@@ -410,14 +341,6 @@ public class AcUserDetail implements Serializable {
 		this.dislike = dislike;
 	}
 
-	public String getIsOpenDislike() {
-		return isOpenDislike;
-	}
-
-	public void setIsOpenDislike(String isOpenDislike) {
-		this.isOpenDislike = isOpenDislike;
-	}
-	
 	public Date getCreateTime() {
 		return createTime;
 	}

@@ -67,9 +67,9 @@ private BaseDao<PubActivities> activitiesDao;
 		StringBuffer sb = new StringBuffer();
 		sb.append(" select t.id,t.subject,t.createTime,t.userId,t.picIds,t.content,t.label from pub_activities t ");
 		sb.append(" where 1=1 ");
-		if(in!=null&&!in.equals("")){
+/*		if(in!=null&&!in.equals("")){
 			sb.append(" and CONCAT(subject,',',content,',',label) REGEXP '" + in + "' ");
-		}
+		}*/
 		if(notIn!=null&&!notIn.equals("")){
 			sb.append(" and CONCAT(subject,',',content,',',label) not REGEXP '" + notIn + "' ");
 		}

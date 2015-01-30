@@ -8,7 +8,10 @@ import java.util.Date;
 public class Test {
 
 	public static void main(String[] args) {
-		changeFileName(new File("E:/document/20世纪中文小说100强"));
+		//changeFileName(new File("E:/document/20世纪中文小说100强"));
+		int sum = 10^2;
+		System.out.println(sum);
+		
 	}
 
 	public static void changeFileName(File file) {

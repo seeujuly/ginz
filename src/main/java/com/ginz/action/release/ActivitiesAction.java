@@ -221,7 +221,7 @@ public class ActivitiesAction extends BaseAction {
 		//推送给匹配的用户
 		String keyWord = subject + label;	//利用消息的subject和label作为关键词
 		keyWord = AnalyzerUtil.analyze(keyWord);
-		String[] keys = keyWord.split("|");
+		String[] keys = keyWord.split("\\|");
 		
 		List<String> keyList = new ArrayList<String>();  //删除key数组中的重复项
 		if(keys.length>0){
@@ -404,14 +404,15 @@ public class ActivitiesAction extends BaseAction {
 						}
 						releaseList.add(release);
 					}
-					
-					Collections.sort(releaseList, new Comparator<ReleaseDemo>() {	//按相似度重新排序releaseList
-			            public int compare(ReleaseDemo arg0, ReleaseDemo arg1) {
-			            	BigDecimal data = new BigDecimal(arg0.getSimilarity());
-			            	BigDecimal data1 = new BigDecimal(arg1.getSimilarity());
-			                return data1.compareTo(data);	//按相似度从高到低排序
-			            }
-			        });
+					if(releaseList.size()>0){
+						Collections.sort(releaseList, new Comparator<ReleaseDemo>() {	//按相似度重新排序releaseList
+							public int compare(ReleaseDemo arg0, ReleaseDemo arg1) {
+								BigDecimal data = new BigDecimal(arg0.getSimilarity());
+								BigDecimal data1 = new BigDecimal(arg1.getSimilarity());
+								return data1.compareTo(data);	//按相似度从高到低排序
+							}
+						});
+					}
 			         
 			        for (ReleaseDemo release : releaseList) {	//遍历添加到jsonArray中输出
 			        	JSONObject json = new JSONObject();
@@ -492,31 +493,34 @@ public class ActivitiesAction extends BaseAction {
 	public String getHobbies(Long userId){
 		
 		String valueString = "";
-		AcUserDetail userDetail = accountService.loadUserDetail(userId);
-		if(userDetail != null){
-			if(userDetail.getCatering()!=null&&!userDetail.getCatering().equals("")){
-				valueString += "," + userDetail.getCatering();
-			}
-			if(userDetail.getSocialContact()!=null&&!userDetail.getSocialContact().equals("")){
-				valueString += "," + userDetail.getSocialContact();
-			}
-			if(userDetail.getTravel()!=null&&!userDetail.getTravel().equals("")){
-				valueString += "," + userDetail.getTravel();
-			}
-			if(userDetail.getSports()!=null&&!userDetail.getSports().equals("")){
-				valueString += "," + userDetail.getSports();
-			}
-			if(userDetail.getMusic()!=null&&!userDetail.getMusic().equals("")){
-				valueString += "," + userDetail.getMusic();
-			}
-			if(userDetail.getOthers()!=null&&!userDetail.getOthers().equals("")){
-				valueString += "," + userDetail.getOthers();
-			}
-			if(userDetail.getCommunityNeed()!=null&&!userDetail.getCommunityNeed().equals("")){
-				valueString += "," + userDetail.getCommunityNeed();
-			}
-			if(userDetail.getDislike()!=null&&!userDetail.getDislike().equals("")){
-				valueString += "|" + userDetail.getDislike();
+		List<AcUserDetail> list = accountService.findUserDetail(" and userId = " + userId);
+		if(list.size()>0){
+			AcUserDetail userDetail = list.get(0);
+			if(userDetail != null){
+				if(userDetail.getCatering()!=null&&!userDetail.getCatering().equals("")){
+					valueString += "," + userDetail.getCatering();
+				}
+				if(userDetail.getSocialContact()!=null&&!userDetail.getSocialContact().equals("")){
+					valueString += "," + userDetail.getSocialContact();
+				}
+				if(userDetail.getTravel()!=null&&!userDetail.getTravel().equals("")){
+					valueString += "," + userDetail.getTravel();
+				}
+				if(userDetail.getSports()!=null&&!userDetail.getSports().equals("")){
+					valueString += "," + userDetail.getSports();
+				}
+				if(userDetail.getMusic()!=null&&!userDetail.getMusic().equals("")){
+					valueString += "," + userDetail.getMusic();
+				}
+				if(userDetail.getOthers()!=null&&!userDetail.getOthers().equals("")){
+					valueString += "," + userDetail.getOthers();
+				}
+				if(userDetail.getCommunityNeed()!=null&&!userDetail.getCommunityNeed().equals("")){
+					valueString += "," + userDetail.getCommunityNeed();
+				}
+				if(userDetail.getDislike()!=null&&!userDetail.getDislike().equals("")){
+					valueString += "|" + userDetail.getDislike();
+				}
 			}
 			
 		}

@@ -37,6 +37,9 @@ public class PubNotice implements Serializable  {
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="createTime")
 	private Date createTime;
+
+	@Column(name="isOpen")
+	private String isOpen;
 	
 	@Column(name="picIds")
 	private String picIds;
@@ -114,6 +117,14 @@ public class PubNotice implements Serializable  {
 
 	public void setPicIds(String picIds) {
 		this.picIds = picIds;
+	}
+
+	public String getIsOpen() {
+		return isOpen;
+	}
+
+	public void setIsOpen(String isOpen) {
+		this.isOpen = isOpen;
 	}
 
 	public Date getStartTime() {

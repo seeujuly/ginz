@@ -23,7 +23,7 @@ public class AnalyzerUtil {
 	public static String analyze(String value) throws IOException {  
         StringReader sr=new StringReader(value);  
         IKSegmenter ik=new IKSegmenter(sr, true);  
-        Lexeme lex=null;  
+        Lexeme lex=null;
         String stringValue = "";
         while((lex=ik.next())!=null){  
             //System.out.print(lex.getLexemeText()+"|");  

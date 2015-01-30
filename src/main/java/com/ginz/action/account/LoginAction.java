@@ -2,7 +2,6 @@ package com.ginz.action.account;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
@@ -21,8 +20,6 @@ import com.ginz.action.BaseAction;
 import com.ginz.model.AcMerchant;
 import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
-import com.ginz.model.MsgMessageBox;
-import com.ginz.model.MsgMessageInfo;
 import com.ginz.service.AccountService;
 import com.ginz.service.MessageService;
 import com.ginz.util.base.DictionaryUtil;
@@ -148,7 +145,7 @@ public class LoginAction extends BaseAction {
 			}
 			
 		}
-		
+		System.out.println("userName="+userName);
 		if(StringUtils.equals("1", result)){
 			jsonObject.put("result", "1");
 	    	jsonObject.put("value", "欢迎回来!");
@@ -207,24 +204,32 @@ public class LoginAction extends BaseAction {
 		String accountType = valueMap.get("accountType");
 		String deviceToken = valueMap.get("deviceToken");
 		String deviceAccount = valueMap.get("deviceAccount");
+		System.out.println("id="+id);
+		System.out.println("accountType="+accountType);
+		System.out.println("deviceToken="+deviceToken);
+		System.out.println("deviceAccount="+deviceAccount);
 		
-		if(StringUtils.isNotEmpty(deviceToken)&&StringUtils.isNotEmpty(deviceAccount)){
-			if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_01)){
-				AcUser user = accountService.loadUser(Long.parseLong(id));
-				user.setDeviceAccount(deviceAccount);
-				user.setDeviceToken(deviceToken);
-				accountService.updateUser(user);
-			}else if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_02)){
-				AcProperty property = accountService.loadProperty(Long.parseLong(id));
-				property.setDeviceAccount(deviceAccount);
-				property.setDeviceToken(deviceToken);
-				accountService.updateProperty(property);
-			}else if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_03)){
-				AcMerchant merchant = accountService.loadMerchant(Long.parseLong(id));
-				merchant.setDeviceAccount(deviceAccount);
-				merchant.setDeviceToken(deviceToken);
-				accountService.updateMerchant(merchant);
-			}	
+		try {
+			if(StringUtils.isNotEmpty(deviceToken)&&StringUtils.isNotEmpty(deviceAccount)){
+				if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_01)){
+					AcUser user = accountService.loadUser(Long.parseLong(id));
+					user.setDeviceAccount(deviceAccount);
+					user.setDeviceToken(deviceToken);
+					accountService.updateUser(user);
+				}else if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_02)){
+					AcProperty property = accountService.loadProperty(Long.parseLong(id));
+					property.setDeviceAccount(deviceAccount);
+					property.setDeviceToken(deviceToken);
+					accountService.updateProperty(property);
+				}else if(StringUtils.equals(accountType, DictionaryUtil.ACCOUNT_TYPE_03)){
+					AcMerchant merchant = accountService.loadMerchant(Long.parseLong(id));
+					merchant.setDeviceAccount(deviceAccount);
+					merchant.setDeviceToken(deviceToken);
+					accountService.updateMerchant(merchant);
+				}	
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		
 		JSONObject jsonObject=new JSONObject();
