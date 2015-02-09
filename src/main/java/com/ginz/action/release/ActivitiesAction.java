@@ -47,7 +47,6 @@ import com.ginz.service.ActivitiesService;
 import com.ginz.service.MessageService;
 import com.ginz.service.PictureService;
 import com.ginz.service.ReplyService;
-import com.ginz.util.base.AnalyzerUtil;
 import com.ginz.util.base.CosineSimilarAlgorithm;
 import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.DictionaryUtil;
@@ -114,7 +113,7 @@ public class ActivitiesAction extends BaseAction {
 	}
 	
 	//发布活动
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings({ "unchecked" })
 	public void releaseActivity() throws IOException{
 		
 		HttpServletResponse response = ServletActionContext.getResponse();
@@ -213,13 +212,14 @@ public class ActivitiesAction extends BaseAction {
 			activity.setEndTime(DateFormatUtil.toDate2(endTime));
 		}
 		activity.setFlag(DictionaryUtil.DETELE_FLAG_00);
-		PubActivities activity2 = activitiesService.saveActivities(activity);
+		activitiesService.saveActivities(activity);
 			
 		jsonObject.put("value", "SUCCESS!");
 		out.print(jsonObject.toString());
 		
+		
 		//推送给匹配的用户
-		String keyWord = subject + label;	//利用消息的subject和label作为关键词
+		/*String keyWord = subject + label;	//利用消息的subject和label作为关键词
 		keyWord = AnalyzerUtil.analyze(keyWord);
 		String[] keys = keyWord.split("\\|");
 		
@@ -259,7 +259,7 @@ public class ActivitiesAction extends BaseAction {
 		keyMap.put("id", activity2.getId());
 		keyMap.put("userId", userId);
 		keyMap.put("accountType", DictionaryUtil.ACCOUNT_TYPE_01);
-		PushIOS.pushAccountList(subject, keyMap, accountList);
+		PushIOS.pushAccountList(subject, keyMap, accountList);*/
 		
 	}
 	
@@ -370,10 +370,14 @@ public class ActivitiesAction extends BaseAction {
 				String in = "";
 				String notIn = "";
 				if(!valueString.equals("")){
-					in = valueString.substring(0, valueString.indexOf("|"));;
-					in = in.replace(",", "|");
-					notIn = valueString.substring(valueString.indexOf("|")+1,valueString.length());
-					notIn = notIn.replace(",", "|");
+					if(valueString.contains("|")){
+						in = valueString.substring(0, valueString.indexOf("|"));;
+						in = in.replace(",", "|");
+						notIn = valueString.substring(valueString.indexOf("|")+1,valueString.length());
+						notIn = notIn.replace(",", "|");
+					}else{
+						in = in.replace(",", "|");
+					}
 				}
 			
 				List<ReleaseDemo> releaseList = new ArrayList();
@@ -1002,5 +1006,13 @@ public class ActivitiesAction extends BaseAction {
 		out.print(jsonObject.toString());
 		
 	}
+	
+	//对用户点赞或评论的信息做统计，统计其参与的信息标签出现的频率最高的10个标签
+	public void countSysTab(Long userId){
+		
+		
+		
+	}
+	
 	
 }

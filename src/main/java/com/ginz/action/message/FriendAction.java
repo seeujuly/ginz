@@ -2,6 +2,7 @@ package com.ginz.action.message;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -362,16 +363,19 @@ public class FriendAction extends BaseAction {
 					if(StringUtils.equals(fAccountType, DictionaryUtil.ACCOUNT_TYPE_01)){
 						AcUser u = accountService.loadUser(fId);
 						json.put("name", u.getNickName());
+						json.put("userName", u.getUserName());
 						json.put("headUrl", u.getHeadPortrait());
 						userArray.add(json);
 					}else if(StringUtils.equals(fAccountType, DictionaryUtil.ACCOUNT_TYPE_02)){
 						AcProperty p = accountService.loadProperty(fId);
 						json.put("name", p.getPropertyName());
+						json.put("userName", p.getUserName());
 						json.put("headUrl", p.getPicUrl());
 						propertyArray.add(json);
 					}else if(StringUtils.equals(fAccountType, DictionaryUtil.ACCOUNT_TYPE_03)){
 						AcMerchant m = accountService.loadMerchant(fId);
 						json.put("name", m.getMerchantName());
+						json.put("userName", m.getUserName());
 						json.put("headUrl", m.getPicUrl());
 						merchantArray.add(json);
 					}
@@ -389,6 +393,103 @@ public class FriendAction extends BaseAction {
 			
 			out.print(jsonObject.toString());
 		}
+		
+	}
+	
+	//获取好友头像和昵称
+	@SuppressWarnings("unchecked")
+	public void getFriendInfo() throws IOException{
+	
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		JSONObject jsonObject=new JSONObject();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		String userNames[] = jsonString.split(",");
+		
+		List<String> userList = new ArrayList<String>();
+		List<String> propertyList = new ArrayList<String>();
+		List<String> merchantList = new ArrayList<String>();
+		
+		if(userNames.length>0){
+			for(int i=0;i<userNames.length;i++){
+				if(StringUtils.equals(userNames[i].substring(0, 1), "u")){		//个人用户
+					userList.add(userNames[i]);
+				}else if(StringUtils.equals(userNames[i].substring(0, 1), "p")){
+					propertyList.add(userNames[i]);
+				}else if(StringUtils.equals(userNames[i].substring(0, 1), "m")){
+					merchantList.add(userNames[i]);
+				}
+			}
+			
+			JSONArray userArray = new JSONArray();
+			JSONArray propertyArray = new JSONArray();
+			JSONArray merchantArray = new JSONArray();
+			
+			if(userList.size()>0){
+				for(int i=0;i<userList.size();i++){
+					JSONObject json = new JSONObject();
+					List<AcUser> list = accountService.findUser(" and userName = '" + userList.get(i) + "' ");
+					if(list.size()>0){
+						AcUser user = list.get(0);
+						if(user!=null){
+							json.put("userId", user.getId());
+							json.put("name", user.getNickName());
+							json.put("userName", user.getUserName());
+							json.put("headUrl", user.getHeadPortrait());
+						}
+						userArray.add(json);
+					}
+				}
+			}
+			
+			if(propertyList.size()>0){
+				for(int i=0;i<propertyList.size();i++){
+					JSONObject json = new JSONObject();
+					List<AcProperty> list = accountService.findProperty(" and userName = '" + propertyList.get(i) + "' ");
+					if(list.size()>0){
+						AcProperty property = list.get(0);
+						if(property!=null){
+							json.put("userId", property.getId());
+							json.put("name", property.getPropertyName());
+							json.put("userName", property.getUserName());
+							json.put("headUrl", property.getPicUrl());
+						}
+						propertyArray.add(json);
+					}
+				}
+			}
+
+			if(merchantList.size()>0){
+				for(int i=0;i<merchantList.size();i++){
+					JSONObject json = new JSONObject();
+					List<AcMerchant> list = accountService.findMerchant(" and userName = '" + merchantList.get(i) + "' ");
+					if(list.size()>0){
+						AcMerchant merchant = list.get(0);
+						if(merchant!=null){
+							json.put("userId", merchant.getId());
+							json.put("name", merchant.getMerchantName());
+							json.put("userName", merchant.getUserName());
+							json.put("headUrl", merchant.getPicUrl());
+						}
+						merchantArray.add(json);
+					}
+				}
+			}	
+			
+			jsonObject.put("result", "1");
+			jsonObject.put("value", "SUCCESS!");
+			jsonObject.put("userArray", userArray);		//个人用户
+			jsonObject.put("propertyArray", propertyArray);		//社区用户/物业
+			jsonObject.put("merchantArray", merchantArray);		//商户
+		}
+		
+		out.print(jsonObject.toString());
 		
 	}
 	

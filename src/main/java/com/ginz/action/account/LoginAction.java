@@ -2,12 +2,16 @@ package com.ginz.action.account;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
@@ -21,6 +25,8 @@ import com.ginz.model.AcMerchant;
 import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
 import com.ginz.service.AccountService;
+import com.ginz.service.ActivitiesService;
+import com.ginz.service.EventService;
 import com.ginz.service.MessageService;
 import com.ginz.util.base.DictionaryUtil;
 import com.ginz.util.base.JsonUtil;
@@ -31,6 +37,8 @@ public class LoginAction extends BaseAction {
 
 	private AccountService accountService;
 	private MessageService messageService;
+	private EventService eventService;
+	private ActivitiesService activitiesService; 
 
 	public AccountService getAccountService() {
 		return accountService;
@@ -45,8 +53,27 @@ public class LoginAction extends BaseAction {
 		return messageService;
 	}
 
+	@Autowired
 	public void setMessageService(MessageService messageService) {
 		this.messageService = messageService;
+	}
+	
+	public EventService getEventService() {
+		return eventService;
+	}
+
+	@Autowired
+	public void setEventService(EventService eventService) {
+		this.eventService = eventService;
+	}
+
+	public ActivitiesService getActivitiesService() {
+		return activitiesService;
+	}
+
+	@Autowired
+	public void setActivitiesService(ActivitiesService activitiesService) {
+		this.activitiesService = activitiesService;
 	}
 
 	//个人用户登录
@@ -145,7 +172,6 @@ public class LoginAction extends BaseAction {
 			}
 			
 		}
-		System.out.println("userName="+userName);
 		if(StringUtils.equals("1", result)){
 			jsonObject.put("result", "1");
 	    	jsonObject.put("value", "欢迎回来!");
@@ -185,9 +211,11 @@ public class LoginAction extends BaseAction {
 			jsonObject.put("value", "账户不存在!");
 		}
 		jsonObject.put("accountType", accountType);
+		
 		out.print(jsonObject.toString());
 	}
 	
+	//保存设备token和别名
 	@SuppressWarnings("unchecked")
 	public void saveDeviceInfo() throws IOException{
 		
@@ -204,10 +232,6 @@ public class LoginAction extends BaseAction {
 		String accountType = valueMap.get("accountType");
 		String deviceToken = valueMap.get("deviceToken");
 		String deviceAccount = valueMap.get("deviceAccount");
-		System.out.println("id="+id);
-		System.out.println("accountType="+accountType);
-		System.out.println("deviceToken="+deviceToken);
-		System.out.println("deviceAccount="+deviceAccount);
 		
 		try {
 			if(StringUtils.isNotEmpty(deviceToken)&&StringUtils.isNotEmpty(deviceAccount)){
@@ -234,6 +258,126 @@ public class LoginAction extends BaseAction {
 		
 		JSONObject jsonObject=new JSONObject();
 		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+
+	//获取所有的用户个人标签
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void getPersonalTabs() throws IOException{
+						
+		HttpServletResponse response = ServletActionContext.getResponse();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		JSONArray jsonArray = new JSONArray();
+		
+		HashMap<String,Object> rethm = accountService.getTabs();
+		List<Object> list = (List<Object>) rethm.get("list");	
+		if(list != null && !list.isEmpty()){
+			Iterator iterator = list.iterator();
+			while(iterator.hasNext()){	
+				Object obj = (Object) iterator.next();
+				String valueString = String.valueOf(obj==null?"":obj);
+				if(StringUtils.isNotEmpty(valueString)){
+					String tabs[] = valueString.split(",");
+					if(tabs.length>0){
+						List<String> tabList = new LinkedList<String>();  //去除标签数组中的重复项
+					    for(int i = 0; i < tabs.length; i++) {  
+					        if(!tabList.contains(tabs[i])) {  
+					        	tabList.add(tabs[i]);  
+					        }  
+					    }
+					    
+					    for(int i = 0; i<tabList.size(); i++){
+					    	jsonArray.add(tabList.get(i));
+					    }
+					}
+				}
+			}
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("personTabArray", jsonArray);
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//获取所有的社区生活信息标签
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void getEventLabels() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		JSONArray jsonArray = new JSONArray();
+		
+		HashMap<String,Object> rethm = eventService.getLabels();
+		List<Object> list = (List<Object>) rethm.get("list");	
+		if(list != null && !list.isEmpty()){
+			Iterator iterator = list.iterator();
+			while(iterator.hasNext()){	
+				Object obj = (Object) iterator.next();
+				String valueString = String.valueOf(obj==null?"":obj);
+				if(StringUtils.isNotEmpty(valueString)){
+					String labels[] = valueString.split(",");
+					if(labels.length>0){
+						List<String> labelList = new LinkedList<String>();  //去除标签数组中的重复项
+					    for(int i = 0; i < labels.length; i++) {  
+					        if(!labelList.contains(labels[i])) {  
+					        	labelList.add(labels[i]);  
+					        }  
+					    }
+					    
+					    for(int i = 0; i<labelList.size(); i++){
+					    	jsonArray.add(labelList.get(0));
+					    }
+					}
+				}
+			}
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("eventLabelArray", jsonArray);
+		out.print(jsonObject.toString());
+		
+	}
+
+	//获取所有的互动交易信息标签
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void getActivityLabels() throws IOException{
+						
+		HttpServletResponse response = ServletActionContext.getResponse();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		JSONArray jsonArray = new JSONArray();
+		
+		HashMap<String,Object> rethm = activitiesService.getLabels();
+		List<Object> list = (List<Object>) rethm.get("list");	
+		if(list != null && !list.isEmpty()){
+			Iterator iterator = list.iterator();
+			while(iterator.hasNext()){	
+				Object obj = (Object) iterator.next();
+				String valueString = String.valueOf(obj==null?"":obj);
+				if(StringUtils.isNotEmpty(valueString)){
+					String labels[] = valueString.split(",");
+					if(labels.length>0){
+						List<String> labelList = new LinkedList<String>();  //去除标签数组中的重复项
+					    for(int i = 0; i < labels.length; i++) {  
+					        if(!labelList.contains(labels[i])) {  
+					        	labelList.add(labels[i]);  
+					        }  
+					    }
+					    
+					    for(int i = 0; i<labelList.size(); i++){
+					    	jsonArray.add(labelList.get(0));
+					    }
+					}
+				}
+			}
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("activityLabelArray", jsonArray);
 		out.print(jsonObject.toString());
 		
 	}

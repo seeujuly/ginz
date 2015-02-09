@@ -179,6 +179,19 @@ public class AccountServiceImpl implements AccountService {
 		String hql = "from AcUserDetail where 1=1" + condition;
 		return userDetailDao.find(hql);
 	}
+	
+	
+	//获取所有的用户个人标签
+	public HashMap<String, Object> getTabs(){
+		
+		HashMap<String, Object> hm = new HashMap<String, Object>();
+		StringBuffer sb = new StringBuffer();
+		sb.append(" SELECT GROUP_CONCAT(personal_tag SEPARATOR ',') as tabs FROM ac_user_detail ");
+		//SELECT GROUP_CONCAT(personal_tag SEPARATOR ',') as tab FROM ac_user_detail where personal_tag LIKE '%逗%'
+		hm.put("list", userDetailDao.queryBySql(sb.toString()));
+		return hm;
+		
+	}
 
 	//社区用户部分
 	@Override

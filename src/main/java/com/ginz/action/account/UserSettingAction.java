@@ -839,6 +839,35 @@ public class UserSettingAction extends BaseAction {
 		
 	}
 	
+	//保存标签
+	@SuppressWarnings("unchecked")
+	public void saveTab() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String userId = valueMap.get("userId");
+		String tab = valueMap.get("tab");
+		
+		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		if(user!=null){
+			AcUserDetail userDetail = getUserDetail(userId);
+			userDetail.setPersonalTag(tab);
+			accountService.updateUserDetail(userDetail);
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("value", "SUCCESS!");
+		out.print(jsonObject.toString());
+		
+	}
+	
 	//通用方法
 	public AcUserDetail getUserDetail(String userId){
 		AcUserDetail userDetail = new AcUserDetail();

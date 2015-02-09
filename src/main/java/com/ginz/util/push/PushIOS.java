@@ -18,8 +18,9 @@ public class PushIOS {
 		MessageIOS message = new MessageIOS();
 		message.setAlert(content);
 		message.setExpireTime(259200);
+		//message.setSound("beep.wav");
+		message.setSound("tweet.wav");
 		/*message.setBadge(1);
-		message.setSound("beep.wav");
 		TimeInterval acceptTime1 = new TimeInterval(0,0,23,59);
 		message.addAcceptTime(acceptTime1);
 		Map<String, Object> custom = new HashMap<String, Object>();
@@ -28,7 +29,7 @@ public class PushIOS {
 		message.setCustom(custom);*/
 		
 		XingeApp xinge = new XingeApp(PushDictionary.ACCESS_ID, PushDictionary.SECRET_KEY);	
-		JSONObject ret = xinge.pushSingleDevice(deviceToken, message, XingeApp.IOSENV_DEV);
+		JSONObject ret = xinge.pushSingleDevice(deviceToken, message, XingeApp.IOSENV_PROD);
 		return (ret);
 	}
 	

@@ -59,6 +59,18 @@ public class EventServiceImpl implements EventService {
 		return eventDao.find(hql, (page - 1) * rows + 1, rows);
 	}
 	
+	public HashMap<String, Object> findEventBySql(String condition){
+		HashMap<String, Object> hm = new HashMap<String, Object>();
+		StringBuffer sb = new StringBuffer();
+		sb.append(" select t.id,t.subject,t.createTime,t.picIds from pub_event t ");
+		sb.append(" where 1=1 ");
+		if(condition!=null&&!condition.equals("")){
+			sb.append(condition);
+		}
+		hm.put("list", eventDao.queryBySql(sb.toString()));
+		return hm;
+	}
+	
 	//个人用户查看社区生活页面————使用用户的个人兴趣爱好作为关键字，搜索相关连的信息（主题，内容，标签）
 	@Override
 	public HashMap<String, Object> seachEvents(String in, String notIn, int page, int rows) {
@@ -92,6 +104,18 @@ public class EventServiceImpl implements EventService {
 		sb.append(" ORDER BY createTime DESC ");	
 		hm.put("list", eventDao.queryBySql(sb.toString()));
 		hm.put("cnt", eventDao.queryBySql(sb.toString()).size());
+		return hm;
+		
+	}
+	
+	//获取所有的社区生活信息标签
+	public HashMap<String, Object> getLabels(){
+		
+		HashMap<String, Object> hm = new HashMap<String, Object>();
+		StringBuffer sb = new StringBuffer();
+		sb.append(" SELECT GROUP_CONCAT(label SEPARATOR ',') as labels FROM pub_event ");
+		//SELECT GROUP_CONCAT(personal_tag SEPARATOR ',') as tab FROM ac_user_detail where personal_tag LIKE '%逗%'
+		hm.put("list", eventDao.queryBySql(sb.toString()));
 		return hm;
 		
 	}

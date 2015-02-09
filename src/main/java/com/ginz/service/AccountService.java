@@ -40,6 +40,9 @@ public interface AccountService {
 	
 	public List<AcUserDetail> findUserDetail(String condition);
 	
+	//获取所有的用户个人标签
+	public HashMap<String, Object> getTabs();
+	
 	//社区用户部分
 	public AcProperty loginProperty(AcProperty property);
 	

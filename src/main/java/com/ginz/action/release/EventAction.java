@@ -43,6 +43,7 @@ import com.ginz.model.PubEvent;
 import com.ginz.model.PubPraise;
 import com.ginz.model.Reports;
 import com.ginz.service.AccountService;
+import com.ginz.service.ActivitiesService;
 import com.ginz.service.EventService;
 import com.ginz.service.MessageService;
 import com.ginz.service.PictureService;
@@ -66,6 +67,7 @@ public class EventAction extends BaseAction {
 	private EventService eventService;
 	private PictureService pictureService;
 	private MessageService messageService;
+	private ActivitiesService activitiesService;
 	
 	public AccountService getAccountService() {
 		return accountService;
@@ -89,6 +91,7 @@ public class EventAction extends BaseAction {
 		return eventService;
 	}
 
+	@Autowired
 	public void setEventService(EventService eventService) {
 		this.eventService = eventService;
 	}
@@ -109,6 +112,15 @@ public class EventAction extends BaseAction {
 	@Autowired
 	public void setMessageService(MessageService messageService) {
 		this.messageService = messageService;
+	}
+	
+	public ActivitiesService getActivitiesService() {
+		return activitiesService;
+	}
+
+	@Autowired
+	public void setActivitiesService(ActivitiesService activitiesService) {
+		this.activitiesService = activitiesService;
 	}
 
 	//发布个人动态信息
@@ -805,6 +817,65 @@ public class EventAction extends BaseAction {
 		
 		jsonObject.put("value", "SUCCESS!");
 		out.print(jsonObject.toString());
+		
+	}
+	
+	//对用户点赞或评论的信息做统计，统计其参与的信息标签出现的频率最高的10个标签
+	public void countSysTab(Long userId){
+		
+		List<PubPraise> praiseList = replyService.findPraise(" and userId = " + userId + " and accountType = '" + DictionaryUtil.ACCOUNT_TYPE_01 + "'");
+		List<PubComments> commentsList = replyService.findComments(" and userId = " + userId + " and accountType = '" + DictionaryUtil.ACCOUNT_TYPE_01 + "' GROUP BY releaseType, releaseId ");
+
+		List<Long> eventList = new ArrayList<Long>();
+		List<Long> activityList = new ArrayList<Long>();
+		
+		if(praiseList.size()>0){
+			for(PubPraise praise : praiseList){
+				if(StringUtils.equals(praise.getReleaseType(), DictionaryUtil.RELEASE_TYPE_02)){	//社区生活
+					if(!eventList.contains(praise.getReleaseId())) {  
+						eventList.add(praise.getReleaseId());  
+			        }  
+				}else if(StringUtils.equals(praise.getReleaseType(), DictionaryUtil.RELEASE_TYPE_03)){		//互动交易
+					activityList.add(praise.getReleaseId());
+					if(!activityList.contains(praise.getReleaseId())) {  
+						activityList.add(praise.getReleaseId());  
+			        } 
+				}
+			}
+		}
+		
+		if(commentsList.size()>0){
+			for(PubComments comments : commentsList){
+				if(StringUtils.equals(comments.getReleaseType(), DictionaryUtil.RELEASE_TYPE_02)){	//社区生活
+					if(!eventList.contains(comments.getReleaseId())) {  
+						eventList.add(comments.getReleaseId());  
+			        }  
+				}else if(StringUtils.equals(comments.getReleaseType(), DictionaryUtil.RELEASE_TYPE_03)){		//互动交易
+					activityList.add(comments.getReleaseId());
+					if(!activityList.contains(comments.getReleaseId())) {  
+						activityList.add(comments.getReleaseId());  
+			        } 
+				}
+			}
+		}
+		
+		//遍历查询信息条，取label
+		if(eventList.size()>0){
+			for(int i=0;i<eventList.size();i++){
+				PubEvent event = eventService.loadEvent(eventList.get(i));
+				if(event!=null){
+					event.getLabel();
+				}
+				
+			}
+			
+		}
+		
+		if(activityList.size()>0){
+			
+			
+			
+		}
 		
 	}
 	
