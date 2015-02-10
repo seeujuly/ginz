@@ -2,53 +2,72 @@ package com.ginz.util.base;
 
 import java.io.File;
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.LinkedList;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
-
-import net.sf.json.JSONArray;
-
-import org.apache.commons.lang.StringUtils;
-import org.json.JSONObject;
-
-import com.ginz.util.push.PushIOS;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.StringTokenizer;
 
 public class Test {
 
 	public static void main(String[] args) throws IOException {
-		//changeFileName(new File("E:/document/20世纪中文小说100强"));
-		/*JSONArray jsonArray = new JSONArray();
-		String valueString = "宅,逗比,拉风老年,猫奴,任性,吃货,逗比,败家,逗比小二货";
-		String tabs[] = valueString.split(",");
-		if(tabs.length>0){
-			List<String> tabList = new LinkedList<String>();  //去除标签数组中的重复项
-		    for(int i = 0; i < tabs.length; i++) {  
-		        if(!tabList.contains(tabs[i])) {  
-		        	tabList.add(tabs[i]);  
-		        }  
-		    }
-		    
-		    for(int i = 0; i<tabList.size(); i++){
-		    	jsonArray.add(tabList.get(i));
-		    }
-		}
-		System.out.println(jsonArray.toString());*/
-		String keyWord = "车| ";
-		String[] keys = keyWord.split("\\|");
+/*		String keyWord = "逗比逗比小二货";
+		String[] keys = keyWord.split(",");
 		if(keys.length>0){
 			for(int i=0;i<keys.length;i++){
 					System.out.println(i + "=" + keys[i]);
 			}
+		}*/
+		
+		
+		BigDecimal data = new BigDecimal(0.0);
+		BigDecimal data1 = new BigDecimal("");
+		
+		System.out.println(data1.compareTo(data));
+		
+		
+		/*List<String> stringList = new ArrayList<String>();
+		Map<String, Integer> map = new HashMap<String, Integer>();// 用于统计各个单词的个数，排序
+		String sentence = "hello,my name is Tom,what is your name?he said:\"my name is John\"";
+		StringTokenizer token = new StringTokenizer(sentence);// 这个类会将字符串分解成一个个的标记
+		while (token.hasMoreTokens()) { // 循环遍历
+			String word = token.nextToken(", ?.!:\"\"''\n"); // 括号里的字符的含义是说按照,空格? . : "" ''
+																// \n去分割，如果这里你没明确要求，即括号里为空，则默认按照空格，制表符，新行符和回车符去分割
+			stringList.add(word);
 		}
 		
-		
-		//JSONObject json = PushIOS.pushSingleDevice("测试铃声", "8a0a240b24142f08c5e2362ec942658b95061d8949eb2f6ff1de593932a19910");
-		//System.out.println(json.toString());
-		
+		for(int i=0;i<stringList.size();i++){
+			String word = stringList.get(i);
+			if (map.containsKey(word)) { // HashMap不允许重复的key，所以利用这个特性，去统计单词的个数
+				int count = map.get(word);
+				map.put(word, count + 1); // 如果HashMap已有这个单词，则设置它的数量加1
+			} else{
+				map.put(word, 1); // 如果没有这个单词，则新填入，数量为1
+			}
+		}
+		sort(map); // 调用排序的方法，排序并输出！
+*/		
 	}
 
+	public static void sort(Map<String, Integer> map) {
+		List<Map.Entry<String, Integer>> infoIds = new ArrayList<Map.Entry<String, Integer>>(
+				map.entrySet());
+		Collections.sort(infoIds, new Comparator<Map.Entry<String, Integer>>() {
+			public int compare(Map.Entry<String, Integer> o1,
+					Map.Entry<String, Integer> o2) {
+				return (o2.getValue() - o1.getValue());
+			}
+		}); // 排序
+		for (int i = 0; i < infoIds.size(); i++) { // 输出
+			Entry<String, Integer> id = infoIds.get(i);
+			System.out.println(id.getKey() + ":" + id.getValue());
+		}
+	}
+	
 	public static void changeFileName(File file) {
 		String dirPath = file.getAbsolutePath();// 目录路径
 		System.out.println(dirPath);

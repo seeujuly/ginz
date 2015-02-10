@@ -253,6 +253,19 @@ public class AccountServiceImpl implements AccountService {
 		String hql = "from AcProperty where 1=1" + condition;
 		return propertyDao.find(hql);
 	}
+	
+	@Override
+	public HashMap<String, Object> findPropertyBySql(String condition){
+		HashMap<String, Object> hm = new HashMap<String, Object>();
+		StringBuffer sb = new StringBuffer();
+		sb.append(" select t.id,t.property_name,t.pic_url from ac_property t ");
+		sb.append(" where 1=1 ");
+		if(condition!=null&&!condition.equals("")){
+			sb.append(condition);
+		}
+		hm.put("list", propertyDao.queryBySql(sb.toString()));
+		return hm;
+	}
 
 	//商户部分
 	@Override
@@ -314,6 +327,19 @@ public class AccountServiceImpl implements AccountService {
 	public List<AcMerchant> findMerchant(String condition) {
 		String hql = "from AcMerchant where 1=1" + condition;
 		return merchantDao.find(hql);
+	}
+	
+	@Override
+	public HashMap<String, Object> findMerchantBySql(String condition){
+		HashMap<String, Object> hm = new HashMap<String, Object>();
+		StringBuffer sb = new StringBuffer();
+		sb.append(" select t.id,t.merchant_name,t.pic_url from ac_merchant t ");
+		sb.append(" where 1=1 ");
+		if(condition!=null&&!condition.equals("")){
+			sb.append(condition);
+		}
+		hm.put("list", merchantDao.queryBySql(sb.toString()));
+		return hm;
 	}
 
 }

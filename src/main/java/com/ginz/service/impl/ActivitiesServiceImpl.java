@@ -64,7 +64,7 @@ private BaseDao<PubActivities> activitiesDao;
 	public HashMap<String, Object> findActivitiesBySql(String condition){
 		HashMap<String, Object> hm = new HashMap<String, Object>();
 		StringBuffer sb = new StringBuffer();
-		sb.append(" select t.id,t.subject,t.createTime,t.picIds from pub_activities t ");
+		sb.append(" select t.id,t.subject,t.createTime,t.picIds,t.userId from pub_activities t ");
 		sb.append(" where 1=1 ");
 		if(condition!=null&&!condition.equals("")){
 			sb.append(condition);

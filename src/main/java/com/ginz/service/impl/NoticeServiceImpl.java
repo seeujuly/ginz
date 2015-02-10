@@ -1,5 +1,6 @@
 package com.ginz.service.impl;
 
+import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,4 +59,17 @@ public class NoticeServiceImpl implements NoticeService {
 		return noticeDao.find(hql, (page - 1) * rows + 1, rows);
 	}
 
+	@Override
+	public HashMap<String, Object> findNoticeBySql(String condition){
+		HashMap<String, Object> hm = new HashMap<String, Object>();
+		StringBuffer sb = new StringBuffer();
+		sb.append(" select t.id,t.subject,t.createTime,t.picIds,t.property_id from pub_notice t ");
+		sb.append(" where 1=1 ");
+		if(condition!=null&&!condition.equals("")){
+			sb.append(condition);
+		}
+		hm.put("list", noticeDao.queryBySql(sb.toString()));
+		return hm;
+	}
+	
 }

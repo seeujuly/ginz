@@ -1,5 +1,11 @@
 package com.ginz.util.base;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,5 +28,36 @@ public class StringUtil {
 	    }
 	    return slashMatcher.start();
 	 }
+	
+	//对map做排序，并输出前10项
+	public static String sort(Map<String, Integer> map) {
+		List<Map.Entry<String, Integer>> infoIds = new ArrayList<Map.Entry<String, Integer>>(
+				map.entrySet());
+		Collections.sort(infoIds, new Comparator<Map.Entry<String, Integer>>() {
+			public int compare(Map.Entry<String, Integer> o1,
+					Map.Entry<String, Integer> o2) {
+				return (o2.getValue() - o1.getValue());
+			}
+		}); // 排序
+		
+		String valueString = "";
+		if(infoIds.size()>10){
+			for (int i = 0; i < 10; i++) { // 输出
+				Entry<String, Integer> id = infoIds.get(i);
+				valueString += "," + id.getKey();
+			}
+		}else{
+			for (int i = 0; i < infoIds.size(); i++) { // 输出
+				Entry<String, Integer> id = infoIds.get(i);
+				valueString += "," + id.getKey();
+			}
+		}
+		if(valueString.length()>0){
+			if(valueString.substring(0, 1).equals(",")){
+				valueString = valueString.substring(1, valueString.length());
+			}
+		}
+		return valueString;
+	}
 	
 }

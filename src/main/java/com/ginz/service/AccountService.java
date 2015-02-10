@@ -56,6 +56,8 @@ public interface AccountService {
 	
 	public List<AcProperty> findProperty(String condition);
 	
+	public HashMap<String, Object> findPropertyBySql(String condition);
+	
 	//商户部分
 	public AcMerchant loginMerchant(AcMerchant merchant);
 	
@@ -68,5 +70,7 @@ public interface AccountService {
 	public void deleteMerchant(Long id);
 	
 	public List<AcMerchant> findMerchant(String condition);
+	
+	public HashMap<String, Object> findMerchantBySql(String condition);
 	
 }

@@ -401,10 +401,14 @@ public class ActivitiesAction extends BaseAction {
 						release.setLabel(label);
 						
 						if(StringUtils.isEmpty(in)){
-							release.setSimilarity(0);
+							release.setSimilarity(0.0);
 						}else{
 							double similarity =	CosineSimilarAlgorithm.getSimilarity(subject + content + label, in);	//计算信息主题内容标签和用户兴趣爱好的相似度
-							release.setSimilarity(similarity);
+							if(similarity>0){
+								release.setSimilarity(similarity);
+							}else{
+								release.setSimilarity(0.0);
+							}
 						}
 						releaseList.add(release);
 					}

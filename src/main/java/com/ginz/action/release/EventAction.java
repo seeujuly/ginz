@@ -38,6 +38,7 @@ import com.ginz.model.AcUserDetail;
 import com.ginz.model.MsgMessageBox;
 import com.ginz.model.MsgMessageInfo;
 import com.ginz.model.Picture;
+import com.ginz.model.PubActivities;
 import com.ginz.model.PubComments;
 import com.ginz.model.PubEvent;
 import com.ginz.model.PubPraise;
@@ -821,13 +822,27 @@ public class EventAction extends BaseAction {
 	}
 	
 	//对用户点赞或评论的信息做统计，统计其参与的信息标签出现的频率最高的10个标签
-	public void countSysTab(Long userId){
+	@SuppressWarnings("unchecked")
+	public void countSysTab() throws IOException{
 		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		
+		HttpServletRequest request = ServletActionContext.getRequest();
+		Map<String,String[]> map1 = request.getParameterMap();
+		String a[] = map1.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		String id = valueMap.get("userId");	//用户id
+		Long userId = Long.parseLong(id);
+		
+		//查询用户全部的点赞和评论
 		List<PubPraise> praiseList = replyService.findPraise(" and userId = " + userId + " and accountType = '" + DictionaryUtil.ACCOUNT_TYPE_01 + "'");
 		List<PubComments> commentsList = replyService.findComments(" and userId = " + userId + " and accountType = '" + DictionaryUtil.ACCOUNT_TYPE_01 + "' GROUP BY releaseType, releaseId ");
-
-		List<Long> eventList = new ArrayList<Long>();
-		List<Long> activityList = new ArrayList<Long>();
+		
+		List<Long> eventList = new ArrayList<Long>();	//用户参与的所有社区生活信息
+		List<Long> activityList = new ArrayList<Long>();	//用户参与的所有互动交易信息
 		
 		if(praiseList.size()>0){
 			for(PubPraise praise : praiseList){
@@ -836,7 +851,6 @@ public class EventAction extends BaseAction {
 						eventList.add(praise.getReleaseId());  
 			        }  
 				}else if(StringUtils.equals(praise.getReleaseType(), DictionaryUtil.RELEASE_TYPE_03)){		//互动交易
-					activityList.add(praise.getReleaseId());
 					if(!activityList.contains(praise.getReleaseId())) {  
 						activityList.add(praise.getReleaseId());  
 			        } 
@@ -851,7 +865,6 @@ public class EventAction extends BaseAction {
 						eventList.add(comments.getReleaseId());  
 			        }  
 				}else if(StringUtils.equals(comments.getReleaseType(), DictionaryUtil.RELEASE_TYPE_03)){		//互动交易
-					activityList.add(comments.getReleaseId());
 					if(!activityList.contains(comments.getReleaseId())) {  
 						activityList.add(comments.getReleaseId());  
 			        } 
@@ -859,24 +872,54 @@ public class EventAction extends BaseAction {
 			}
 		}
 		
-		//遍历查询信息条，取label
+		//遍历查询信息条，取全部的label
+		List<String> labelList = new ArrayList<String>();	//全部的label list
 		if(eventList.size()>0){
 			for(int i=0;i<eventList.size();i++){
 				PubEvent event = eventService.loadEvent(eventList.get(i));
 				if(event!=null){
-					event.getLabel();
+					String label = event.getLabel();
+					if(StringUtils.isNotEmpty(label)){
+						String[] keys = label.split(",");
+						if(keys.length>0){
+							for(int k=0;k<keys.length;k++){
+								labelList.add(keys[k]);
+							}
+						}
+					}
 				}
-				
 			}
-			
 		}
-		
 		if(activityList.size()>0){
-			
-			
-			
+			for(int i=0;i<activityList.size();i++){
+				PubActivities activity = activitiesService.loadActivities(activityList.get(i));
+				if(activity!=null){
+					String label = activity.getLabel();
+					if(StringUtils.isNotEmpty(label)){
+						String[] keys = label.split(",");
+						if(keys.length>0){
+							for(int k=0;k<keys.length;k++){
+								labelList.add(keys[k]);
+							}
+						}
+					}
+				}
+			}
 		}
 		
+		//统计
+		Map<String, Integer> map = new HashMap<String, Integer>();// 用于统计各个标签的个数，排序
+		for(int i=0;i<labelList.size();i++){
+			String word = labelList.get(i);
+			if (map.containsKey(word)) { // HashMap不允许重复的key，所以利用这个特性，去统计单词的个数
+				int count = map.get(word);
+				map.put(word, count + 1); // 如果HashMap已有这个标签，则设置它的数量加1
+			} else{
+				map.put(word, 1); //如果没有这个标签，则新填入，数量为1
+			}
+		}
+		String valueString = StringUtil.sort(map); // 调用排序的方法，排序并输出！
+		out.print(valueString);
 	}
 	
 }

@@ -20,12 +20,10 @@ import org.apache.struts2.convention.annotation.Namespace;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ginz.action.BaseAction;
-import com.ginz.model.AcMerchant;
 import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
 import com.ginz.model.Community;
 import com.ginz.model.Picture;
-import com.ginz.model.PubNotice;
 import com.ginz.service.AccountService;
 import com.ginz.service.ActivitiesService;
 import com.ginz.service.CommunityService;
@@ -33,7 +31,6 @@ import com.ginz.service.EventService;
 import com.ginz.service.NoticeService;
 import com.ginz.service.PictureService;
 import com.ginz.util.base.AnalyzerUtil;
-import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.JsonUtil;
 
 //搜索界面
@@ -103,7 +100,7 @@ public class SearchAction extends BaseAction {
 	}
 
 	//搜用户-物业
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void searchProperty() throws IOException{
 		
 		HttpServletResponse response = ServletActionContext.getResponse();
@@ -120,21 +117,24 @@ public class SearchAction extends BaseAction {
 		String keyWord = valueMap.get("keyWord");	//关键字
 		
 		keyWord = AnalyzerUtil.analyze(keyWord);
-		String[] keys = keyWord.split("|");
+		String[] keys = keyWord.split("\\|");
 		String condition = "";
 		if(keys.length>0){
 			for(int i=0;i<keys.length;i++){
-				condition += " and  propertyName REGEXP '" + keys[i] + "'";
+				condition += " and  property_name REGEXP '" + keys[i] + "'";
 			}
 		}
 		
-		List<AcProperty> propertyList = accountService.findProperty(condition);
-		if(propertyList.size()>0){
-			for(AcProperty property:propertyList){
+		HashMap<String,Object> rethm = accountService.findPropertyBySql(condition);
+		List<Object> list = (List<Object>) rethm.get("list");
+		if(list != null && !list.isEmpty()){
+			Iterator iterator = list.iterator();
+			while(iterator.hasNext()){
+				Object[] obj = (Object[]) iterator.next();
 				JSONObject json = new JSONObject();
-				json.put("id", property.getId());
-				json.put("name", property.getPropertyName());
-				json.put("headUrl", property.getPicUrl());
+				json.put("id", String.valueOf(obj[0]==null?"":obj[0]));
+				json.put("name", String.valueOf(obj[1]==null?"":obj[1]));
+				json.put("headUrl", String.valueOf(obj[2]==null?"":obj[2]));
 				jsonArray.add(json);
 			}
 			jsonObject.put("result", "1");
@@ -148,7 +148,7 @@ public class SearchAction extends BaseAction {
 	}
 	
 	//搜用户-商家
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void searchMerchant() throws IOException{
 		
 		HttpServletResponse response = ServletActionContext.getResponse();
@@ -165,21 +165,24 @@ public class SearchAction extends BaseAction {
 		String keyWord = valueMap.get("keyWord");	//关键字
 		
 		keyWord = AnalyzerUtil.analyze(keyWord);
-		String[] keys = keyWord.split("|");
+		String[] keys = keyWord.split("\\|");
 		String condition = "";
 		if(keys.length>0){
 			for(int i=0;i<keys.length;i++){
-				condition += " and  merchantName REGEXP '" + keys[i] + "'";
+				condition += " and  merchant_name REGEXP '" + keys[i] + "'";
 			}
 		}
 		
-		List<AcMerchant> merchantList = accountService.findMerchant(condition);
-		if(merchantList.size()>0){
-			for(AcMerchant merchant:merchantList){
+		HashMap<String,Object> rethm = accountService.findMerchantBySql(condition);
+		List<Object> list = (List<Object>) rethm.get("list");
+		if(list != null && !list.isEmpty()){
+			Iterator iterator = list.iterator();
+			while(iterator.hasNext()){
+				Object[] obj = (Object[]) iterator.next();
 				JSONObject json = new JSONObject();
-				json.put("id", merchant.getId());
-				json.put("name", merchant.getMerchantName());
-				json.put("headUrl", merchant.getPicUrl());
+				json.put("id", String.valueOf(obj[0]==null?"":obj[0]));
+				json.put("name", String.valueOf(obj[1]==null?"":obj[1]));
+				json.put("headUrl", String.valueOf(obj[2]==null?"":obj[2]));
 				jsonArray.add(json);
 			}
 			jsonObject.put("result", "1");
@@ -210,7 +213,7 @@ public class SearchAction extends BaseAction {
 		String keyWord = valueMap.get("keyWord");	//关键字
 		
 		keyWord = AnalyzerUtil.analyze(keyWord);
-		String[] keys = keyWord.split("|");
+		String[] keys = keyWord.split("\\|");
 		
 		String userCondition = "";
 		String detailCondition = "";
@@ -308,6 +311,7 @@ public class SearchAction extends BaseAction {
 						}
 					}
 				}
+				json.put("userId", String.valueOf(obj[4]==null?"":obj[4]));
 				jsonArray.add(json);
 			}
 			
@@ -373,6 +377,7 @@ public class SearchAction extends BaseAction {
 						}
 					}
 				}
+				json.put("userId", String.valueOf(obj[4]==null?"":obj[4]));
 				jsonArray.add(json);
 			}
 			
@@ -387,7 +392,7 @@ public class SearchAction extends BaseAction {
 	}
 	
 	//搜信息-公告
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void searchNotice() throws IOException{
 		
 		HttpServletResponse response = ServletActionContext.getResponse();
@@ -424,16 +429,18 @@ public class SearchAction extends BaseAction {
 						jsonObject.put("result", "3");
 						jsonObject.put("value", "您还未添加社区信息!");
 					}else{
-						List<PubNotice> noticeList = noticeService.findNotice(" and communityId = " + user.getCommunityId() + condition);
-						if(noticeList.size()>0){
-							for(PubNotice notice : noticeList){
-								JSONObject json = new JSONObject();
-								json.put("id", notice.getId());
-								json.put("subject", notice.getSubject());
-								String createTime = DateFormatUtil.dateToStringM(notice.getCreateTime());
-								json.put("createTime", createTime);
+						HashMap<String,Object> rethm = noticeService.findNoticeBySql(" and community_id = " + user.getCommunityId() + condition);
+						List<Object> list = (List<Object>) rethm.get("list");	
+						if(list != null && !list.isEmpty()){
+							Iterator iterator = list.iterator();
+							while(iterator.hasNext()){
+								Object[] obj = (Object[]) iterator.next();
 								
-								String picIds = notice.getPicIds();
+								JSONObject json = new JSONObject();
+								json.put("id", String.valueOf(obj[0]==null?"":obj[0]));
+								json.put("subject", String.valueOf(obj[1]==null?"":obj[1]));
+								json.put("createTime", String.valueOf(obj[2]==null?"":obj[2]));
+								String picIds = String.valueOf(obj[3]==null?"":obj[3]);
 								if(picIds!=null&&!picIds.equals("")){
 									String[] ids = picIds.split(",");
 									if(ids.length>0){
@@ -443,8 +450,10 @@ public class SearchAction extends BaseAction {
 										}
 									}
 								}
+								json.put("userId", String.valueOf(obj[4]==null?"":obj[4]));
 								jsonArray.add(json);
 							}
+							
 							jsonObject.put("result", "1");
 							jsonObject.put("value", jsonArray);
 						}else{
@@ -470,16 +479,18 @@ public class SearchAction extends BaseAction {
 								communityIds += "," + community.getId();
 							}
 						}
-						List<PubNotice> noticeList = noticeService.findNotice(" and communityId in (" + communityIds + ")" + condition);
-						if(noticeList.size()>0){
-							for(PubNotice notice : noticeList){
-								JSONObject json = new JSONObject();
-								json.put("id", notice.getId());
-								json.put("subject", notice.getSubject());
-								String createTime = DateFormatUtil.dateToStringM(notice.getCreateTime());
-								json.put("createTime", createTime);
+						HashMap<String,Object> rethm = noticeService.findNoticeBySql(" and community_id in (" + communityIds + ")" + condition);
+						List<Object> list = (List<Object>) rethm.get("list");	
+						if(list != null && !list.isEmpty()){
+							Iterator iterator = list.iterator();
+							while(iterator.hasNext()){
+								Object[] obj = (Object[]) iterator.next();
 								
-								String picIds = notice.getPicIds();
+								JSONObject json = new JSONObject();
+								json.put("id", String.valueOf(obj[0]==null?"":obj[0]));
+								json.put("subject", String.valueOf(obj[1]==null?"":obj[1]));
+								json.put("createTime", String.valueOf(obj[2]==null?"":obj[2]));
+								String picIds = String.valueOf(obj[3]==null?"":obj[3]);
 								if(picIds!=null&&!picIds.equals("")){
 									String[] ids = picIds.split(",");
 									if(ids.length>0){
@@ -489,8 +500,10 @@ public class SearchAction extends BaseAction {
 										}
 									}
 								}
+								json.put("userId", String.valueOf(obj[4]==null?"":obj[4]));
 								jsonArray.add(json);
 							}
+							
 							jsonObject.put("result", "1");
 							jsonObject.put("value", jsonArray);
 						}else{
