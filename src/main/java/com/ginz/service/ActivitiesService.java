@@ -22,7 +22,7 @@ public interface ActivitiesService {
 	public HashMap<String, Object> findActivitiesBySql(String condition);
 	
 	//个人用户查看活动页面————使用用户的个人兴趣爱好作为关键字，搜索相关连的信息（主题，内容，标签）
-	public HashMap<String, Object> searchActivities(String in, String notIn, int page, int rows);
+	public HashMap<String, Object> searchActivities(String in, String notIn);
 	
 	//获取所有的互动交易信息标签
 	public HashMap<String, Object> getLabels();

@@ -3,6 +3,7 @@ package com.ginz.service.impl;
 import java.util.HashMap;
 import java.util.List;
 
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -73,21 +74,20 @@ public class EventServiceImpl implements EventService {
 	
 	//个人用户查看社区生活页面————使用用户的个人兴趣爱好作为关键字，搜索相关连的信息（主题，内容，标签）
 	@Override
-	public HashMap<String, Object> seachEvents(String in, String notIn, int page, int rows) {
+	public HashMap<String, Object> seachEvents(String in, String notIn) {
 		
 		HashMap<String, Object> hm = new HashMap<String, Object>();
 		StringBuffer sb = new StringBuffer();
-		sb.append(" select t.id,t.subject,t.createTime,t.userId,t.picIds,t.content,t.label from pub_event t ");
+		sb.append(" select t.id,t.subject,t.createTime,t.userId,t.picIds,t.label from pub_event t ");
 		sb.append(" where 1=1 ");
 /*		if(in!=null&&!in.equals("")){
-			sb.append(" and CONCAT(subject,',',content,',',label) REGEXP '" + in + "' ");
+			sb.append(" and CONCAT(subject,',',label) REGEXP '" + in + "' ");
 		}*/
 		if(notIn!=null&&!notIn.equals("")){
-			//sb.append(" and subject not REGEXP '" + notIn + "' and content not REGEXP '" + notIn + "' and label not REGEXP '" + notIn + "' ");
-			sb.append(" and CONCAT(subject,',',content,',',label) not REGEXP '" + notIn + "' ");
+			sb.append(" and CONCAT(subject,',',label) not REGEXP '" + notIn + "' ");
 		}
 		sb.append(" and status not REGEXP '1' order by createTime desc ");
-		hm.put("list", eventDao.queryBySql(sb.toString(), (page-1)*rows+1, rows));
+		hm.put("list", eventDao.queryBySql(sb.toString()));
 		return hm;
 		
 	}
@@ -120,4 +120,30 @@ public class EventServiceImpl implements EventService {
 		
 	}
 
+	//系统设置中用于查询用户赞过/评论过的所有信息
+	@Override
+	public HashMap<String, Object> listAllRelease(String noticeIds, String eventIds, String activityIds) {
+		HashMap<String, Object> hm = new HashMap<String, Object>();
+		StringBuffer sb = new StringBuffer();
+		
+		sb.append(" SELECT '3' as releaseType, t.id, t.subject, t.createTime, t.userId, t.picIds");
+		sb.append(" from pub_activities t where 1=1 ");
+		if(StringUtils.isNotEmpty(activityIds)){
+			sb.append(" and t.id in (" + activityIds + ") ");
+		}
+		sb.append(" UNION select '2' as releaseType, t1.id, t1.subject, t1.createTime, t1.userId, t1.picIds");
+		sb.append(" from pub_event t1 where 1=1 ");
+		if(StringUtils.isNotEmpty(eventIds)){
+			sb.append(" and t1.id in (" + eventIds + ") ");
+		}
+		sb.append(" UNION SELECT '1' as releaseType, t2.id, t2.subject, t2.createTime, t2.property_id as userId, t2.picIds");
+		sb.append(" from pub_notice t2 where 1=1 ");
+		if(StringUtils.isNotEmpty(noticeIds)){
+			sb.append(" and t12.id in (" + noticeIds + ") ");
+		}
+		sb.append(" ORDER BY createTime ");
+		hm.put("list", eventDao.queryBySql(sb.toString()));
+		return hm;
+	}
+	
 }

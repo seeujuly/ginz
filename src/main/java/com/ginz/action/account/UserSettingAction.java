@@ -229,7 +229,7 @@ public class UserSettingAction extends BaseAction {
 		
 	}
 	
-	//初始化myprofile页面
+	//初始化个人基本信息页面
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void init() throws IOException{
 		
@@ -302,6 +302,45 @@ public class UserSettingAction extends BaseAction {
 		}else{
 			
 			jsonObject.put("result", "2");
+			jsonObject.put("value", "查无此人或该用户已被封号");
+		}
+		
+		out.print(jsonObject.toString());
+		
+	}
+	
+	//初始化个人详细信息页面
+	@SuppressWarnings({ "unchecked" })
+	public void initDetail() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		HttpServletRequest request = ServletActionContext.getRequest();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		JSONObject jsonObject = new JSONObject();
+		
+		Map<String,String[]> map = request.getParameterMap();
+		String a[] = map.get("json");
+		String jsonString = a[0];
+		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
+		
+		String userId = valueMap.get("userId");	//用户id-唯一标识
+		
+		AcUser user = accountService.loadUser(userId);
+		
+		if(user!=null){
+			
+			AcUserDetail userDetail = accountService.loadUserDetail(userId);
+			if(userDetail!=null){
+				jsonObject = JSONObject.fromObject(userDetail);
+				jsonObject.put("result", "1");
+			}else{
+				jsonObject.put("result", "2");
+				jsonObject.put("value", "还未填写详细信息");
+			}
+			
+		}else{
+			jsonObject.put("result", "3");
 			jsonObject.put("value", "查无此人或该用户已被封号");
 		}
 		
@@ -442,7 +481,7 @@ public class UserSettingAction extends BaseAction {
 		
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(userId);
+			AcUserDetail userDetail = getUserDetail(user.getUserName());
 			userDetail.setGender(gender);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -478,7 +517,7 @@ public class UserSettingAction extends BaseAction {
 		
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(userId);
+			AcUserDetail userDetail = getUserDetail(user.getUserName());
 			userDetail.setConstellation(constellation);
 			userDetail.setBirthday(DateFormatUtil.stringToDate(birthday));
 			userDetail.setAge(DateFormatUtil.getAgeByBirthday(DateFormatUtil.stringToDate(birthday)));
@@ -509,7 +548,7 @@ public class UserSettingAction extends BaseAction {
 		
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(userId);
+			AcUserDetail userDetail = getUserDetail(user.getUserName());
 			userDetail.setEmotionalState(emotionalState);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -538,7 +577,7 @@ public class UserSettingAction extends BaseAction {
 		
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(userId);
+			AcUserDetail userDetail = getUserDetail(user.getUserName());
 			userDetail.setCareer(career);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -567,7 +606,7 @@ public class UserSettingAction extends BaseAction {
 		
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(userId);
+			AcUserDetail userDetail = getUserDetail(user.getUserName());
 			userDetail.setCompany(company);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -596,7 +635,7 @@ public class UserSettingAction extends BaseAction {
 		
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(userId);
+			AcUserDetail userDetail = getUserDetail(user.getUserName());
 			userDetail.setSchool(school);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -625,7 +664,7 @@ public class UserSettingAction extends BaseAction {
 		
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(userId);
+			AcUserDetail userDetail = getUserDetail(user.getUserName());
 			userDetail.setCatering(catering);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -654,7 +693,7 @@ public class UserSettingAction extends BaseAction {
 		
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(userId);
+			AcUserDetail userDetail = getUserDetail(user.getUserName());
 			userDetail.setSocialContact(socialContact);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -683,7 +722,7 @@ public class UserSettingAction extends BaseAction {
 		
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(userId);
+			AcUserDetail userDetail = getUserDetail(user.getUserName());
 			userDetail.setTravel(travel);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -712,7 +751,7 @@ public class UserSettingAction extends BaseAction {
 		
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(userId);
+			AcUserDetail userDetail = getUserDetail(user.getUserName());
 			userDetail.setSports(sports);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -741,7 +780,7 @@ public class UserSettingAction extends BaseAction {
 		
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(userId);
+			AcUserDetail userDetail = getUserDetail(user.getUserName());
 			userDetail.setMusic(music);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -770,7 +809,7 @@ public class UserSettingAction extends BaseAction {
 		
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(userId);
+			AcUserDetail userDetail = getUserDetail(user.getUserName());
 			userDetail.setOthers(others);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -799,7 +838,7 @@ public class UserSettingAction extends BaseAction {
 		
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(userId);
+			AcUserDetail userDetail = getUserDetail(user.getUserName());
 			userDetail.setCommunityNeed(communityNeed);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -828,7 +867,7 @@ public class UserSettingAction extends BaseAction {
 		
 		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(userId);
+			AcUserDetail userDetail = getUserDetail(user.getUserName());
 			userDetail.setDislike(dislike);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -871,11 +910,11 @@ public class UserSettingAction extends BaseAction {
 	//通用方法
 	public AcUserDetail getUserDetail(String userId){
 		AcUserDetail userDetail = new AcUserDetail();
-		List<AcUserDetail> detailList = accountService.findUserDetail(" and userId = " + Long.parseLong(userId));
+		List<AcUserDetail> detailList = accountService.findUserDetail(" and userId = '" + userId + "'");
 		if(detailList.size()>0){
 			userDetail = detailList.get(0);
 		}else{
-			userDetail.setUserId(Long.parseLong(userId));
+			userDetail.setUserId(userId);
 		}
 		return userDetail;
 	}

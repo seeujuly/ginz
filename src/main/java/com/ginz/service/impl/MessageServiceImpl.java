@@ -1,5 +1,6 @@
 package com.ginz.service.impl;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,6 +10,7 @@ import com.ginz.dao.BaseDao;
 import com.ginz.model.MsgMessageBox;
 import com.ginz.model.MsgMessageInfo;
 import com.ginz.service.MessageService;
+import com.ginz.util.base.DictionaryUtil;
 
 @Service("messageService")
 public class MessageServiceImpl implements MessageService {
@@ -82,6 +84,38 @@ public class MessageServiceImpl implements MessageService {
 	public List<MsgMessageBox> listMessageBox(String condition) {
 		String hql = "from MsgMessageBox where 1=1" + condition;
 		return messageBoxDao.find(hql);
+	}
+	
+	//发布新的信息，并保存在收件箱
+	public void sendMessage(Long userId, String accountType, Long targetUserId,
+			String targetAccountType, String subject, String content,
+			Long releaseId, String releaseType, String messageType){
+		
+		Date nowDate = new Date();
+		
+		MsgMessageInfo messageInfo = new MsgMessageInfo();
+		messageInfo.setUserId(userId);
+		messageInfo.setAccountType(accountType);
+		messageInfo.setTargetUserId(targetUserId);
+		messageInfo.setTargetAccountType(targetAccountType);
+		messageInfo.setCreateTime(nowDate);
+		messageInfo.setSubject(subject);
+		messageInfo.setContent(content);
+		messageInfo.setReleaseId(releaseId);
+		messageInfo.setReleaseType(releaseType);
+		messageInfo.setMessageType(messageType);
+		messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
+		MsgMessageInfo messageInfo2 = messageInfoDao.save(messageInfo);
+		
+		MsgMessageBox messageBox = new MsgMessageBox();
+		messageBox.setMessageId(messageInfo2.getId());
+		messageBox.setUserId(targetUserId);
+		messageBox.setAccountType(targetAccountType);
+		messageBox.setReceiveDate(nowDate);
+		messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
+		messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
+		messageBoxDao.save(messageBox);
+		
 	}
 
 }

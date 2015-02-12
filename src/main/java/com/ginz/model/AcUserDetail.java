@@ -23,7 +23,7 @@ public class AcUserDetail implements Serializable {
 	private Long id;
 	
 	@Column(name="userId")
-	private Long userId;
+	private String userId;
 	
 	@Column(name="gender")
 	private String gender;	//性别
@@ -80,7 +80,10 @@ public class AcUserDetail implements Serializable {
 	private String isOpenSchool;
 	
 	@Column(name="personal_tag")
-	private String personalTag;
+	private String personalTag;		//个人标签：由用户自己添加
+	
+	@Column(name="system_tag")
+	private String systemTag;		//系统标签：由系统根据用户参与的信息条分析其中使用最多的标签
 	
 	@Column(name="catering")
 	private String catering;	//餐饮喜好
@@ -125,11 +128,11 @@ public class AcUserDetail implements Serializable {
 		this.id = id;
 	}
 
-	public Long getUserId() {
+	public String getUserId() {
 		return userId;
 	}
 
-	public void setUserId(Long userId) {
+	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 
@@ -275,6 +278,14 @@ public class AcUserDetail implements Serializable {
 
 	public void setPersonalTag(String personalTag) {
 		this.personalTag = personalTag;
+	}
+
+	public String getSystemTag() {
+		return systemTag;
+	}
+
+	public void setSystemTag(String systemTag) {
+		this.systemTag = systemTag;
 	}
 
 	public String getCatering() {

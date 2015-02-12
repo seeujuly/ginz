@@ -192,4 +192,17 @@ public class DateFormatUtil {
 		return age;
 	}
 	
+	//判断日期是哪一天(-3:大前天 -2:前天 -1：昨天 0：今天   1：明天 2：后天)
+	public static int judgeDate(Date oldTime) throws ParseException {
+		Date nowTime = new Date();
+		
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+		String todayStr = sdf.format(nowTime);
+		Date today = sdf.parse(todayStr);	//取yyyy-MM-dd 00:00:00
+		
+		double intervalMilli = oldTime.getTime() - today.getTime();
+		double flag = intervalMilli / (24 * 60 * 60 * 1000);
+		return (int)Math.floor(flag);
+	}
+	
 }

@@ -14,6 +14,8 @@ public interface AccountService {
 	public AcUser loginUser(AcUser user);
 	
 	public AcUser loadUser(Long id);
+	
+	public AcUser loadUser(String userId);
 
 	public AcUser saveUser(AcUser user);
 	
@@ -31,6 +33,8 @@ public interface AccountService {
 	
 	//个人用户明细部分
 	public AcUserDetail loadUserDetail(Long id);
+	
+	public AcUserDetail loadUserDetail(String userId);
 
 	public AcUserDetail saveUserDetail(AcUserDetail userDetail);
 	

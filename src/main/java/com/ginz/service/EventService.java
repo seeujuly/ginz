@@ -23,7 +23,7 @@ public interface EventService {
 	public HashMap<String, Object> findEventBySql(String condition);
 
 	//个人用户查看社区生活页面————使用用户的个人兴趣爱好作为关键字，搜索相关连的信息（主题，内容，标签）
-	public HashMap<String, Object> seachEvents(String in, String notIn, int page, int rows);
+	public HashMap<String, Object> seachEvents(String in, String notIn);
 	
 	//进入个人主页时显示个人发布的所有信息
 	public HashMap<String, Object> listRelease(Long userId);
@@ -31,6 +31,7 @@ public interface EventService {
 	//获取所有的社区生活信息标签
 	public HashMap<String, Object> getLabels();
 	
-	
+	//系统设置中用于查询用户赞过/评论过的所有信息
+	public HashMap<String, Object> listAllRelease(String noticeIds, String eventIds, String activityIds);
 	
 }

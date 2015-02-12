@@ -272,7 +272,7 @@ public class SearchAction extends BaseAction {
 		if(keys.length>0){
 			for(int i=0;i<keys.length;i++){
 				if(StringUtils.isNotEmpty(keys[i])){
-					condition += " and CONCAT(subject,',',content,',',label,',',place) REGEXP '" + keys[i] + "'";
+					condition += " and CONCAT(subject,',',label,',',place) REGEXP '" + keys[i] + "'";
 				}
 			}
 		}
@@ -350,7 +350,7 @@ public class SearchAction extends BaseAction {
 		if(keys.length>0){
 			for(int i=0;i<keys.length;i++){
 				if(StringUtils.isNotEmpty(keys[i])){
-					condition += " and CONCAT(subject,',',content,',',label) REGEXP '" + keys[i] + "'";
+					condition += " and CONCAT(subject,',',label) REGEXP '" + keys[i] + "'";
 				}
 			}
 		}
@@ -415,7 +415,7 @@ public class SearchAction extends BaseAction {
 		if(keys.length>0){
 			for(int i=0;i<keys.length;i++){
 				if(StringUtils.isNotEmpty(keys[i])){
-					condition += " and CONCAT(subject,',',content) REGEXP '" + keys[i] + "'";
+					condition += " and subject REGEXP '" + keys[i] + "'";
 				}
 			}
 		}

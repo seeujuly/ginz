@@ -91,6 +91,14 @@ public class AccountServiceImpl implements AccountService {
 	public AcUser loadUser(Long id) {
 		return userDao.get(AcUser.class, id);
 	}
+	
+	@Override
+	public AcUser loadUser(String userId){
+		String hql = "from AcUser where userName = '" + userId + "' ";
+		List<AcUser> list = userDao.find(hql);
+		return list.get(0);
+		
+	}
 
 	@Override
 	public AcUser saveUser(AcUser user) {
@@ -156,6 +164,13 @@ public class AccountServiceImpl implements AccountService {
 		return userDetailDao.get(AcUserDetail.class, id);
 	}
 
+	@Override
+	public AcUserDetail loadUserDetail(String userId){
+		String hql = "from AcUserDetail where userId = '" + userId + "'";
+		List<AcUserDetail> list = userDetailDao.find(hql);
+		return list.get(0);
+	}
+	
 	@Override
 	public AcUserDetail saveUserDetail(AcUserDetail userDetail) {
 		return userDetailDao.save(userDetail);

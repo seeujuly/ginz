@@ -133,7 +133,6 @@ public class NoticeAction extends BaseAction{
 		String userId = valueMap.get("id");	//社区用户id
 		String communityId = valueMap.get("communityId");
 		String subject = valueMap.get("subject");
-		String content = valueMap.get("content");
 		String startTime = valueMap.get("startTime");
 		String endTime = valueMap.get("endTime");
 		String isOpen = valueMap.get("isOpen");
@@ -200,7 +199,6 @@ public class NoticeAction extends BaseAction{
 		notice.setPropertyId(Long.parseLong(userId));
 		notice.setCommunityId(Long.parseLong(communityId));
 		notice.setSubject(subject);
-		notice.setContent(content);
 		notice.setPicIds(picIds);
 		notice.setCreateTime(nowDate);
 		if(startTime!=null&&!startTime.equals("")){
@@ -515,31 +513,16 @@ public class NoticeAction extends BaseAction{
 					if(property != null){
 						AcUser user = accountService.loadUser(Long.parseLong(userId));
 						if(user != null){
+							String value = user.getNickName() + "赞了你的信息!";
+							
+							//发送推送给目标用户
 							if(property.getDeviceToken()!=null&&!property.getDeviceToken().equals("")){
-								PushIOS.pushSingleDevice(user.getNickName() + "赞了你的信息!", property.getDeviceToken());	//通知社区用户有人点赞..
+								PushIOS.pushSingleDevice(value, property.getDeviceToken());	//通知社区用户有人点赞..
 							}
 							
-							//发送系统消息给目标用户
-							MsgMessageInfo messageInfo = new MsgMessageInfo();
-							messageInfo.setTargetUserId(propertyId);
-							messageInfo.setTargetAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
-							messageInfo.setCreateTime(new Date());
-							messageInfo.setSubject(user.getNickName() + "赞了你的信息!");
-							messageInfo.setContent(user.getNickName() + "赞了你的信息!");
-							messageInfo.setReleaseId(Long.parseLong(id));
-							messageInfo.setReleaseType(DictionaryUtil.RELEASE_TYPE_01);
-							messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_PRAISE);
-							messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
-							MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
-							
-							MsgMessageBox messageBox = new MsgMessageBox();
-							messageBox.setMessageId(messageInfo2.getId());
-							messageBox.setUserId(propertyId);
-							messageBox.setAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
-							messageBox.setReceiveDate(new Date());
-							messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
-							messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
-							messageService.saveMessageBox(messageBox);
+							//发送系统通知给目标用户
+							messageService.sendMessage(null, "", propertyId, DictionaryUtil.ACCOUNT_TYPE_02, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_01, DictionaryUtil.MESSAGE_TYPE_PRAISE);
+
 						}
 					}
 				}
@@ -593,31 +576,15 @@ public class NoticeAction extends BaseAction{
 				if(property != null){
 					AcUser user = accountService.loadUser(Long.parseLong(userId));
 					if(user != null){
+						String value = user.getNickName() + "评论了你的信息!";
+						
+						//发送推送给目标用户
 						if(property.getDeviceToken()!=null&&!property.getDeviceToken().equals("")){
-							PushIOS.pushSingleDevice(user.getNickName() + "评论了你的信息!", property.getDeviceToken());	//通知社区用户有人评论..
+							PushIOS.pushSingleDevice(value, property.getDeviceToken());	//通知社区用户有人评论..
 						}
 						
-						//发送系统消息给目标用户
-						MsgMessageInfo messageInfo = new MsgMessageInfo();
-						messageInfo.setTargetUserId(propertyId);
-						messageInfo.setTargetAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
-						messageInfo.setCreateTime(new Date());
-						messageInfo.setSubject(user.getNickName() + "评论了你的信息!");
-						messageInfo.setContent(user.getNickName() + "评论了你的信息!");
-						messageInfo.setReleaseId(Long.parseLong(id));
-						messageInfo.setReleaseType(DictionaryUtil.RELEASE_TYPE_01);
-						messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_COMMENTS);
-						messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
-						MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
-						
-						MsgMessageBox messageBox = new MsgMessageBox();
-						messageBox.setMessageId(messageInfo2.getId());
-						messageBox.setUserId(propertyId);
-						messageBox.setAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
-						messageBox.setReceiveDate(new Date());
-						messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
-						messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
-						messageService.saveMessageBox(messageBox);
+						//发送系统通知给目标用户
+						messageService.sendMessage(null, "", propertyId, DictionaryUtil.ACCOUNT_TYPE_02, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_01, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 					}
 				}
 			}

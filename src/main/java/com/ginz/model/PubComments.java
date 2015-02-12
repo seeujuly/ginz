@@ -41,6 +41,9 @@ public class PubComments implements Serializable {
 	@Column(name="createTime")
 	private Date createTime;
 	
+	@Column(name="followId")
+	private Long followId;
+	
 	@Column(name="flag")
 	private String flag;
 	
@@ -102,6 +105,14 @@ public class PubComments implements Serializable {
 
 	public void setCreateTime(Date createTime) {
 		this.createTime = createTime;
+	}
+
+	public Long getFollowId() {
+		return followId;
+	}
+
+	public void setFollowId(Long followId) {
+		this.followId = followId;
 	}
 
 	public String getFlag() {
