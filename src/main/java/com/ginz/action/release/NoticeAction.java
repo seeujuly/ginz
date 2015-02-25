@@ -454,7 +454,7 @@ public class NoticeAction extends BaseAction{
 					for(int i=0;i<ids.length;i++){
 						Picture picture = pictureService.loadPicture(Long.parseLong(ids[i]));
 						if(picture!=null){
-							json.put("image"+(i+1), picture.getThumbnailUrl());
+							json.put("image"+(i+1), picture.getUrl());
 						}
 					}
 					

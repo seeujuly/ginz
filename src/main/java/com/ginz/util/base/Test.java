@@ -3,11 +3,9 @@ package com.ginz.util.base;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -16,9 +14,12 @@ public class Test {
 
 	public static void main(String[] args) throws IOException, ParseException {
 
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-		Date y = sdf.parse("2015-02-10 20:20:36");
-		System.out.println(DateFormatUtil.judgeDate(y));
+		String userId = "39";
+		long uId = 39L;
+		
+		System.out.println(userId.equals(String.valueOf(uId)));
+		
+		//FileUtil.write("D://test.txt","1234567890","");
 	}
 	
 	public static void sort(Map<String, Integer> map) {

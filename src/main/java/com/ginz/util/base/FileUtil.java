@@ -27,7 +27,7 @@ public class FileUtil {
 	 * @param strDestDir 拷贝到指定的文件夹
 	 * @return 如果成功true;否则false
 	 */
-	public boolean copyTo(String strSourceFileName, String strDestDir) {
+	public static boolean copyTo(String strSourceFileName, String strDestDir) {
 		File fileSource = new File(strSourceFileName);
 		File fileDest = new File(strDestDir);
 
@@ -170,7 +170,7 @@ public class FileUtil {
 	 * @param destFile目标文件
 	 * @param content写入内容
 	 */
-	public void write(String destFile,String content){
+	public static void write(String destFile,String content){
 		//String path="e://a.txt";  
         try{  
             FileWriter fw = new FileWriter(destFile,true);  
@@ -190,14 +190,12 @@ public class FileUtil {
 	 * @param content1写入内容1
 	 * @param content2写入内容2
 	 */
-	public void write(String destFile,String content1,String content2){
+	public static void write(String destFile,String content,String content2){
         try {   
              FileWriter fw = new FileWriter(destFile,true);   
              BufferedWriter bw = new BufferedWriter(fw);   
              bw.newLine();   
-			 bw.write(content1);   
-			 bw.newLine();   
-			 bw.write(content2);   
+			 bw.write(content);   
 			 bw.close();  
 			 fw.close();   
         } catch (IOException e) {   

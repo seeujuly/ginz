@@ -813,7 +813,7 @@ public class ActivitiesAction extends BaseAction {
 			PubActivities activity = activitiesService.loadActivities(Long.parseLong(id));
 			if(activity != null){
 				Long uId = activity.getUserId();
-				if(!userId.equals(uId)){	//如果是本人点赞，不发推送消息
+				if(!userId.equals(String.valueOf(uId))){	//如果是本人点赞，不发推送消息
 					AcUser u = accountService.loadUser(uId);
 					if(u != null){
 						AcUser user = accountService.loadUser(Long.parseLong(userId));
@@ -884,7 +884,7 @@ public class ActivitiesAction extends BaseAction {
 				String value = "你的信息有了新评论!";
 				String value2 = "你的评论有了新回复!";
 				String value3 = "你评论过的信息有了新的评论!";
-				if(!userId.equals(uId)){	//非本人发表评论
+				if(!userId.equals(String.valueOf(uId))){	//非本人发表评论
 					
 					AcUser u = accountService.loadUser(uId);
 					if(u != null){

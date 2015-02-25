@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,11 +27,13 @@ import com.ginz.model.Picture;
 import com.ginz.model.PubComments;
 import com.ginz.model.PubPraise;
 import com.ginz.service.AccountService;
+import com.ginz.service.ActivitiesService;
 import com.ginz.service.EventService;
 import com.ginz.service.PictureService;
 import com.ginz.service.ReplyService;
 import com.ginz.util.base.DateFormatUtil;
 import com.ginz.util.base.DictionaryUtil;
+import com.ginz.util.base.FileUtil;
 import com.ginz.util.base.JsonUtil;
 
 //系统设置
@@ -39,6 +42,7 @@ import com.ginz.util.base.JsonUtil;
 public class SystemAction extends BaseAction {
 
 	private AccountService accountService;
+	private ActivitiesService activitiesService;
 	private EventService eventService;
 	private ReplyService replyService;
 	private PictureService pictureService;
@@ -52,6 +56,15 @@ public class SystemAction extends BaseAction {
 		this.accountService = accountService;
 	}
 	
+	public ActivitiesService getActivitiesService() {
+		return activitiesService;
+	}
+
+	@Autowired
+	public void setActivitiesService(ActivitiesService activitiesService) {
+		this.activitiesService = activitiesService;
+	}
+
 	public EventService getEventService() {
 		return eventService;
 	}
@@ -316,11 +329,129 @@ public class SystemAction extends BaseAction {
 				}
 			}else{
 				jsonObject.put("result", "2");
-				jsonObject.put("value", "还未赞过任何信息!");
+				jsonObject.put("value", "还未评论过任何信息!");
 			}
 		}
 		out.print(jsonObject.toString());
 		
 	}
+	
+	//获取所有的用户个人标签
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void getPersonalTabs(){
+						
+		HashMap<String,Object> rethm = accountService.getTabs();
+		List<Object> list = (List<Object>) rethm.get("list");	
+		if(list != null && !list.isEmpty()){
+			Iterator iterator = list.iterator();
+			String content = "";
+			while(iterator.hasNext()){	
+				Object obj = (Object) iterator.next();
+				String valueString = String.valueOf(obj==null?"":obj);
+				if(StringUtils.isNotEmpty(valueString)){
+					String tabs[] = valueString.split(",");
+					if(tabs.length>0){
+						List<String> tabList = new LinkedList<String>();  //去除标签数组中的重复项
+					    for(int i = 0; i < tabs.length; i++) {  
+					        if(!tabList.contains(tabs[i])) {  
+					        	tabList.add(tabs[i]);  
+					        }  
+					    }
+					    
+					    for(int i = 0; i<tabList.size(); i++){
+					    	if(StringUtils.isNotEmpty(content)){
+					    		content += "," + tabList.get(i);
+					    	}else{
+					    		content += tabList.get(i);
+					    	}
+					    }
+					}
+				}
+			}
+			FileUtil.write("D://test.txt",content);
+		}
+		
+	}
+	
+	//获取所有的社区生活信息标签
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void getEventLabels() throws IOException{
+		
+		HttpServletResponse response = ServletActionContext.getResponse();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		JSONArray jsonArray = new JSONArray();
+		
+		HashMap<String,Object> rethm = eventService.getLabels();
+		List<Object> list = (List<Object>) rethm.get("list");	
+		if(list != null && !list.isEmpty()){
+			Iterator iterator = list.iterator();
+			while(iterator.hasNext()){	
+				Object obj = (Object) iterator.next();
+				String valueString = String.valueOf(obj==null?"":obj);
+				if(StringUtils.isNotEmpty(valueString)){
+					String labels[] = valueString.split(",");
+					if(labels.length>0){
+						List<String> labelList = new LinkedList<String>();  //去除标签数组中的重复项
+					    for(int i = 0; i < labels.length; i++) {  
+					        if(!labelList.contains(labels[i])) {  
+					        	labelList.add(labels[i]);  
+					        }  
+					    }
+					    
+					    for(int i = 0; i<labelList.size(); i++){
+					    	jsonArray.add(labelList.get(0));
+					    }
+					}
+				}
+			}
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("eventLabelArray", jsonArray);
+		out.print(jsonObject.toString());
+		
+	}
+
+	//获取所有的互动交易信息标签
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void getActivityLabels() throws IOException{
+						
+		HttpServletResponse response = ServletActionContext.getResponse();
+		response.setContentType("text/html;charset=utf-8");
+		PrintWriter out = response.getWriter();
+		JSONArray jsonArray = new JSONArray();
+		
+		HashMap<String,Object> rethm = activitiesService.getLabels();
+		List<Object> list = (List<Object>) rethm.get("list");	
+		if(list != null && !list.isEmpty()){
+			Iterator iterator = list.iterator();
+			while(iterator.hasNext()){	
+				Object obj = (Object) iterator.next();
+				String valueString = String.valueOf(obj==null?"":obj);
+				if(StringUtils.isNotEmpty(valueString)){
+					String labels[] = valueString.split(",");
+					if(labels.length>0){
+						List<String> labelList = new LinkedList<String>();  //去除标签数组中的重复项
+					    for(int i = 0; i < labels.length; i++) {  
+					        if(!labelList.contains(labels[i])) {  
+					        	labelList.add(labels[i]);  
+					        }  
+					    }
+					    
+					    for(int i = 0; i<labelList.size(); i++){
+					    	jsonArray.add(labelList.get(0));
+					    }
+					}
+				}
+			}
+		}
+		
+		JSONObject jsonObject=new JSONObject();
+		jsonObject.put("activityLabelArray", jsonArray);
+		out.print(jsonObject.toString());
+		
+	}
+	
 	
 }

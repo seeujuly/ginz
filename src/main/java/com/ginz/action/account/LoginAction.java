@@ -2,16 +2,12 @@ package com.ginz.action.account;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import org.apache.commons.lang.StringUtils;
@@ -262,124 +258,4 @@ public class LoginAction extends BaseAction {
 		
 	}
 
-	//获取所有的用户个人标签
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void getPersonalTabs() throws IOException{
-						
-		HttpServletResponse response = ServletActionContext.getResponse();
-		response.setContentType("text/html;charset=utf-8");
-		PrintWriter out = response.getWriter();
-		JSONArray jsonArray = new JSONArray();
-		
-		HashMap<String,Object> rethm = accountService.getTabs();
-		List<Object> list = (List<Object>) rethm.get("list");	
-		if(list != null && !list.isEmpty()){
-			Iterator iterator = list.iterator();
-			while(iterator.hasNext()){	
-				Object obj = (Object) iterator.next();
-				String valueString = String.valueOf(obj==null?"":obj);
-				if(StringUtils.isNotEmpty(valueString)){
-					String tabs[] = valueString.split(",");
-					if(tabs.length>0){
-						List<String> tabList = new LinkedList<String>();  //去除标签数组中的重复项
-					    for(int i = 0; i < tabs.length; i++) {  
-					        if(!tabList.contains(tabs[i])) {  
-					        	tabList.add(tabs[i]);  
-					        }  
-					    }
-					    
-					    for(int i = 0; i<tabList.size(); i++){
-					    	jsonArray.add(tabList.get(i));
-					    }
-					}
-				}
-			}
-		}
-		
-		JSONObject jsonObject=new JSONObject();
-		jsonObject.put("personTabArray", jsonArray);
-		out.print(jsonObject.toString());
-		
-	}
-	
-	//获取所有的社区生活信息标签
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void getEventLabels() throws IOException{
-		
-		HttpServletResponse response = ServletActionContext.getResponse();
-		response.setContentType("text/html;charset=utf-8");
-		PrintWriter out = response.getWriter();
-		JSONArray jsonArray = new JSONArray();
-		
-		HashMap<String,Object> rethm = eventService.getLabels();
-		List<Object> list = (List<Object>) rethm.get("list");	
-		if(list != null && !list.isEmpty()){
-			Iterator iterator = list.iterator();
-			while(iterator.hasNext()){	
-				Object obj = (Object) iterator.next();
-				String valueString = String.valueOf(obj==null?"":obj);
-				if(StringUtils.isNotEmpty(valueString)){
-					String labels[] = valueString.split(",");
-					if(labels.length>0){
-						List<String> labelList = new LinkedList<String>();  //去除标签数组中的重复项
-					    for(int i = 0; i < labels.length; i++) {  
-					        if(!labelList.contains(labels[i])) {  
-					        	labelList.add(labels[i]);  
-					        }  
-					    }
-					    
-					    for(int i = 0; i<labelList.size(); i++){
-					    	jsonArray.add(labelList.get(0));
-					    }
-					}
-				}
-			}
-		}
-		
-		JSONObject jsonObject=new JSONObject();
-		jsonObject.put("eventLabelArray", jsonArray);
-		out.print(jsonObject.toString());
-		
-	}
-
-	//获取所有的互动交易信息标签
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	public void getActivityLabels() throws IOException{
-						
-		HttpServletResponse response = ServletActionContext.getResponse();
-		response.setContentType("text/html;charset=utf-8");
-		PrintWriter out = response.getWriter();
-		JSONArray jsonArray = new JSONArray();
-		
-		HashMap<String,Object> rethm = activitiesService.getLabels();
-		List<Object> list = (List<Object>) rethm.get("list");	
-		if(list != null && !list.isEmpty()){
-			Iterator iterator = list.iterator();
-			while(iterator.hasNext()){	
-				Object obj = (Object) iterator.next();
-				String valueString = String.valueOf(obj==null?"":obj);
-				if(StringUtils.isNotEmpty(valueString)){
-					String labels[] = valueString.split(",");
-					if(labels.length>0){
-						List<String> labelList = new LinkedList<String>();  //去除标签数组中的重复项
-					    for(int i = 0; i < labels.length; i++) {  
-					        if(!labelList.contains(labels[i])) {  
-					        	labelList.add(labels[i]);  
-					        }  
-					    }
-					    
-					    for(int i = 0; i<labelList.size(); i++){
-					    	jsonArray.add(labelList.get(0));
-					    }
-					}
-				}
-			}
-		}
-		
-		JSONObject jsonObject=new JSONObject();
-		jsonObject.put("activityLabelArray", jsonArray);
-		out.print(jsonObject.toString());
-		
-	}
-	
 }
