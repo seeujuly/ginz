@@ -29,10 +29,7 @@ public class PubPraise implements Serializable {
 	private String releaseType;
 	
 	@Column(name="userId")
-	private Long userId;
-	
-	@Column(name="account_type")
-	private String accountType;
+	private String userId;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="createTime")
@@ -69,20 +66,12 @@ public class PubPraise implements Serializable {
 		this.releaseType = releaseType;
 	}
 
-	public Long getUserId() {
+	public String getUserId() {
 		return userId;
 	}
 
-	public void setUserId(Long userId) {
+	public void setUserId(String userId) {
 		this.userId = userId;
-	}
-
-	public String getAccountType() {
-		return accountType;
-	}
-
-	public void setAccountType(String accountType) {
-		this.accountType = accountType;
 	}
 
 	public Date getCreateTime() {

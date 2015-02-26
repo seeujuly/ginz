@@ -23,7 +23,7 @@ public class PubActivities implements Serializable {
 	private Long id;
 	
 	@Column(name="userId")
-	private Long userId;
+	private String userId;
 	
 	@Column(name="subject")
 	private String subject;
@@ -36,9 +36,6 @@ public class PubActivities implements Serializable {
 	
 	@Column(name="cost")
 	private String cost;
-	
-	@Column(name="content")
-	private String content;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="createTime")
@@ -87,11 +84,11 @@ public class PubActivities implements Serializable {
 		this.id = id;
 	}
 
-	public Long getUserId() {
+	public String getUserId() {
 		return userId;
 	}
 
-	public void setUserId(Long userId) {
+	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 
@@ -125,14 +122,6 @@ public class PubActivities implements Serializable {
 
 	public void setCost(String cost) {
 		this.cost = cost;
-	}
-
-	public String getContent() {
-		return content;
-	}
-
-	public void setContent(String content) {
-		this.content = content;
 	}
 
 	public Date getCreateTime() {

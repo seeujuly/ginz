@@ -136,15 +136,13 @@ public class ActivitiesAction extends BaseAction {
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String userId = valueMap.get("id");	//用户id
+		String userId = valueMap.get("userId");	//用户id
 		String subject = valueMap.get("subject");
 		String place = valueMap.get("place");
 		String cost = valueMap.get("cost");
 		String startTime = valueMap.get("startTime");
 		String endTime = valueMap.get("endTime");
 		String label = valueMap.get("label");
-		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
 		
 		String picIds = "";
 		SimpleDateFormat sdf=new SimpleDateFormat("yyyyMMddHHmmss");
@@ -187,8 +185,7 @@ public class ActivitiesAction extends BaseAction {
 					picture.setUrl(serverUrl + dir + fileName);
 					picture.setThumbnailUrl(serverUrl + thumbnailDir + dir + fileName);
 					picture.setFileName(fileName);
-					picture.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
-					picture.setUserId(user.getId());
+					picture.setUserId(userId);
 					picture.setPicType(DictionaryUtil.PIC_TYPE_RELEASE);
 					picture.setCreateTime(nowDate);
 					picture.setFlag(DictionaryUtil.DETELE_FLAG_00);
@@ -205,7 +202,7 @@ public class ActivitiesAction extends BaseAction {
 		}
 		
 		PubActivities activity = new PubActivities();
-		activity.setUserId(Long.parseLong(userId));
+		activity.setUserId(userId);
 		activity.setSubject(subject);
 		activity.setLabel(label);
 		activity.setPlace(place);
@@ -290,7 +287,7 @@ public class ActivitiesAction extends BaseAction {
 		
 		PubActivities activity = activitiesService.loadActivities(Long.parseLong(id));
 		if(activity != null){
-			if(StringUtils.equals(activity.getUserId().toString(),userId)){
+			if(StringUtils.equals(activity.getUserId(),userId)){
 				activitiesService.deleteActivities(Long.parseLong(id));	//删除个人动态信息
 				
 				List<PubPraise> praiseList = replyService.findPraise(" and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' and releaseId = " + activity.getId());
@@ -366,12 +363,12 @@ public class ActivitiesAction extends BaseAction {
 		
 		AcUser user = new AcUser();
 		if(userId!=null&&!userId.equals("")){
-			user = accountService.loadUser(Long.parseLong(userId));
+			user = accountService.loadUser(userId);
 		}
 	
 		try {
 			if(user!=null){
-				String valueString = getHobbies(user.getUserName());
+				String valueString = getHobbies(user.getUserId());
 				String in = "";
 				String notIn = "";
 				if(!valueString.equals("")){
@@ -547,7 +544,7 @@ public class ActivitiesAction extends BaseAction {
 				}
 			}
 			if(uId!=null&&!uId.equals("")){
-				AcUser u = accountService.loadUser(Long.parseLong(uId));
+				AcUser u = accountService.loadUser(uId);
 				if(u != null){
 					json.put("userId", uId);
 					json.put("name", u.getNickName());
@@ -560,7 +557,7 @@ public class ActivitiesAction extends BaseAction {
 				json.put("praiseNum", praiseNum+"");
 				json.put("commentNum", commentNum+"");
 			}
-			List<PubPraise> listPraise = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' and userId = " + userId);
+			List<PubPraise> listPraise = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' and userId = '" + userId + "'");
 			if(listPraise.size()>0){	//判断是否已赞过..
 				json.put("isPraise", "1");
 			}else{
@@ -640,7 +637,7 @@ public class ActivitiesAction extends BaseAction {
 				json.put("name", user.getNickName());
 				json.put("headUrl", user.getHeadPortrait());
 			}
-			List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' and userId = " + userId);
+			List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' and userId = '" + userId + "'");
 			if(list.size()>0){	//判断是否已赞过..
 				json.put("isPraise", "1");
 			}else{
@@ -681,7 +678,7 @@ public class ActivitiesAction extends BaseAction {
 		String userId = valueMap.get("userId");	//报名用户id
 		String id = valueMap.get("id");	//活动id
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		PubActivities activity = activitiesService.loadActivities(Long.parseLong(id));
 		if(activity != null){
 			if(activity.getStatus().equals("0")){
@@ -733,7 +730,7 @@ public class ActivitiesAction extends BaseAction {
 		String userId = valueMap.get("userId");	//报名用户id
 		String id = valueMap.get("id");	//活动id
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		PubActivities activity = activitiesService.loadActivities(Long.parseLong(id));
 		if(activity != null){
 			if(activity.getStatus().equals("0")){
@@ -789,7 +786,7 @@ public class ActivitiesAction extends BaseAction {
 		String id = valueMap.get("id");	//活动id
 		
 		int num = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "'");
-		List<PubPraise> list = replyService.findPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' and userId = " + userId);
+		List<PubPraise> list = replyService.findPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' and userId = '" + userId + "'");
 		if(list.size()>0){	//判断是否已赞过..删除点赞记录(取消点赞)
 			replyService.deletePraise(list.get(0).getId());
 			num--;
@@ -799,8 +796,7 @@ public class ActivitiesAction extends BaseAction {
 			PubPraise praise = new PubPraise();
 			praise.setReleaseId(Long.parseLong(id));
 			praise.setReleaseType(DictionaryUtil.RELEASE_TYPE_03);
-			praise.setUserId(Long.parseLong(userId));
-			praise.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+			praise.setUserId(userId);
 			praise.setCreateTime(new Date());
 			praise.setFlag(DictionaryUtil.DETELE_FLAG_00);
 			replyService.savePraise(praise);
@@ -812,11 +808,11 @@ public class ActivitiesAction extends BaseAction {
 			//发推送消息给发布该活动的社区用户
 			PubActivities activity = activitiesService.loadActivities(Long.parseLong(id));
 			if(activity != null){
-				Long uId = activity.getUserId();
-				if(!userId.equals(String.valueOf(uId))){	//如果是本人点赞，不发推送消息
+				String uId = activity.getUserId();
+				if(!userId.equals(uId)){	//如果是本人点赞，不发推送消息
 					AcUser u = accountService.loadUser(uId);
 					if(u != null){
-						AcUser user = accountService.loadUser(Long.parseLong(userId));
+						AcUser user = accountService.loadUser(userId);
 						if(user != null){
 							String value = user.getNickName() + "赞了你的信息!";
 							
@@ -826,7 +822,7 @@ public class ActivitiesAction extends BaseAction {
 							}
 							
 							//发送系统通知给目标用户
-							messageService.sendMessage(null, "", u.getId(), DictionaryUtil.ACCOUNT_TYPE_01, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_PRAISE);
+							messageService.sendMessage(null, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_PRAISE);
 
 						}
 					}
@@ -834,7 +830,7 @@ public class ActivitiesAction extends BaseAction {
 			}
 		}
 		out.print(jsonObject.toString());
-		countSysTab(Long.parseLong(userId));
+		countSysTab(userId);
 		
 	}
 	
@@ -857,7 +853,7 @@ public class ActivitiesAction extends BaseAction {
 		String commentId = valueMap.get("commentId");	//回复的评论id，非回复评论而是直接对活动发表评论则为空或是0
 		String content = valueMap.get("content");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user != null){
 			PubActivities activity = activitiesService.loadActivities(Long.parseLong(id));
 			if(activity != null){
@@ -865,8 +861,7 @@ public class ActivitiesAction extends BaseAction {
 				comment.setReleaseId(Long.parseLong(id));
 				comment.setReleaseType(DictionaryUtil.RELEASE_TYPE_03);
 				comment.setContent(content);
-				comment.setUserId(Long.parseLong(userId));
-				comment.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+				comment.setUserId(userId);
 				comment.setCreateTime(new Date());
 				if(StringUtils.isNotEmpty(commentId)){
 					comment.setFollowId(Long.parseLong(commentId));
@@ -880,11 +875,11 @@ public class ActivitiesAction extends BaseAction {
 				jsonObject.put("number", num+"");	//更新评论数量
 				out.print(jsonObject.toString());
 				
-				Long uId = activity.getUserId();	//发布信息的用户id
+				String uId = activity.getUserId();	//发布信息的用户id
 				String value = "你的信息有了新评论!";
 				String value2 = "你的评论有了新回复!";
 				String value3 = "你评论过的信息有了新的评论!";
-				if(!userId.equals(String.valueOf(uId))){	//非本人发表评论
+				if(!userId.equals(uId)){	//非本人发表评论
 					
 					AcUser u = accountService.loadUser(uId);
 					if(u != null){
@@ -893,12 +888,12 @@ public class ActivitiesAction extends BaseAction {
 							if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
 								PushIOS.pushSingleDevice(value, u.getDeviceToken());	
 							}
-							messageService.sendMessage(null, "", u.getId(), DictionaryUtil.ACCOUNT_TYPE_01, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+							messageService.sendMessage(null, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 						
 							//发送系统消息给回复的那条评论的发布人
 							PubComments c = replyService.loadComments(Long.parseLong(commentId));
 							if(c!=null){
-								messageService.sendMessage(null, "", c.getUserId(), c.getAccountType(), value2, value2, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+								messageService.sendMessage(null, c.getUserId(), value2, value2, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 							}
 						
 						}else{		//对信息发布新的评论
@@ -906,13 +901,13 @@ public class ActivitiesAction extends BaseAction {
 							if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
 								PushIOS.pushSingleDevice(value, u.getDeviceToken());	
 							}
-							messageService.sendMessage(null, "", u.getId(), DictionaryUtil.ACCOUNT_TYPE_01, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+							messageService.sendMessage(null, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 						
 							//发送系统消息给其他已经评论过该信息的用户
 							List<PubComments> list = replyService.findComments(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' ");
 							if(list.size()>0){
 								for(PubComments c : list){
-									messageService.sendMessage(null, "", c.getUserId(), c.getAccountType(), value3, value3, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+									messageService.sendMessage(null, c.getUserId(), value3, value3, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 								}
 							}
 						}
@@ -923,14 +918,14 @@ public class ActivitiesAction extends BaseAction {
 						//发送系统消息给所回复评论的发布人
 						PubComments c = replyService.loadComments(Long.parseLong(commentId));
 						if(c!=null){
-							messageService.sendMessage(null, "", c.getUserId(), c.getAccountType(), value2, value2, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+							messageService.sendMessage(null, c.getUserId(), value2, value2, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 						}
 					}else{		//对自己的信息发布新的评论
 						//发送系统消息给其他已经评论过该信息的用户
 						List<PubComments> list = replyService.findComments(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' ");
 						if(list.size()>0){
 							for(PubComments c : list){
-								messageService.sendMessage(null, "", c.getUserId(), c.getAccountType(), value3, value3, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+								messageService.sendMessage(null, c.getUserId(), value3, value3, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 							}
 						}
 						
@@ -941,7 +936,7 @@ public class ActivitiesAction extends BaseAction {
 				jsonObject.put("value", "该信息已被删除!");
 			}
 		}
-		countSysTab(Long.parseLong(userId));
+		countSysTab(userId);
 	}
 	
 	//显示点赞的list(只显示给发布信息的用户)
@@ -968,7 +963,7 @@ public class ActivitiesAction extends BaseAction {
 				JSONObject json = new JSONObject();
 				AcUser user = accountService.loadUser(praise.getUserId());
 				if(user != null){
-					json.put("id", user.getId());
+					json.put("userId", user.getUserId());
 					json.put("name", user.getNickName());
 				}
 				jsonArray.add(json);
@@ -1016,7 +1011,7 @@ public class ActivitiesAction extends BaseAction {
 				json.put("createTime", createTime);
 				AcUser user = accountService.loadUser(comment.getUserId());
 				if(user != null){
-					json.put("id", user.getId());
+					json.put("userId", user.getUserId());
 					json.put("name", user.getNickName());
 					json.put("headUrl", user.getHeadPortrait());
 				}
@@ -1054,7 +1049,6 @@ public class ActivitiesAction extends BaseAction {
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String id = valueMap.get("id");	//消息id
 		String userId = valueMap.get("userId");
-		String accountType = valueMap.get("accountType");
 		String description = valueMap.get("description");
 		
 		Reports report = new Reports();
@@ -1062,8 +1056,7 @@ public class ActivitiesAction extends BaseAction {
 		report.setReleaseId(Long.parseLong(id));
 		report.setReleaseType(DictionaryUtil.RELEASE_TYPE_03);
 		report.setDescription(description);
-		report.setUserId(Long.parseLong(userId));
-		report.setAccountType(accountType);
+		report.setUserId(userId);
 		report.setCreateTime(new Date());
 		report.setFlag(DictionaryUtil.DETELE_FLAG_00);
 		replyService.saveReport(report);
@@ -1103,11 +1096,11 @@ public class ActivitiesAction extends BaseAction {
 	}
 	
 	//对用户点赞或评论的信息做统计，统计其参与的信息标签出现的频率最高的10个标签
-	public void countSysTab(Long userId) throws IOException{
+	public void countSysTab(String userId) throws IOException{
 		
 		//查询用户全部的点赞和评论
-		List<PubPraise> praiseList = replyService.findPraise(" and userId = " + userId + " and accountType = '" + DictionaryUtil.ACCOUNT_TYPE_01 + "'");
-		List<PubComments> commentsList = replyService.findComments(" and userId = " + userId + " and accountType = '" + DictionaryUtil.ACCOUNT_TYPE_01 + "' GROUP BY releaseType, releaseId ");
+		List<PubPraise> praiseList = replyService.findPraise(" and userId = '" + userId + "'");
+		List<PubComments> commentsList = replyService.findComments(" and userId = '" + userId + "' GROUP BY releaseType, releaseId ");
 		
 		List<Long> eventList = new ArrayList<Long>();	//用户参与的所有社区生活信息
 		List<Long> activityList = new ArrayList<Long>();	//用户参与的所有互动交易信息
@@ -1191,7 +1184,7 @@ public class ActivitiesAction extends BaseAction {
 		//保存进个人详细表
 		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
-			AcUserDetail userDetail = accountService.loadUserDetail(user.getUserName());
+			AcUserDetail userDetail = accountService.loadUserDetail(user.getUserId());
 			userDetail.setSystemTag(valueString);
 			accountService.updateUserDetail(userDetail);
 		}

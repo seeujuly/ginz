@@ -31,8 +31,8 @@ public class AcUser implements Serializable {
 	@Column(name="nick_name")
 	private String nickName;
 	
-	@Column(name="user_name")
-	private String userName;
+	@Column(name="userId")
+	private String userId;
 	
 	@Column(name="mobile")
 	private String mobile;
@@ -113,12 +113,12 @@ public class AcUser implements Serializable {
 		this.nickName = nickName;
 	}
 
-	public String getUserName() {
-		return userName;
+	public String getUserId() {
+		return userId;
 	}
 
-	public void setUserName(String userName) {
-		this.userName = userName;
+	public void setUserId(String userId) {
+		this.userId = userId;
 	}
 
 	public String getMobile() {

@@ -26,7 +26,7 @@ public class PubNotice implements Serializable  {
 	private Long communityId;
 	
 	@Column(name="property_id")
-	private Long propertyId;
+	private String propertyId;
 	
 	@Column(name="subject")
 	private String subject;
@@ -79,11 +79,11 @@ public class PubNotice implements Serializable  {
 		this.communityId = communityId;
 	}
 
-	public Long getPropertyId() {
+	public String getPropertyId() {
 		return propertyId;
 	}
 
-	public void setPropertyId(Long propertyId) {
+	public void setPropertyId(String propertyId) {
 		this.propertyId = propertyId;
 	}
 

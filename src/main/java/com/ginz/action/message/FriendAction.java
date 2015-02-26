@@ -24,8 +24,6 @@ import com.ginz.model.AcMerchant;
 import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
 import com.ginz.model.MsgFriend;
-import com.ginz.model.MsgMessageBox;
-import com.ginz.model.MsgMessageInfo;
 import com.ginz.service.AccountService;
 import com.ginz.service.FriendService;
 import com.ginz.service.MessageService;
@@ -83,19 +81,17 @@ public class FriendAction extends BaseAction {
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String userId = valueMap.get("userId");	//用户id
-		String accountType = valueMap.get("accountType");	//账户类型
 		String tUserId = valueMap.get("tUserId");	//目标用户id
-		String tAccountType = valueMap.get("tAccountType");	//目标账户类型
 		String message = valueMap.get("message");	//添加好友时的验证消息
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
-		AcUser tUser = accountService.loadUser(Long.parseLong(tUserId));
+		AcUser user = accountService.loadUser(userId);
+		AcUser tUser = accountService.loadUser(tUserId);
 		
 		if(user!=null&&tUser!=null){
 			
 			String condition = "";
-			condition = "and (userId = " + userId + " and accountType = '" + accountType + "' and friendUserId = " + tUserId + " AND friendAccountType = '" + tAccountType + "') ";
-			condition += "OR (userId = " + tUserId + " and accountType = '" + tAccountType + "' and friendUserId = " + userId + " AND friendAccountType = '" + accountType + "')";
+			condition = "and (userId = '" + userId + "' and friendUserId = '" + tUserId + "') ";
+			condition += "OR (userId = '" + tUserId + "' and friendUserId = '" + userId + "')";
 			condition += " and state = 1 ";
 			List<MsgFriend> list = friendService.listFriends(condition);
 			
@@ -104,12 +100,10 @@ public class FriendAction extends BaseAction {
 				jsonObject.put("value", "你们已经是好友了!");
 			}else{
 				MsgFriend friend = new MsgFriend();
-				friend.setUserId(Long.parseLong(userId));
-				friend.setAccountType(accountType);
-				friend.setUserName(user.getNickName());
-				friend.setFriendUserId(Long.parseLong(tUserId));
-				friend.setFriendAccountType(tAccountType);
-				friend.setFriendUserName(tUser.getNickName());
+				friend.setUserId(userId);
+				friend.setNickName(user.getNickName());
+				friend.setFriendUserId(tUserId);
+				friend.setFriendNickName(tUser.getNickName());
 				friend.setState("0");	//状态:0.请求未确认;1.好友
 				friend.setStartType("1");	//0: 别人添加我为好友 1:我添加别人为好友
 				friend.setValidateMessage(message);
@@ -117,32 +111,17 @@ public class FriendAction extends BaseAction {
 				friend.setFlag(DictionaryUtil.DETELE_FLAG_00);
 				friendService.saveFriend(friend);
 				
+				
+				String sValue = user.getNickName() + "请求添加您为好友!";
+				String cValue = sValue + "附加消息：" + message;
+				
 				//发送推送消息给目标用户
 				if(tUser.getDeviceToken()!=null&&!tUser.getDeviceToken().equals("")){
-					PushIOS.pushSingleDevice(user.getNickName() + "请求添加您为好友!",tUser.getDeviceToken());
+					PushIOS.pushSingleDevice(sValue,tUser.getDeviceToken());
 				}
 				
 				//发送系统消息给目标用户
-				MsgMessageInfo messageInfo = new MsgMessageInfo();
-				messageInfo.setUserId(Long.parseLong(userId));
-				messageInfo.setAccountType(accountType);
-				messageInfo.setTargetUserId(Long.parseLong(tUserId));
-				messageInfo.setTargetAccountType(tAccountType);
-				messageInfo.setCreateTime(new Date());
-				messageInfo.setSubject(user.getNickName() + "请求添加您为好友!");
-				messageInfo.setContent(user.getNickName() + "请求添加您为好友!附加消息：" + message);
-				messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_FRIEND_REQUEST);
-				messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
-				MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
-				
-				MsgMessageBox messageBox = new MsgMessageBox();
-				messageBox.setMessageId(messageInfo2.getId());
-				messageBox.setUserId(Long.parseLong(tUserId));
-				messageBox.setAccountType(tAccountType);
-				messageBox.setReceiveDate(new Date());
-				messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
-				messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
-				messageService.saveMessageBox(messageBox);
+				messageService.sendMessage(userId, tUserId, sValue, cValue, null, "", DictionaryUtil.MESSAGE_TYPE_FRIEND_REQUEST);
 				
 				jsonObject.put("result", "2");
 				jsonObject.put("value", "SUCCESS!");
@@ -167,15 +146,13 @@ public class FriendAction extends BaseAction {
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String userId = valueMap.get("userId");	//用户id
-		String accountType = valueMap.get("accountType");	//账户类型
 		String tUserId = valueMap.get("tUserId");	//目标用户id
-		String tAccountType = valueMap.get("tAccountType");	//目标账户类型
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
-		AcUser tUser = accountService.loadUser(Long.parseLong(tUserId));
+		AcUser user = accountService.loadUser(userId);
+		AcUser tUser = accountService.loadUser(tUserId);
 		
 		if(user!=null&&tUser!=null){
-			List<MsgFriend> list = friendService.listFriends(" and userId = " + tUserId + " and accountType = '" + tAccountType + "' and friendUserId = " + userId + " AND friendAccountType = '" + accountType + "' ");
+			List<MsgFriend> list = friendService.listFriends(" and userId = '" + tUserId + "' and friendUserId = '" + userId + "' ");
 			if(list.size()>0){
 				MsgFriend friend = list.get(0);
 				if(StringUtils.equals(friend.getState(), "1")){
@@ -185,32 +162,15 @@ public class FriendAction extends BaseAction {
 					friend.setState("1");
 					friendService.updateFriend(friend);
 					
+					String value = user.getNickName() + "接受了您的添加请求并添加您为好友!";
+					
 					//发送推送消息给目标用户
 					if(tUser.getDeviceToken()!=null&&!tUser.getDeviceToken().equals("")){
-						PushIOS.pushSingleDevice(user.getNickName() + "接受了您的添加请求并添加您为好友!",tUser.getDeviceToken());
+						PushIOS.pushSingleDevice(value,tUser.getDeviceToken());
 					}
 					
 					//发送系统消息给目标用户
-					MsgMessageInfo messageInfo = new MsgMessageInfo();
-					messageInfo.setUserId(Long.parseLong(userId));
-					messageInfo.setAccountType(accountType);
-					messageInfo.setTargetUserId(Long.parseLong(tUserId));
-					messageInfo.setTargetAccountType(tAccountType);
-					messageInfo.setCreateTime(new Date());
-					messageInfo.setSubject(user.getNickName() + "接受了您的添加请求并添加您为好友!");
-					messageInfo.setContent(user.getNickName() + "接受了您的添加请求并添加您为好友!");
-					messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_FRIEND_PASS);
-					messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
-					MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
-					
-					MsgMessageBox messageBox = new MsgMessageBox();
-					messageBox.setMessageId(messageInfo2.getId());
-					messageBox.setUserId(Long.parseLong(tUserId));
-					messageBox.setAccountType(tAccountType);
-					messageBox.setReceiveDate(new Date());
-					messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
-					messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
-					messageService.saveMessageBox(messageBox);
+					messageService.sendMessage(userId, tUserId, value, value, null, "", DictionaryUtil.MESSAGE_TYPE_FRIEND_PASS);
 					
 					jsonObject.put("result", "2");
 					jsonObject.put("value", "SUCCESS!");
@@ -219,8 +179,8 @@ public class FriendAction extends BaseAction {
 			}
 			
 			String condition = "";
-			condition = "and (userId = " + userId + " and accountType = '" + accountType + "' and friendUserId = " + tUserId + " AND friendAccountType = '" + tAccountType + "') ";
-			condition += "OR (userId = " + tUserId + " and accountType = '" + tAccountType + "' and friendUserId = " + userId + " AND friendAccountType = '" + accountType + "')";
+			condition = "and (userId = '" + userId + "' and friendUserId = '" + tUserId + "') ";
+			condition += "OR (userId = '" + tUserId + "' and friendUserId = '" + userId + "')";
 			condition += " and state = 0 ";
 			List<MsgFriend> listFriends = friendService.listFriends(condition);
 			if(list.size()>0){
@@ -249,18 +209,16 @@ public class FriendAction extends BaseAction {
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String userId = valueMap.get("userId");	//用户id
-		String accountType = valueMap.get("accountType");	//账户类型
 		String tUserId = valueMap.get("tUserId");	//目标用户id
-		String tAccountType = valueMap.get("tAccountType");	//目标账户类型
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
-		AcUser tUser = accountService.loadUser(Long.parseLong(tUserId));
+		AcUser user = accountService.loadUser(userId);
+		AcUser tUser = accountService.loadUser(tUserId);
 		
 		if(user!=null&&tUser!=null){
 			
 			String condition = "";
-			condition = "and (userId = " + userId + " and accountType = '" + accountType + "' and friendUserId = " + tUserId + " AND friendAccountType = '" + tAccountType + "') ";
-			condition += "OR (userId = " + tUserId + " and accountType = '" + tAccountType + "' and friendUserId = " + userId + " AND friendAccountType = '" + accountType + "')";
+			condition = "and (userId = '" + userId + "' and friendUserId = '" + tUserId + "') ";
+			condition += "OR (userId = '" + tUserId + "' and friendUserId = '" + userId + "')";
 			List<MsgFriend> list = friendService.listFriends(condition);
 			
 			if(list.size()>0){
@@ -289,18 +247,16 @@ public class FriendAction extends BaseAction {
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String userId = valueMap.get("userId");	//用户id
-		String accountType = valueMap.get("accountType");	//账户类型
 		String tUserId = valueMap.get("tUserId");	//目标用户id
-		String tAccountType = valueMap.get("tAccountType");	//目标账户类型
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
-		AcUser tUser = accountService.loadUser(Long.parseLong(tUserId));
+		AcUser user = accountService.loadUser(userId);
+		AcUser tUser = accountService.loadUser(tUserId);
 		
 		if(user!=null&&tUser!=null){
 			
 			String condition = "";
-			condition = "and (userId = " + userId + " and accountType = '" + accountType + "' and friendUserId = " + tUserId + " AND friendAccountType = '" + tAccountType + "') ";
-			condition += "OR (userId = " + tUserId + " and accountType = '" + tAccountType + "' and friendUserId = " + userId + " AND friendAccountType = '" + accountType + "')";
+			condition = "and (userId = '" + userId + "' and friendUserId = '" + tUserId + "') ";
+			condition += "OR (userId = '" + tUserId + "' and friendUserId = '" + userId + "')";
 			List<MsgFriend> list = friendService.listFriends(condition);
 			
 			if(list.size()>0){
@@ -330,15 +286,14 @@ public class FriendAction extends BaseAction {
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String userId = valueMap.get("userId");	//用户id
-		String accountType = valueMap.get("accountType");	//账户类型
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		
 		if(user!=null){
 			
 			String condition = "";
-			condition = "and (userId = " + userId + " and accountType = '" + accountType + "') ";
-			condition += "OR (friendUserId = " + userId + " AND friendAccountType = '" + accountType + "')";
+			condition = "and (userId = '" + userId + "' ";
+			condition += "OR friendUserId = '" + userId + "')";
 			List<MsgFriend> list = friendService.listFriends(condition);
 			
 			if(list.size()>0){
@@ -348,34 +303,30 @@ public class FriendAction extends BaseAction {
 				
 				for(MsgFriend friend:list){
 					JSONObject json = new JSONObject();
-					Long fId = 0L;
-					String fAccountType = "";
-					if(StringUtils.equals(userId, friend.getUserId().toString())){
+					String fId = "";
+					if(StringUtils.equals(userId, friend.getUserId())){
 						fId = friend.getFriendUserId();
-						fAccountType = friend.getFriendAccountType();
 					}else{
 						fId = friend.getUserId();
-						fAccountType = friend.getAccountType();
 					}
 					
 					json.put("userId", fId);
-					json.put("accountType", fAccountType);
-					if(StringUtils.equals(fAccountType, DictionaryUtil.ACCOUNT_TYPE_01)){
+					if(StringUtils.equals(userId.substring(0, 1), "u")){
 						AcUser u = accountService.loadUser(fId);
 						json.put("name", u.getNickName());
-						json.put("userName", u.getUserName());
+						json.put("userId", u.getUserId());
 						json.put("headUrl", u.getHeadPortrait());
 						userArray.add(json);
-					}else if(StringUtils.equals(fAccountType, DictionaryUtil.ACCOUNT_TYPE_02)){
+					}else if(StringUtils.equals(userId.substring(0, 1), "p")){
 						AcProperty p = accountService.loadProperty(fId);
 						json.put("name", p.getPropertyName());
-						json.put("userName", p.getUserName());
+						json.put("userId", p.getUserId());
 						json.put("headUrl", p.getPicUrl());
 						propertyArray.add(json);
-					}else if(StringUtils.equals(fAccountType, DictionaryUtil.ACCOUNT_TYPE_03)){
+					}else if(StringUtils.equals(userId.substring(0, 1), "m")){
 						AcMerchant m = accountService.loadMerchant(fId);
 						json.put("name", m.getMerchantName());
-						json.put("userName", m.getUserName());
+						json.put("userId", m.getUserId());
 						json.put("headUrl", m.getPicUrl());
 						merchantArray.add(json);
 					}
@@ -434,15 +385,11 @@ public class FriendAction extends BaseAction {
 			if(userList.size()>0){
 				for(int i=0;i<userList.size();i++){
 					JSONObject json = new JSONObject();
-					List<AcUser> list = accountService.findUser(" and userName = '" + userList.get(i) + "' ");
-					if(list.size()>0){
-						AcUser user = list.get(0);
-						if(user!=null){
-							json.put("userId", user.getId());
-							json.put("name", user.getNickName());
-							json.put("userName", user.getUserName());
-							json.put("headUrl", user.getHeadPortrait());
-						}
+					AcUser user = accountService.loadUser(userList.get(i));
+					if(user!=null){
+						json.put("name", user.getNickName());
+						json.put("userId", user.getUserId());
+						json.put("headUrl", user.getHeadPortrait());
 						userArray.add(json);
 					}
 				}
@@ -451,15 +398,12 @@ public class FriendAction extends BaseAction {
 			if(propertyList.size()>0){
 				for(int i=0;i<propertyList.size();i++){
 					JSONObject json = new JSONObject();
-					List<AcProperty> list = accountService.findProperty(" and userName = '" + propertyList.get(i) + "' ");
-					if(list.size()>0){
-						AcProperty property = list.get(0);
-						if(property!=null){
-							json.put("userId", property.getId());
-							json.put("name", property.getPropertyName());
-							json.put("userName", property.getUserName());
-							json.put("headUrl", property.getPicUrl());
-						}
+					AcProperty property = accountService.loadProperty(propertyList.get(i));
+					if(property!=null){
+						json.put("userId", property.getId());
+						json.put("name", property.getPropertyName());
+						json.put("userId", property.getUserId());
+						json.put("headUrl", property.getPicUrl());
 						propertyArray.add(json);
 					}
 				}
@@ -468,15 +412,12 @@ public class FriendAction extends BaseAction {
 			if(merchantList.size()>0){
 				for(int i=0;i<merchantList.size();i++){
 					JSONObject json = new JSONObject();
-					List<AcMerchant> list = accountService.findMerchant(" and userName = '" + merchantList.get(i) + "' ");
-					if(list.size()>0){
-						AcMerchant merchant = list.get(0);
-						if(merchant!=null){
-							json.put("userId", merchant.getId());
-							json.put("name", merchant.getMerchantName());
-							json.put("userName", merchant.getUserName());
-							json.put("headUrl", merchant.getPicUrl());
-						}
+					AcMerchant merchant = accountService.loadMerchant(merchantList.get(i));
+					if(merchant!=null){
+						json.put("userId", merchant.getId());
+						json.put("name", merchant.getMerchantName());
+						json.put("userId", merchant.getUserId());
+						json.put("headUrl", merchant.getPicUrl());
 						merchantArray.add(json);
 					}
 				}

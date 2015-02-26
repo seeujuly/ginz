@@ -26,7 +26,7 @@ public interface EventService {
 	public HashMap<String, Object> seachEvents(String in, String notIn);
 	
 	//进入个人主页时显示个人发布的所有信息
-	public HashMap<String, Object> listRelease(Long userId);
+	public HashMap<String, Object> listRelease(String userId);
 	
 	//获取所有的社区生活信息标签
 	public HashMap<String, Object> getLabels();

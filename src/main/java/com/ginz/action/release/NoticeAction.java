@@ -31,8 +31,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.ginz.action.BaseAction;
 import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
-import com.ginz.model.MsgMessageBox;
-import com.ginz.model.MsgMessageInfo;
 import com.ginz.model.Picture;
 import com.ginz.model.PubComments;
 import com.ginz.model.PubNotice;
@@ -130,14 +128,12 @@ public class NoticeAction extends BaseAction{
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String userId = valueMap.get("id");	//社区用户id
+		String userId = valueMap.get("userId");	//社区用户id
 		String communityId = valueMap.get("communityId");
 		String subject = valueMap.get("subject");
 		String startTime = valueMap.get("startTime");
 		String endTime = valueMap.get("endTime");
 		String isOpen = valueMap.get("isOpen");
-		
-		AcProperty property = accountService.loadProperty(Long.parseLong(userId));
 		
 		String picIds = "";
 		SimpleDateFormat sdf=new SimpleDateFormat("yyyyMMddHHmmss");
@@ -179,8 +175,7 @@ public class NoticeAction extends BaseAction{
 					picture.setUrl(serverUrl + dir + fileName);
 					picture.setThumbnailUrl(serverUrl + thumbnailDir + dir + fileName);
 					picture.setFileName(fileName);
-					picture.setAccountType(DictionaryUtil.ACCOUNT_TYPE_02);
-					picture.setUserId(property.getId());
+					picture.setUserId(userId);
 					picture.setPicType(DictionaryUtil.PIC_TYPE_RELEASE);
 					picture.setCreateTime(nowDate);
 					picture.setFlag(DictionaryUtil.DETELE_FLAG_00);
@@ -196,7 +191,7 @@ public class NoticeAction extends BaseAction{
 		}
 		
 		PubNotice notice = new PubNotice();
-		notice.setPropertyId(Long.parseLong(userId));
+		notice.setPropertyId(userId);
 		notice.setCommunityId(Long.parseLong(communityId));
 		notice.setSubject(subject);
 		notice.setPicIds(picIds);
@@ -225,26 +220,8 @@ public class NoticeAction extends BaseAction{
 					}
 					
 					//发送系统消息给目标用户
-					MsgMessageInfo messageInfo = new MsgMessageInfo();
-					messageInfo.setTargetUserId(user.getId());
-					messageInfo.setTargetAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
-					messageInfo.setCreateTime(new Date());
-					messageInfo.setSubject(subject);
-					messageInfo.setContent(subject);
-					messageInfo.setReleaseId(notice2.getId());
-					messageInfo.setReleaseType(DictionaryUtil.RELEASE_TYPE_01);
-					messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_PUSH);
-					messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
-					MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
-					
-					MsgMessageBox messageBox = new MsgMessageBox();
-					messageBox.setMessageId(messageInfo2.getId());
-					messageBox.setUserId(user.getId());
-					messageBox.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
-					messageBox.setReceiveDate(new Date());
-					messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
-					messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
-					messageService.saveMessageBox(messageBox);
+					messageService.sendMessage(null, user.getUserId(), subject, subject, notice2.getId(),DictionaryUtil.RELEASE_TYPE_01, DictionaryUtil.MESSAGE_TYPE_PUSH);
+
 				}
 			}
 			Map<String,Object> keyMap = new HashMap<String, Object>();
@@ -275,7 +252,7 @@ public class NoticeAction extends BaseAction{
 		
 		PubNotice notice = noticeService.loadNotice(Long.parseLong(id));
 		if(notice != null){
-			if(StringUtils.equals(notice.getPropertyId().toString(),userId)){
+			if(StringUtils.equals(notice.getPropertyId(),userId)){
 				noticeService.deleteNotice(Long.parseLong(id));	//删除个人动态信息
 				
 				List<PubPraise> praiseList = replyService.findPraise(" and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "' and releaseId = " + notice.getId());
@@ -350,7 +327,7 @@ public class NoticeAction extends BaseAction{
 		
 		AcUser user = new AcUser();
 		if(userId!=null&&!userId.equals("")){
-			user = accountService.loadUser(Long.parseLong(userId));
+			user = accountService.loadUser(userId);
 		}
 	
 		if(user!=null){
@@ -380,13 +357,13 @@ public class NoticeAction extends BaseAction{
 						}
 						AcProperty property = accountService.loadProperty(notice.getPropertyId());
 						if(property != null){
-							json.put("userId", property.getId());
+							json.put("userId", property.getUserId());
 							json.put("name", property.getPropertyName());
 							json.put("headUrl", property.getPicUrl());
 						}
 						json.put("praiseNum", praiseNum+"");
 						json.put("commentNum", commentNum+"");
-						List<PubPraise> listPraise = replyService.findPraise(" and releaseId = " + notice.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "' and userId = " + userId);
+						List<PubPraise> listPraise = replyService.findPraise(" and releaseId = " + notice.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "' and userId = '" + userId + "'");
 						if(listPraise.size()>0){	//判断是否已赞过..
 							json.put("isPraise", "1");
 						}else{
@@ -441,7 +418,7 @@ public class NoticeAction extends BaseAction{
 				json.put("name", property.getPropertyName());
 				json.put("headUrl", property.getPicUrl());
 			}
-			List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "' and userId = " + userId);
+			List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "' and userId = '" + userId + "'");
 			if(list.size()>0){	//判断是否已赞过..
 				json.put("isPraise", "1");
 			}else{
@@ -484,7 +461,7 @@ public class NoticeAction extends BaseAction{
 		String id = valueMap.get("id");	//公告id
 		
 		int num = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
-		List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "' and userId = " + userId);
+		List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "' and userId = '" + userId + "'");
 		if(list.size()>0){	//判断是否已赞过..删除点赞记录(取消点赞)
 			replyService.deletePraise(list.get(0).getId());
 			num--;
@@ -494,8 +471,7 @@ public class NoticeAction extends BaseAction{
 			PubPraise praise = new PubPraise();
 			praise.setReleaseId(Long.parseLong(id));
 			praise.setReleaseType(DictionaryUtil.RELEASE_TYPE_01);
-			praise.setUserId(Long.parseLong(userId));
-			praise.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+			praise.setUserId(userId);
 			praise.setCreateTime(new Date());
 			praise.setFlag(DictionaryUtil.DETELE_FLAG_00);
 			replyService.savePraise(praise);
@@ -507,11 +483,11 @@ public class NoticeAction extends BaseAction{
 			//发推送消息给发布该公告的社区用户
 			PubNotice notice = noticeService.loadNotice(Long.parseLong(id));
 			if(notice != null){
-				Long propertyId = notice.getPropertyId();
+				String propertyId = notice.getPropertyId();
 				if(!userId.equals(propertyId)){	//如果是本人点赞，不发推送消息
 					AcProperty property = accountService.loadProperty(propertyId);
 					if(property != null){
-						AcUser user = accountService.loadUser(Long.parseLong(userId));
+						AcUser user = accountService.loadUser(userId);
 						if(user != null){
 							String value = user.getNickName() + "赞了你的信息!";
 							
@@ -521,8 +497,7 @@ public class NoticeAction extends BaseAction{
 							}
 							
 							//发送系统通知给目标用户
-							messageService.sendMessage(null, "", propertyId, DictionaryUtil.ACCOUNT_TYPE_02, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_01, DictionaryUtil.MESSAGE_TYPE_PRAISE);
-
+							messageService.sendMessage(null, propertyId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_01, DictionaryUtil.MESSAGE_TYPE_PRAISE);
 						}
 					}
 				}
@@ -554,8 +529,7 @@ public class NoticeAction extends BaseAction{
 		comment.setReleaseId(Long.parseLong(id));
 		comment.setReleaseType(DictionaryUtil.RELEASE_TYPE_01);
 		comment.setContent(content);
-		comment.setUserId(Long.parseLong(userId));
-		comment.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
+		comment.setUserId(userId);
 		comment.setCreateTime(new Date());
 		comment.setFlag(DictionaryUtil.DETELE_FLAG_00);
 		replyService.saveComments(comment);
@@ -570,11 +544,11 @@ public class NoticeAction extends BaseAction{
 		//发推送消息给发布该公告的社区用户
 		PubNotice notice = noticeService.loadNotice(Long.parseLong(id));
 		if(notice != null){
-			Long propertyId = notice.getPropertyId();
+			String propertyId = notice.getPropertyId();
 			if(!userId.equals(propertyId)){	//如果是本人评论，不发推送消息
 				AcProperty property = accountService.loadProperty(propertyId);
 				if(property != null){
-					AcUser user = accountService.loadUser(Long.parseLong(userId));
+					AcUser user = accountService.loadUser(userId);
 					if(user != null){
 						String value = user.getNickName() + "评论了你的信息!";
 						
@@ -584,7 +558,7 @@ public class NoticeAction extends BaseAction{
 						}
 						
 						//发送系统通知给目标用户
-						messageService.sendMessage(null, "", propertyId, DictionaryUtil.ACCOUNT_TYPE_02, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_01, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+						messageService.sendMessage(null, propertyId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_01, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 					}
 				}
 			}
@@ -616,7 +590,7 @@ public class NoticeAction extends BaseAction{
 				JSONObject json = new JSONObject();
 				AcUser user = accountService.loadUser(praise.getUserId());
 				if(user != null){
-					json.put("id", user.getId());
+					json.put("userId", user.getUserId());
 					json.put("name", user.getNickName());
 				}
 				jsonArray.add(json);
@@ -663,7 +637,7 @@ public class NoticeAction extends BaseAction{
 				json.put("createTime", createTime);
 				AcUser user = accountService.loadUser(comment.getUserId());
 				if(user != null){
-					json.put("id", user.getId());
+					json.put("userId", user.getUserId());
 					json.put("name", user.getNickName());
 					json.put("headUrl", user.getHeadPortrait());
 				}

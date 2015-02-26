@@ -32,10 +32,7 @@ public class Reports implements Serializable {
 	private String description;
 	
 	@Column(name="userId")
-	private Long userId;
-	
-	@Column(name="account_type")
-	private String accountType;
+	private String userId;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="createTime")
@@ -80,20 +77,12 @@ public class Reports implements Serializable {
 		this.description = description;
 	}
 
-	public Long getUserId() {
+	public String getUserId() {
 		return userId;
 	}
 
-	public void setUserId(Long userId) {
+	public void setUserId(String userId) {
 		this.userId = userId;
-	}
-
-	public String getAccountType() {
-		return accountType;
-	}
-
-	public void setAccountType(String accountType) {
-		this.accountType = accountType;
 	}
 
 	public Date getCreateTime() {

@@ -103,7 +103,7 @@ public class UserSettingAction extends BaseAction {
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String userId = valueMap.get("userId");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		
 		SimpleDateFormat sdf=new SimpleDateFormat("yyyyMMddHHmmss");
 		Date nowDate = new Date();
@@ -141,8 +141,7 @@ public class UserSettingAction extends BaseAction {
 					picture.setUrl(serverUrl + dir + fileName);
 					picture.setThumbnailUrl(serverUrl + thumbnailDir + dir + fileName);
 					picture.setFileName(fileName);
-					picture.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
-					picture.setUserId(user.getId());
+					picture.setUserId(userId);
 					picture.setPicType(DictionaryUtil.PIC_TYPE_PORTRAIT);
 					picture.setCreateTime(nowDate);
 					picture.setFlag(DictionaryUtil.DETELE_FLAG_00);
@@ -177,7 +176,7 @@ public class UserSettingAction extends BaseAction {
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String userId = valueMap.get("userId");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		
 		SimpleDateFormat sdf=new SimpleDateFormat("yyyyMMddHHmmss");
 		Date nowDate = new Date();
@@ -209,8 +208,7 @@ public class UserSettingAction extends BaseAction {
 					Picture picture = new Picture();
 					picture.setUrl(serverUrl + dir + fileName);
 					picture.setFileName(fileName);
-					picture.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
-					picture.setUserId(user.getId());
+					picture.setUserId(userId);
 					picture.setPicType(DictionaryUtil.PIC_TYPE_BG);
 					picture.setCreateTime(nowDate);
 					picture.setFlag(DictionaryUtil.DETELE_FLAG_00);
@@ -246,11 +244,9 @@ public class UserSettingAction extends BaseAction {
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		
 		String userId = valueMap.get("userId");	//用户id
-		String accountType = valueMap.get("accountType");	//账户类型
 		String tUserId = valueMap.get("tUserId");	//目标用户id
-		String tAccountType = valueMap.get("tAccountType");	//目标账户类型
 		
-		AcUser user = accountService.loadUser(Long.parseLong(tUserId));
+		AcUser user = accountService.loadUser(tUserId);
 		
 		if(user!=null){
 			jsonObject.put("result", "1");
@@ -258,7 +254,7 @@ public class UserSettingAction extends BaseAction {
 			jsonObject.put("headUrl", user.getHeadPortrait());
 			jsonObject.put("bgUrl", user.getBackground());
 			
-			HashMap<String,Object> rethm = eventService.listRelease(Long.parseLong(tUserId));
+			HashMap<String,Object> rethm = eventService.listRelease(tUserId);
 			List<Object> list = (List<Object>) rethm.get("list");
 			
 			if(list != null && !list.isEmpty()){
@@ -283,10 +279,10 @@ public class UserSettingAction extends BaseAction {
 					
 				}
 			}
-			if(!StringUtils.equals(userId, tUserId)||!StringUtils.equals(accountType, tAccountType)){	//查看自己的主页是不判断
+			if(!StringUtils.equals(userId, tUserId)){	//查看自己的主页时不判断
 				String condition = "";
-				condition = "and (userId = " + userId + " and account_type = '" + accountType + "' and friend_userId = " + tUserId + " AND friend_account_type = '" + tAccountType + "') ";
-				condition += "OR (userId = " + tUserId + " and account_type = '" + tAccountType + "' and friend_userId = " + userId + " AND friend_account_type = '" + accountType + "')";
+				condition = "and (userId = '" + userId + "' and friend_userId = '" + tUserId + "') ";
+				condition += "OR (userId = '" + tUserId + "' and friend_userId = '" + userId + "')";
 				List<MsgFriend> friendList = friendService.listFriends(condition);
 				if(friendList.size()>0){
 					jsonObject.put("isFriend", "0");	//是好友关系
@@ -295,7 +291,7 @@ public class UserSettingAction extends BaseAction {
 				}
 			}
 			
-			HashMap<String,Object> rethMap = friendService.listFriends(Long.parseLong(tUserId), tAccountType);
+			HashMap<String,Object> rethMap = friendService.getFriendMap(tUserId);
 			jsonObject.put("friendNum", rethMap.get("cnt"));	//好友数
 			jsonObject.put("releaseNum", rethm.get("cnt"));		//发布的消息数
 			jsonObject.put("value", jsonArray);
@@ -367,7 +363,7 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String communityId = valueMap.get("communityId");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
 			user.setCommunityId(Long.parseLong(communityId));
 			accountService.updateUser(user);
@@ -395,7 +391,7 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String email = valueMap.get("email");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
 			user.setEmail(email);
 			accountService.updateUser(user);
@@ -423,7 +419,7 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String nickName = valueMap.get("nickName");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
 			user.setNickName(nickName);
 			accountService.updateUser(user);
@@ -451,7 +447,7 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String address = valueMap.get("address");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
 			user.setAddress(address);
 			accountService.updateUser(user);
@@ -479,9 +475,9 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String gender = valueMap.get("gender");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(user.getUserName());
+			AcUserDetail userDetail = getUserDetail(user.getUserId());
 			userDetail.setGender(gender);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -515,9 +511,9 @@ public class UserSettingAction extends BaseAction {
 		int day = DateFormatUtil.getDay(date);
 		String constellation = DateFormatUtil.getAstro(month,day);
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(user.getUserName());
+			AcUserDetail userDetail = getUserDetail(user.getUserId());
 			userDetail.setConstellation(constellation);
 			userDetail.setBirthday(DateFormatUtil.stringToDate(birthday));
 			userDetail.setAge(DateFormatUtil.getAgeByBirthday(DateFormatUtil.stringToDate(birthday)));
@@ -546,9 +542,9 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String emotionalState = valueMap.get("emotionalState");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(user.getUserName());
+			AcUserDetail userDetail = getUserDetail(user.getUserId());
 			userDetail.setEmotionalState(emotionalState);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -575,9 +571,9 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String career = valueMap.get("career");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(user.getUserName());
+			AcUserDetail userDetail = getUserDetail(user.getUserId());
 			userDetail.setCareer(career);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -604,9 +600,9 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String company = valueMap.get("company");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(user.getUserName());
+			AcUserDetail userDetail = getUserDetail(user.getUserId());
 			userDetail.setCompany(company);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -633,9 +629,9 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String school = valueMap.get("school");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(user.getUserName());
+			AcUserDetail userDetail = getUserDetail(user.getUserId());
 			userDetail.setSchool(school);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -662,9 +658,9 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String catering = valueMap.get("catering");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(user.getUserName());
+			AcUserDetail userDetail = getUserDetail(user.getUserId());
 			userDetail.setCatering(catering);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -691,9 +687,9 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String socialContact = valueMap.get("socialContact");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(user.getUserName());
+			AcUserDetail userDetail = getUserDetail(user.getUserId());
 			userDetail.setSocialContact(socialContact);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -720,9 +716,9 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String travel = valueMap.get("travel");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(user.getUserName());
+			AcUserDetail userDetail = getUserDetail(user.getUserId());
 			userDetail.setTravel(travel);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -749,9 +745,9 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String sports = valueMap.get("sports");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(user.getUserName());
+			AcUserDetail userDetail = getUserDetail(user.getUserId());
 			userDetail.setSports(sports);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -778,9 +774,9 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String music = valueMap.get("music");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(user.getUserName());
+			AcUserDetail userDetail = getUserDetail(user.getUserId());
 			userDetail.setMusic(music);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -807,9 +803,9 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String others = valueMap.get("others");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(user.getUserName());
+			AcUserDetail userDetail = getUserDetail(user.getUserId());
 			userDetail.setOthers(others);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -836,9 +832,9 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String communityNeed = valueMap.get("communityNeed");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(user.getUserName());
+			AcUserDetail userDetail = getUserDetail(user.getUserId());
 			userDetail.setCommunityNeed(communityNeed);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -865,9 +861,9 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String dislike = valueMap.get("dislike");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
-			AcUserDetail userDetail = getUserDetail(user.getUserName());
+			AcUserDetail userDetail = getUserDetail(user.getUserId());
 			userDetail.setDislike(dislike);
 			accountService.updateUserDetail(userDetail);
 		}
@@ -894,7 +890,7 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String tab = valueMap.get("tab");
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		if(user!=null){
 			AcUserDetail userDetail = getUserDetail(userId);
 			userDetail.setPersonalTag(tab);

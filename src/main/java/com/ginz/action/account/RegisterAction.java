@@ -65,13 +65,13 @@ public class RegisterAction extends BaseAction {
 				user.setMobile(mobile);
 				user.setPassword(password);
 				
-				String userName = "u" + RandomUtil.digitsRandom();
-				List<AcUser> list =  accountService.findUser(" and userName = '" + userName + "'");
+				String userId = "u" + RandomUtil.digitsRandom();
+				List<AcUser> list =  accountService.findUser(" and userName = '" + userId + "'");
 				if(list.size()>0){
-					userName = "u" + RandomUtil.digitsRandom();
+					userId = "u" + RandomUtil.digitsRandom();
 				}
-				user.setUserName(userName);
-				user.setNickName(userName);
+				user.setUserId(userId);
+				user.setNickName(userId);
 				user.setCommunityId(1L);
 				user.setStatus(DictionaryUtil.ACCOUNT_STATUS_00);
 				user.setFlag(DictionaryUtil.DETELE_FLAG_00);

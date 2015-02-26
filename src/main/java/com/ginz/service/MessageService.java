@@ -26,8 +26,8 @@ public interface MessageService {
 	public List<MsgMessageBox> listMessageBox(String condition);
 
 	// 发布新的信息，并保存在收件箱
-	public void sendMessage(Long userId, String accountType, Long targetUserId,
-			String targetAccountType, String subject, String content,
-			Long releaseId, String releaseType, String messageType);
+	public void sendMessage(String userId, String targetUserId, String subject,
+			String content, Long releaseId, String releaseType,
+			String messageType);
 
 }

@@ -94,7 +94,7 @@ public class AccountServiceImpl implements AccountService {
 	
 	@Override
 	public AcUser loadUser(String userId){
-		String hql = "from AcUser where userName = '" + userId + "' ";
+		String hql = "from AcUser where userId = '" + userId + "' ";
 		List<AcUser> list = userDao.find(hql);
 		return list.get(0);
 		
@@ -135,8 +135,8 @@ public class AccountServiceImpl implements AccountService {
 		
 		HashMap<String, Object> hm = new HashMap<String, Object>();
 		StringBuffer sb = new StringBuffer();
-		sb.append(" SELECT id,nick_name,head_portrait,device_account from ac_user where id in ( ");
-		sb.append(" SELECT id as userId FROM ac_user where 1=1 " + userCondition);
+		sb.append(" SELECT userId,nick_name,head_portrait,device_account from ac_user where userId in ( ");
+		sb.append(" SELECT userId FROM ac_user where 1=1 " + userCondition);
 		sb.append(" UNION  SELECT userId FROM ac_user_detail where 1=1 " + detailCondition + " )");
 		hm.put("list", userDao.queryBySql(sb.toString()));
 		return hm;
@@ -238,6 +238,14 @@ public class AccountServiceImpl implements AccountService {
 	public AcProperty loadProperty(Long id) {
 		return propertyDao.get(AcProperty.class, id);
 	}
+	
+	@Override
+	public AcProperty loadProperty(String userId){
+		String hql = "from AcProperty where userId = '" + userId + "' ";
+		List<AcProperty> list = propertyDao.find(hql);
+		return list.get(0);
+		
+	}
 
 	@Override
 	public AcProperty saveProperty(AcProperty property) {
@@ -273,7 +281,7 @@ public class AccountServiceImpl implements AccountService {
 	public HashMap<String, Object> findPropertyBySql(String condition){
 		HashMap<String, Object> hm = new HashMap<String, Object>();
 		StringBuffer sb = new StringBuffer();
-		sb.append(" select t.id,t.property_name,t.pic_url from ac_property t ");
+		sb.append(" select t.userId,t.property_name,t.pic_url from ac_property t ");
 		sb.append(" where 1=1 ");
 		if(condition!=null&&!condition.equals("")){
 			sb.append(condition);
@@ -312,6 +320,15 @@ public class AccountServiceImpl implements AccountService {
 	public AcMerchant loadMerchant(Long id) {
 		return merchantDao.get(AcMerchant.class, id);
 	}
+	
+
+	@Override
+	public AcMerchant loadMerchant(String userId){
+		String hql = "from AcMerchant where userId = '" + userId + "' ";
+		List<AcMerchant> list = merchantDao.find(hql);
+		return list.get(0);
+		
+	}
 
 	@Override
 	public AcMerchant saveMerchant(AcMerchant merchant) {
@@ -348,7 +365,7 @@ public class AccountServiceImpl implements AccountService {
 	public HashMap<String, Object> findMerchantBySql(String condition){
 		HashMap<String, Object> hm = new HashMap<String, Object>();
 		StringBuffer sb = new StringBuffer();
-		sb.append(" select t.id,t.merchant_name,t.pic_url from ac_merchant t ");
+		sb.append(" select t.userId,t.merchant_name,t.pic_url from ac_merchant t ");
 		sb.append(" where 1=1 ");
 		if(condition!=null&&!condition.equals("")){
 			sb.append(condition);

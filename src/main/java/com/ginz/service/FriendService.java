@@ -19,6 +19,6 @@ public interface FriendService {
 	public List<MsgFriend> listFriends(String condition);
 	
 	//查询好友列表
-	public HashMap<String, Object> listFriends(Long userId, String accountType);
+	public HashMap<String, Object> getFriendMap(String userId);
 	
 }

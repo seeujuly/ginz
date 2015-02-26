@@ -93,14 +93,14 @@ public class EventServiceImpl implements EventService {
 	}
 	
 	//进入个人主页时显示个人发布的所有信息
-	public HashMap<String, Object> listRelease(Long userId){
+	public HashMap<String, Object> listRelease(String userId){
 		
 		HashMap<String, Object> hm = new HashMap<String, Object>();
 		StringBuffer sb = new StringBuffer();
 		sb.append(" select t.id,t.subject,t.picIds,3 releaseType, t.createTime ");
-		sb.append("  from pub_activities t where t.userId = " + userId);
+		sb.append("  from pub_activities t where t.userId = '" + userId + "'");
 		sb.append(" UNION SELECT t1.id,t1.subject,t1.picIds,2 releaseType,");
-		sb.append(" t1.createTime from pub_event t1 WHERE t1.userId = " + userId);
+		sb.append(" t1.createTime from pub_event t1 WHERE t1.userId = '" + userId + "'");
 		sb.append(" ORDER BY createTime DESC ");	
 		hm.put("list", eventDao.queryBySql(sb.toString()));
 		hm.put("cnt", eventDao.queryBySql(sb.toString()).size());

@@ -22,8 +22,8 @@ public class AcProperty implements Serializable {
 	@GeneratedValue(strategy=GenerationType.IDENTITY)
 	private Long id;
 	
-	@Column(name="user_name")
-	private String userName;
+	@Column(name="userId")
+	private String userId;
 	
 	@Column(name="password")
 	private String password;
@@ -89,12 +89,12 @@ public class AcProperty implements Serializable {
 		this.id = id;
 	}
 
-	public String getUserName() {
-		return userName;
+	public String getUserId() {
+		return userId;
 	}
 
-	public void setUserName(String userName) {
-		this.userName = userName;
+	public void setUserId(String userId) {
+		this.userId = userId;
 	}
 
 	public String getPassword() {

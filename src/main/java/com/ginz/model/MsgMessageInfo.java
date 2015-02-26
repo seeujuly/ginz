@@ -23,16 +23,10 @@ public class MsgMessageInfo implements Serializable {
 	private Long id;
 	
 	@Column(name="userId")
-	private Long userId;
-	
-	@Column(name="account_type")
-	private String accountType;
+	private String userId;
 	
 	@Column(name="target_userId")
-	private Long targetUserId;
-	
-	@Column(name="target_account_type")
-	private String targetAccountType;
+	private String targetUserId;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="createTime")
@@ -71,36 +65,20 @@ public class MsgMessageInfo implements Serializable {
 		this.id = id;
 	}
 
-	public Long getUserId() {
+	public String getUserId() {
 		return userId;
 	}
 
-	public void setUserId(Long userId) {
+	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 
-	public String getAccountType() {
-		return accountType;
-	}
-
-	public void setAccountType(String accountType) {
-		this.accountType = accountType;
-	}
-
-	public Long getTargetUserId() {
+	public String getTargetUserId() {
 		return targetUserId;
 	}
 
-	public void setTargetUserId(Long targetUserId) {
+	public void setTargetUserId(String targetUserId) {
 		this.targetUserId = targetUserId;
-	}
-
-	public String getTargetAccountType() {
-		return targetAccountType;
-	}
-
-	public void setTargetAccountType(String targetAccountType) {
-		this.targetAccountType = targetAccountType;
 	}
 
 	public Date getCreateTime() {

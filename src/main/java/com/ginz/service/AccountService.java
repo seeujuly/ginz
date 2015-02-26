@@ -51,6 +51,8 @@ public interface AccountService {
 	public AcProperty loginProperty(AcProperty property);
 	
 	public AcProperty loadProperty(Long id);
+	
+	public AcProperty loadProperty(String userId);
 
 	public AcProperty saveProperty(AcProperty property);
 	
@@ -66,6 +68,8 @@ public interface AccountService {
 	public AcMerchant loginMerchant(AcMerchant merchant);
 	
 	public AcMerchant loadMerchant(Long id);
+	
+	public AcMerchant loadMerchant(String userId);
 
 	public AcMerchant saveMerchant(AcMerchant merchant);
 	

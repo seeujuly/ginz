@@ -132,7 +132,7 @@ public class SearchAction extends BaseAction {
 			while(iterator.hasNext()){
 				Object[] obj = (Object[]) iterator.next();
 				JSONObject json = new JSONObject();
-				json.put("id", String.valueOf(obj[0]==null?"":obj[0]));
+				json.put("userId", String.valueOf(obj[0]==null?"":obj[0]));
 				json.put("name", String.valueOf(obj[1]==null?"":obj[1]));
 				json.put("headUrl", String.valueOf(obj[2]==null?"":obj[2]));
 				jsonArray.add(json);
@@ -180,7 +180,7 @@ public class SearchAction extends BaseAction {
 			while(iterator.hasNext()){
 				Object[] obj = (Object[]) iterator.next();
 				JSONObject json = new JSONObject();
-				json.put("id", String.valueOf(obj[0]==null?"":obj[0]));
+				json.put("userId", String.valueOf(obj[0]==null?"":obj[0]));
 				json.put("name", String.valueOf(obj[1]==null?"":obj[1]));
 				json.put("headUrl", String.valueOf(obj[2]==null?"":obj[2]));
 				jsonArray.add(json);
@@ -233,7 +233,7 @@ public class SearchAction extends BaseAction {
 			while(iterator.hasNext()){
 				Object[] obj = (Object[]) iterator.next();
 				JSONObject json = new JSONObject();
-				json.put("id", String.valueOf(obj[0]==null?"":obj[0]));
+				json.put("userId", String.valueOf(obj[0]==null?"":obj[0]));
 				json.put("name", String.valueOf(obj[1]==null?"":obj[1]));
 				json.put("headUrl", String.valueOf(obj[2]==null?"":obj[2]));
 				jsonArray.add(json);
@@ -421,7 +421,7 @@ public class SearchAction extends BaseAction {
 		}
 		
 		if(StringUtils.equals(userId.substring(0, 1), "u")){		//个人用户查看自己所属小区公告
-			List<AcUser> userList = accountService.findUser(" userName = '" + userId + "' ");
+			List<AcUser> userList = accountService.findUser(" userId = '" + userId + "' ");
 			if(userList.size()>0){
 				AcUser user = userList.get(0);
 				if(user!=null){
@@ -465,7 +465,7 @@ public class SearchAction extends BaseAction {
 			}
 			
 		}else if(StringUtils.equals(userId.substring(0, 1), "p")){		//物业查看所管理的各个小区的公告
-			List<AcProperty> propertyList = accountService.findProperty(" userName = '" + userId + "' ");
+			List<AcProperty> propertyList = accountService.findProperty(" userId = '" + userId + "' ");
 			if(propertyList.size()>0){
 				AcProperty property = propertyList.get(0);
 				if(property!=null){
@@ -518,7 +518,7 @@ public class SearchAction extends BaseAction {
 			}
 		}
 		/*else if(StringUtils.equals(userId.substring(0, 1), "m")){
-			merchantList = accountService.findMerchant(" userName = '" + userId + "' ");
+			merchantList = accountService.findMerchant(" userId = '" + userId + "' ");
 		}AcMerchant*/
 
 		out.print(jsonObject.toString());

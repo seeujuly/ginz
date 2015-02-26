@@ -23,25 +23,19 @@ public class MsgFriend implements Serializable {
 	private Long id;
 	
 	@Column(name="userId")
-	private Long userId;
+	private String userId;
 	
-	@Column(name="account_type")
-	private String accountType;
-	
-	@Column(name="user_name")
-	private String userName;
+	@Column(name="nick_name")
+	private String nickName;
 	
 	@Column(name="groupId")
 	private Long groupId;
 	
 	@Column(name="friend_userId")
-	private Long friendUserId;
+	private String friendUserId;
 	
-	@Column(name="friend_account_type")
-	private String friendAccountType;
-	
-	@Column(name="friend_user_name")
-	private String friendUserName;
+	@Column(name="friend_nick_name")
+	private String friendNickName;
 	
 	@Column(name="friend_server")
 	private String friendServer;
@@ -81,28 +75,20 @@ public class MsgFriend implements Serializable {
 		this.id = id;
 	}
 
-	public Long getUserId() {
+	public String getUserId() {
 		return userId;
 	}
 
-	public void setUserId(Long userId) {
+	public void setUserId(String userId) {
 		this.userId = userId;
 	}
 
-	public String getAccountType() {
-		return accountType;
+	public String getNickName() {
+		return nickName;
 	}
 
-	public void setAccountType(String accountType) {
-		this.accountType = accountType;
-	}
-	
-	public String getUserName() {
-		return userName;
-	}
-
-	public void setUserName(String userName) {
-		this.userName = userName;
+	public void setNickName(String nickName) {
+		this.nickName = nickName;
 	}
 
 	public Long getGroupId() {
@@ -113,28 +99,20 @@ public class MsgFriend implements Serializable {
 		this.groupId = groupId;
 	}
 
-	public Long getFriendUserId() {
+	public String getFriendUserId() {
 		return friendUserId;
 	}
 
-	public void setFriendUserId(Long friendUserId) {
+	public void setFriendUserId(String friendUserId) {
 		this.friendUserId = friendUserId;
 	}
 
-	public String getFriendAccountType() {
-		return friendAccountType;
+	public String getFriendNickName() {
+		return friendNickName;
 	}
 
-	public void setFriendAccountType(String friendAccountType) {
-		this.friendAccountType = friendAccountType;
-	}
-
-	public String getFriendUserName() {
-		return friendUserName;
-	}
-
-	public void setFriendUserName(String friendUserName) {
-		this.friendUserName = friendUserName;
+	public void setFriendNickName(String friendNickName) {
+		this.friendNickName = friendNickName;
 	}
 
 	public String getFriendServer() {

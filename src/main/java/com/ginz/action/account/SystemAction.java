@@ -115,16 +115,7 @@ public class SystemAction extends BaseAction {
 		}
 	
 		if(user!=null){
-			String accountType = "";
-			if(StringUtils.equals(userId.substring(0, 1), "u")){		//个人用户
-				accountType = DictionaryUtil.ACCOUNT_TYPE_01;
-			}else if(StringUtils.equals(userId.substring(0, 1), "p")){	//物业
-				accountType = DictionaryUtil.ACCOUNT_TYPE_02;
-			}else if(StringUtils.equals(userId.substring(0, 1), "m")){	//商家
-				accountType = DictionaryUtil.ACCOUNT_TYPE_03;
-			}
-			
-			List<PubPraise> praiseList = replyService.findPraise(" and userId = " + user.getId() + " and accountType = '" + accountType + "'");
+			List<PubPraise> praiseList = replyService.findPraise(" and userId = '" + userId + "'");
 			
 			if(praiseList.size()>0){
 				String noticeIds = "";	//用户参与的所有社区公告信息id集合		
@@ -183,7 +174,7 @@ public class SystemAction extends BaseAction {
 							}
 						}
 						if(uId!=null&&!uId.equals("")){
-							AcUser u = accountService.loadUser(Long.parseLong(uId));
+							AcUser u = accountService.loadUser(uId);
 							if(u != null){
 								json.put("userId", uId);
 								json.put("name", u.getNickName());
@@ -234,16 +225,7 @@ public class SystemAction extends BaseAction {
 		}
 	
 		if(user!=null){
-			String accountType = "";
-			if(StringUtils.equals(userId.substring(0, 1), "u")){		//个人用户
-				accountType = DictionaryUtil.ACCOUNT_TYPE_01;
-			}else if(StringUtils.equals(userId.substring(0, 1), "p")){	//物业
-				accountType = DictionaryUtil.ACCOUNT_TYPE_02;
-			}else if(StringUtils.equals(userId.substring(0, 1), "m")){	//商家
-				accountType = DictionaryUtil.ACCOUNT_TYPE_03;
-			}
-			
-			List<PubComments> commentsList = replyService.findComments(" and userId = " + user.getId() + " and accountType = '" + accountType + "'");
+			List<PubComments> commentsList = replyService.findComments(" and userId = '" + userId + "'");
 			
 			if(commentsList.size()>0){
 				String noticeIds = "";	//用户参与的所有社区公告信息id集合		
@@ -309,7 +291,7 @@ public class SystemAction extends BaseAction {
 							}
 						}
 						if(uId!=null&&!uId.equals("")){
-							AcUser u = accountService.loadUser(Long.parseLong(uId));
+							AcUser u = accountService.loadUser(uId);
 							if(u != null){
 								json.put("userId", uId);
 								json.put("name", u.getNickName());

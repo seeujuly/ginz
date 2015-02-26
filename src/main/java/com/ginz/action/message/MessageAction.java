@@ -120,12 +120,11 @@ public class MessageAction extends BaseAction {
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String userId = valueMap.get("userId");	//用户id
-		String accountType = valueMap.get("accountType");	//账户类型
 		
-		AcUser user = accountService.loadUser(Long.parseLong(userId));
+		AcUser user = accountService.loadUser(userId);
 		try {
 			if(user!=null){
-				String condition = " and userId = " + userId + " and accountType = '" + accountType + "' and readFlag = '" + DictionaryUtil.MESSAGE_UNREAD + "' ";
+				String condition = " and userId = '" + userId + "' and readFlag = '" + DictionaryUtil.MESSAGE_UNREAD + "' ";
 				List<MsgMessageBox> list = messageService.listMessageBox(condition);
 				if(list.size()>0){
 					JSONArray jsonArray = new JSONArray();
@@ -139,6 +138,8 @@ public class MessageAction extends BaseAction {
 							json.put("messageType", messageInfo.getMessageType());
 							json.put("releaseType", messageInfo.getReleaseType());
 							json.put("releaseId", messageInfo.getReleaseId());
+							String createTime = DateFormatUtil.dateToStringM(messageInfo.getCreateTime());
+							json.put("createTime", createTime);
 							
 							if(StringUtils.isNotEmpty(messageInfo.getReleaseType())&&messageInfo.getReleaseId()!=null){
 								String picIds = "";
@@ -170,7 +171,7 @@ public class MessageAction extends BaseAction {
 							}
 							
 							if(messageInfo.getUserId()!=null){
-								long uId = messageInfo.getUserId();
+								String uId = messageInfo.getUserId();
 								AcUser u = accountService.loadUser(uId);
 								if(u!=null){
 									json.put("userId", uId);
@@ -216,12 +217,11 @@ public class MessageAction extends BaseAction {
 			jsonObject.put("messageId", messageId);
 			jsonObject.put("subject", messageInfo.getSubject());
 			jsonObject.put("content", messageInfo.getContent());
-			jsonObject.put("accountType", messageInfo.getAccountType());
 			if(messageInfo.getUserId()!=null){
-				long userId = messageInfo.getUserId();
+				String userId = messageInfo.getUserId();
 				AcUser user = accountService.loadUser(userId);
 				if(user!=null){
-					jsonObject.put("userId", userId+"");
+					jsonObject.put("userId", userId);
 					jsonObject.put("name", user.getNickName());
 					jsonObject.put("headUrl", user.getHeadPortrait());
 				}
@@ -282,9 +282,8 @@ public class MessageAction extends BaseAction {
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String userId = valueMap.get("userId");	//用户id
-		String accountType = valueMap.get("accountType");	//账户类型
 		
-		String condition = " and userId = " + userId + " and accountType = '" + accountType + "' and readFlag = '" + DictionaryUtil.MESSAGE_UNREAD + "' ";
+		String condition = " and userId = '" + userId + "' and readFlag = '" + DictionaryUtil.MESSAGE_UNREAD + "' ";
 		List<MsgMessageBox> list = messageService.listMessageBox(condition);
 		if(list.size()>0){
 			jsonObject.put("messageNum", list.size() + "");

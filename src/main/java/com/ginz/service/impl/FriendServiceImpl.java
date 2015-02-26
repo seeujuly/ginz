@@ -55,14 +55,14 @@ public class FriendServiceImpl implements FriendService {
 	
 	//查询好友列表
 	@Override
-	public HashMap<String, Object> listFriends(Long userId, String accountType){
+	public HashMap<String, Object> getFriendMap(String userId){
 		
 		HashMap<String, Object> hm = new HashMap<String, Object>();
 		StringBuffer sb = new StringBuffer();
-		sb.append(" SELECT t.userId as userId,t.account_type as accountType,t.friend_user_name as nickName ");
-		sb.append(" from msg_friend t WHERE t.userId = " + userId + " and t.account_type = '" + accountType + "' ");
-		sb.append(" UNION SELECT t.userId as userId,t.account_type as accountType,t.user_name as nickName ");
-		sb.append(" from msg_friend t WHERE t.friend_userId = " + userId + " and t.account_type = '" + accountType + "' ");
+		sb.append(" SELECT t.userId as userId,t.friend_nick_name as nickName ");
+		sb.append(" from msg_friend t WHERE t.userId = '" + userId + "' ");
+		sb.append(" UNION SELECT t.userId as userId,t.nick_name as nickName ");
+		sb.append(" from msg_friend t WHERE t.friend_userId = '" + userId + "' ");
 		sb.append(" ORDER BY nickName ASC ");	
 		
 		hm.put("list", friendDao.queryBySql(sb.toString()));
