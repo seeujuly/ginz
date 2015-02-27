@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang.StringUtils;
 import org.json.JSONObject;
 
 import com.tencent.xinge.MessageIOS;
@@ -49,17 +50,20 @@ public class PushIOS {
 		message.setCustom(custom);*/
 		
 		XingeApp xinge = new XingeApp(PushDictionary.ACCESS_ID, PushDictionary.SECRET_KEY);
-		JSONObject ret = xinge.pushSingleAccount(0, account, message, XingeApp.IOSENV_DEV);
+		JSONObject ret = xinge.pushSingleAccount(0, account, message, XingeApp.IOSENV_PROD);
 		return (ret);
 	}
 	
 	//多个账号下发通知消息
-	public static JSONObject pushAccountList(String content, Map<String,Object> custom, List<String> accountList) {
+	public static JSONObject pushAccountList(String content, Map<String,Object> custom, List<String> accountList, String sendTime) {
 		
 		MessageIOS message = new MessageIOS();
 		message.setAlert(content);
 		message.setExpireTime(259200);
 		message.setCustom(custom);
+		if(StringUtils.isNotEmpty(sendTime)){
+			message.setSendTime(sendTime);
+		}
 		/*message.setBadge(1);
 		message.setSound("beep.wav");
 		List<String> accountList = new ArrayList<String>();
@@ -67,7 +71,7 @@ public class PushIOS {
 		accountList.add("joelliu");*/
 		
 		XingeApp xinge = new XingeApp(PushDictionary.ACCESS_ID, PushDictionary.SECRET_KEY);
-		JSONObject ret = xinge.pushAccountList(0, accountList, message, XingeApp.IOSENV_DEV);
+		JSONObject ret = xinge.pushAccountList(0, accountList, message, XingeApp.IOSENV_PROD);
 		return (ret);
 	}
 	
@@ -79,7 +83,7 @@ public class PushIOS {
 		message.setExpireTime(259200);
 		
 		XingeApp xinge = new XingeApp(PushDictionary.ACCESS_ID, PushDictionary.SECRET_KEY);
-		JSONObject ret = xinge.pushAllDevice(0, message, XingeApp.IOSENV_DEV);
+		JSONObject ret = xinge.pushAllDevice(0, message, XingeApp.IOSENV_PROD);
 		return (ret);
 	}
 	
@@ -95,7 +99,7 @@ public class PushIOS {
 		tagList.add("phone");
 		
 		XingeApp xinge = new XingeApp(PushDictionary.ACCESS_ID, PushDictionary.SECRET_KEY);
-		JSONObject ret = xinge.pushTags(0, tagList, "OR", message, XingeApp.IOSENV_DEV);
+		JSONObject ret = xinge.pushTags(0, tagList, "OR", message, XingeApp.IOSENV_PROD);
 		return (ret);
 	}
 	

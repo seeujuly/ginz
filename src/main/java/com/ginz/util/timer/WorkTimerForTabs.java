@@ -39,8 +39,9 @@ public class WorkTimerForTabs implements Runnable  {
 
 	public void run() {
 		try {
-			/*SystemAction sa = new SystemAction();
-			sa.getPersonalTabs();*/
+			/*TimeTask tt = new TimeTask();
+			tt.getPersonalTabs();
+			tt.getEventLabel();*/
 		} catch (Exception e) {
 			e.printStackTrace();
 			schedual.shutdown();

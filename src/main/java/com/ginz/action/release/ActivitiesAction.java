@@ -479,23 +479,31 @@ public class ActivitiesAction extends BaseAction {
 						}
 					}
 					
-			        int pageNum = Integer.parseInt(page);
+					int pageNum = Integer.parseInt(page);
 			        if(pageNum == 1){
 						if(jsonArray.size()<rows){
 							jsonObject.put("value", jsonArray);
 						}else{
 							jsonObject.put("value", jsonArray.subList(0,rows));
 						}
+						jsonObject.put("result", "1");
+						jsonObject.put("page", page);
 					}else if(pageNum > 1){
-						if((jsonArray.size()>(pageNum-1)*rows)&&jsonArray.size()<pageNum*rows){
-							jsonObject.put("value", jsonArray.subList((pageNum-1)*rows, jsonArray.size()));
+						if(jsonArray.size()<=(pageNum-1)*rows){
+							jsonObject.put("result", "2");
+							jsonObject.put("page", page);
+							jsonObject.put("value", "没有更多的活动信息!");
 						}else{
-							jsonObject.put("value", jsonArray.subList((pageNum-1)*rows, pageNum*rows));
+							if((jsonArray.size()>(pageNum-1)*rows)&&jsonArray.size()<pageNum*rows){
+								jsonObject.put("value", jsonArray.subList((pageNum-1)*rows, jsonArray.size()));
+							}else{
+								jsonObject.put("value", jsonArray.subList((pageNum-1)*rows, pageNum*rows));
+							}
+							jsonObject.put("result", "1");
+							jsonObject.put("page", page);
 						}
 					}
-			        
-					jsonObject.put("result", "1");
-					jsonObject.put("page", page);
+					
 				}else{
 					jsonObject.put("result", "2");
 					jsonObject.put("page", page);

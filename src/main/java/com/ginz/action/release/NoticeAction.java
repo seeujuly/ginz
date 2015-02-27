@@ -134,6 +134,7 @@ public class NoticeAction extends BaseAction{
 		String startTime = valueMap.get("startTime");
 		String endTime = valueMap.get("endTime");
 		String isOpen = valueMap.get("isOpen");
+		String sendTime = valueMap.get("sendTime");
 		
 		String picIds = "";
 		SimpleDateFormat sdf=new SimpleDateFormat("yyyyMMddHHmmss");
@@ -223,12 +224,12 @@ public class NoticeAction extends BaseAction{
 					messageService.sendMessage(null, user.getUserId(), subject, subject, notice2.getId(),DictionaryUtil.RELEASE_TYPE_01, DictionaryUtil.MESSAGE_TYPE_PUSH);
 
 				}
+				Map<String,Object> keyMap = new HashMap<String, Object>();
+				keyMap.put("id", notice2.getId());
+				keyMap.put("userId", userId);
+				keyMap.put("accountType", DictionaryUtil.ACCOUNT_TYPE_02);
+				PushIOS.pushAccountList(subject, keyMap, accountList,sendTime);
 			}
-			Map<String,Object> keyMap = new HashMap<String, Object>();
-			keyMap.put("id", notice2.getId());
-			keyMap.put("userId", userId);
-			keyMap.put("accountType", DictionaryUtil.ACCOUNT_TYPE_02);
-			PushIOS.pushAccountList(subject, keyMap, accountList);
 		}
 		
 	}

@@ -325,18 +325,25 @@ public class UserSettingAction extends BaseAction {
 		AcUser user = accountService.loadUser(userId);
 		
 		if(user!=null){
-			
 			AcUserDetail userDetail = accountService.loadUserDetail(userId);
 			if(userDetail!=null){
 				jsonObject = JSONObject.fromObject(userDetail);
-				jsonObject.put("result", "1");
-			}else{
-				jsonObject.put("result", "2");
-				jsonObject.put("value", "还未填写详细信息");
+				jsonObject.remove("createTime");
+				jsonObject.remove("birthday");
+				jsonObject.remove("workStart");
+				jsonObject.remove("workEnd");
+				String birthday = "";
+				if(userDetail.getBirthday()!=null){
+					birthday = DateFormatUtil.dateToStringM(userDetail.getBirthday());
+				}
+				jsonObject.put("birthday", birthday);
 			}
-			
+			jsonObject.put("result", "1");
+			jsonObject.put("nickName", user.getNickName());
+			jsonObject.put("email", user.getEmail());
+			jsonObject.put("address", user.getAddress());
 		}else{
-			jsonObject.put("result", "3");
+			jsonObject.put("result", "2");
 			jsonObject.put("value", "查无此人或该用户已被封号");
 		}
 		
@@ -383,7 +390,7 @@ public class UserSettingAction extends BaseAction {
 		HttpServletRequest request = ServletActionContext.getRequest();
 		response.setContentType("text/html;charset=utf-8");
 		PrintWriter out = response.getWriter();
-		
+		JSONObject jsonObject=new JSONObject();
 		Map<String,String[]> map = request.getParameterMap();
 		String a[] = map.get("json");
 		String jsonString = a[0];
@@ -391,14 +398,29 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String email = valueMap.get("email");
 		
-		AcUser user = accountService.loadUser(userId);
-		if(user!=null){
-			user.setEmail(email);
-			accountService.updateUser(user);
+		List<AcUser> uList = accountService.findUser(" and email = '" + email + "' ");
+		boolean flag;
+		if(uList.size()>0){
+			if(StringUtils.equals(userId, uList.get(0).getUserId())){
+				flag = true;
+			}else{
+				flag = false;
+			}
+		}else{
+			flag = true;
 		}
 		
-		JSONObject jsonObject=new JSONObject();
-		jsonObject.put("value", "SUCCESS!");
+		if(flag){
+			AcUser user = accountService.loadUser(userId);
+			if(user!=null){
+				user.setEmail(email);
+				accountService.updateUser(user);
+			}
+			jsonObject.put("value", "SUCCESS!");
+		}else{
+			jsonObject.put("value", "该邮箱已存在！");
+		}
+		
 		out.print(jsonObject.toString());
 		
 	}
@@ -411,7 +433,7 @@ public class UserSettingAction extends BaseAction {
 		HttpServletRequest request = ServletActionContext.getRequest();
 		response.setContentType("text/html;charset=utf-8");
 		PrintWriter out = response.getWriter();
-		
+		JSONObject jsonObject=new JSONObject();
 		Map<String,String[]> map = request.getParameterMap();
 		String a[] = map.get("json");
 		String jsonString = a[0];
@@ -419,14 +441,28 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");
 		String nickName = valueMap.get("nickName");
 		
-		AcUser user = accountService.loadUser(userId);
-		if(user!=null){
-			user.setNickName(nickName);
-			accountService.updateUser(user);
+		List<AcUser> uList = accountService.findUser(" and nickName = '" + nickName + "' ");
+		boolean flag;
+		if(uList.size()>0){
+			if(StringUtils.equals(userId, uList.get(0).getUserId())){
+				flag = true;
+			}else{
+				flag = false;
+			}
+		}else{
+			flag = true;
 		}
-		
-		JSONObject jsonObject=new JSONObject();
-		jsonObject.put("value", "SUCCESS!");
+
+		if(flag){
+			AcUser user = accountService.loadUser(userId);
+			if(user!=null){
+				user.setNickName(nickName);
+				accountService.updateUser(user);
+			}
+			jsonObject.put("value", "SUCCESS!");
+		}else{
+			jsonObject.put("value", "该昵称已存在！");
+		}
 		out.print(jsonObject.toString());
 		
 	}

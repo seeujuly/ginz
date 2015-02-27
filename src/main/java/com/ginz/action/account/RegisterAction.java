@@ -66,8 +66,8 @@ public class RegisterAction extends BaseAction {
 				user.setPassword(password);
 				
 				String userId = "u" + RandomUtil.digitsRandom();
-				List<AcUser> list =  accountService.findUser(" and userName = '" + userId + "'");
-				if(list.size()>0){
+				AcUser u =  accountService.loadUser(userId);
+				if(u!=null){
 					userId = "u" + RandomUtil.digitsRandom();
 				}
 				user.setUserId(userId);

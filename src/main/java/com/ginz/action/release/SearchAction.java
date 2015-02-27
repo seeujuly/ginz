@@ -280,7 +280,7 @@ public class SearchAction extends BaseAction {
 		List<AcProperty> propertyList = new ArrayList<AcProperty>();
 		List<AcMerchant> merchantList = new ArrayList<AcMerchant>();
 		if(StringUtils.equals(userId.substring(0, 1), "u")){		//个人用户
-			userList = accountService.findUser(" userName = '" + userId + "' ");
+			userList = accountService.findUser(" userId = '" + userId + "' ");
 			if(userList.size()>0){
 				AcUser user = userList.get(0);
 			}

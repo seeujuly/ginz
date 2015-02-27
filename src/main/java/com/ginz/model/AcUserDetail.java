@@ -28,16 +28,10 @@ public class AcUserDetail implements Serializable {
 	@Column(name="gender")
 	private String gender;	//性别
 	
-	@Column(name="isOpen_gender")
-	private String isOpenGender;
-	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="birthday")
 	private Date birthday;	//生日
 	
-	@Column(name="isOpen_birthday")
-	private String isOpenBirthday;
-
 	@Column(name="age")
 	private int age;	//年龄
 	
@@ -47,20 +41,11 @@ public class AcUserDetail implements Serializable {
 	@Column(name="emotional_state")
 	private String emotionalState;	//情感状态
 	
-	@Column(name="isOpen_emotional")
-	private String isOpenEmotional;
-	
 	@Column(name="career")
 	private String career;	//职业
-	
-	@Column(name="isOpen_career")
-	private String isOpenCareer;
-	
+
 	@Column(name="company")
 	private String company;	//公司
-	
-	@Column(name="isOpen_company")
-	private String isOpenCompany;
 	
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name="work_start")
@@ -70,14 +55,8 @@ public class AcUserDetail implements Serializable {
 	@Column(name="work_end")
 	private Date workEnd;	//工作时间-结束
 	
-	@Column(name="isOpen_workTime")
-	private String isOpenWorkTime;
-	
 	@Column(name="school")
 	private String school;	//学校
-	
-	@Column(name="isOpen_school")
-	private String isOpenSchool;
 	
 	@Column(name="personal_tag")
 	private String personalTag;		//个人标签：由用户自己添加
@@ -144,28 +123,12 @@ public class AcUserDetail implements Serializable {
 		this.gender = gender;
 	}
 
-	public String getIsOpenGender() {
-		return isOpenGender;
-	}
-
-	public void setIsOpenGender(String isOpenGender) {
-		this.isOpenGender = isOpenGender;
-	}
-
 	public Date getBirthday() {
 		return birthday;
 	}
 
 	public void setBirthday(Date birthday) {
 		this.birthday = birthday;
-	}
-
-	public String getIsOpenBirthday() {
-		return isOpenBirthday;
-	}
-
-	public void setIsOpenBirthday(String isOpenBirthday) {
-		this.isOpenBirthday = isOpenBirthday;
 	}
 
 	public int getAge() {
@@ -192,14 +155,6 @@ public class AcUserDetail implements Serializable {
 		this.emotionalState = emotionalState;
 	}
 
-	public String getIsOpenEmotional() {
-		return isOpenEmotional;
-	}
-
-	public void setIsOpenEmotional(String isOpenEmotional) {
-		this.isOpenEmotional = isOpenEmotional;
-	}
-
 	public String getCareer() {
 		return career;
 	}
@@ -208,28 +163,12 @@ public class AcUserDetail implements Serializable {
 		this.career = career;
 	}
 
-	public String getIsOpenCareer() {
-		return isOpenCareer;
-	}
-
-	public void setIsOpenCareer(String isOpenCareer) {
-		this.isOpenCareer = isOpenCareer;
-	}
-
 	public String getCompany() {
 		return company;
 	}
 
 	public void setCompany(String company) {
 		this.company = company;
-	}
-
-	public String getIsOpenCompany() {
-		return isOpenCompany;
-	}
-
-	public void setIsOpenCompany(String isOpenCompany) {
-		this.isOpenCompany = isOpenCompany;
 	}
 
 	public Date getWorkStart() {
@@ -248,28 +187,12 @@ public class AcUserDetail implements Serializable {
 		this.workEnd = workEnd;
 	}
 
-	public String getIsOpenWorkTime() {
-		return isOpenWorkTime;
-	}
-
-	public void setIsOpenWorkTime(String isOpenWorkTime) {
-		this.isOpenWorkTime = isOpenWorkTime;
-	}
-
 	public String getSchool() {
 		return school;
 	}
 
 	public void setSchool(String school) {
 		this.school = school;
-	}
-
-	public String getIsOpenSchool() {
-		return isOpenSchool;
-	}
-
-	public void setIsOpenSchool(String isOpenSchool) {
-		this.isOpenSchool = isOpenSchool;
 	}
 
 	public String getPersonalTag() {

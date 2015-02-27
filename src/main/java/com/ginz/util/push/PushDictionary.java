@@ -6,7 +6,7 @@ public class PushDictionary {
 	public static final Long ACCESS_ID = 2200069882L;
 	public static final String ACCESS_KEY = "IRN2U5T3G59A";
 	
-	public static final String DEVICE_TOKEN = "419bc299e529c1709f6afda2d124969130c92446d7b1d813383ccb822fa7322c";
+	public static final String DEVICE_TOKEN = "8fe9d06ad3fb40cbc79cf9309536e0b430a2cf16a33b6fe158bbc103d1c43795";	
 	//public static final String TEST_ACCOUNT = "DEBUG_DEVICE_01";
 	
 }
