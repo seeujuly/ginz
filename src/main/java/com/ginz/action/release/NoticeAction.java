@@ -419,6 +419,12 @@ public class NoticeAction extends BaseAction{
 				json.put("name", property.getPropertyName());
 				json.put("headUrl", property.getPicUrl());
 			}
+			
+			int praiseNum = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
+			int commentNum = replyService.countComment(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
+			json.put("praiseNum", praiseNum+"");
+			json.put("commentNum", commentNum+"");
+			
 			List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "' and userId = '" + userId + "'");
 			if(list.size()>0){	//判断是否已赞过..
 				json.put("isPraise", "1");

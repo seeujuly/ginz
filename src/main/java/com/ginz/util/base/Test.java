@@ -11,11 +11,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.ginz.model.AcUser;
+import com.ginz.util.timer.TimeTask;
 
 public class Test {
 
 	public static void main(String[] args) throws IOException, ParseException {
 
+		TimeTask tt = new TimeTask();
+		tt.getPersonalTabs();
 	}
 	
 	public static void sort(Map<String, Integer> map) {

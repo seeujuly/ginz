@@ -580,6 +580,12 @@ public class EventAction extends BaseAction {
 				json.put("name", user.getNickName());
 				json.put("headUrl", user.getHeadPortrait());
 			}
+			
+			int praiseNum = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
+			int commentNum = replyService.countComment(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
+			json.put("praiseNum", praiseNum+"");
+			json.put("commentNum", commentNum+"");
+			
 			List<PubPraise> list = replyService.findPraise(" and releaseId = " + id + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "' and userId = '" + userId + "'");
 			if(list.size()>0){	//判断是否已赞过..
 				json.put("isPraise", "1");
