@@ -10,16 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import com.ginz.model.AcUser;
+
 public class Test {
 
 	public static void main(String[] args) throws IOException, ParseException {
 
-		String userId = "39";
-		long uId = 39L;
-		
-		System.out.println(userId.equals(String.valueOf(uId)));
-		
-		//FileUtil.write("D://test.txt","1234567890","");
 	}
 	
 	public static void sort(Map<String, Integer> map) {

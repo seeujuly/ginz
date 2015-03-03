@@ -498,7 +498,7 @@ public class NoticeAction extends BaseAction{
 							}
 							
 							//发送系统通知给目标用户
-							messageService.sendMessage(null, propertyId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_01, DictionaryUtil.MESSAGE_TYPE_PRAISE);
+							messageService.sendMessage(userId, propertyId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_01, DictionaryUtil.MESSAGE_TYPE_PRAISE);
 						}
 					}
 				}
@@ -559,7 +559,7 @@ public class NoticeAction extends BaseAction{
 						}
 						
 						//发送系统通知给目标用户
-						messageService.sendMessage(null, propertyId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_01, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+						messageService.sendMessage(userId, propertyId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_01, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 					}
 				}
 			}

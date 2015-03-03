@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,6 +30,8 @@ import org.apache.struts2.dispatcher.multipart.MultiPartRequestWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ginz.action.BaseAction;
+import com.ginz.model.AcMerchant;
+import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
 import com.ginz.model.AcUserDetail;
 import com.ginz.model.MsgFriend;
@@ -246,13 +249,43 @@ public class UserSettingAction extends BaseAction {
 		String userId = valueMap.get("userId");	//用户id
 		String tUserId = valueMap.get("tUserId");	//目标用户id
 		
-		AcUser user = accountService.loadUser(tUserId);
+		String name = "";
+		String headUrl = "";
+		String bgUrl = "";
+		List<AcUser> userList = new ArrayList();
+		List<AcProperty> propertyList = new ArrayList();
+		List<AcMerchant> merchantList = new ArrayList();
+		if(StringUtils.equals(userId.substring(0, 1), "u")){
+			userList = accountService.findUser(" and userId = '" + tUserId + "' and status = '" + DictionaryUtil.ACCOUNT_STATUS_00 + "' ");
+			if(userList.size()>0){
+				AcUser user = userList.get(0);
+				name = user.getNickName();
+				headUrl = user.getHeadPortrait();
+				bgUrl = user.getBackground();
+			}
+		}else if(StringUtils.equals(userId.substring(0, 1), "p")){
+			propertyList = accountService.findProperty(" and userId = '" + tUserId + "' and status = '" + DictionaryUtil.ACCOUNT_STATUS_00 + "' ");
+			if(propertyList.size()>0){
+				AcProperty property = propertyList.get(0);
+				name = property.getPropertyName();
+				headUrl = property.getPicUrl();
+				bgUrl = property.getBackground();
+			}
+		}else if(StringUtils.equals(userId.substring(0, 1), "m")){
+			merchantList = accountService.findMerchant(" and userId = '" + tUserId + "' and status = '" + DictionaryUtil.ACCOUNT_STATUS_00 + "' ");
+			if(merchantList.size()>0){
+				AcMerchant merchant = merchantList.get(0);
+				name = merchant.getMerchantName();
+				headUrl = merchant.getPicUrl();
+				bgUrl = merchant.getBackground();	
+			}
+		}
 		
-		if(user!=null){
+		if(userList.size()>0||propertyList.size()>0||merchantList.size()>0){
 			jsonObject.put("result", "1");
-			jsonObject.put("name", user.getNickName());
-			jsonObject.put("headUrl", user.getHeadPortrait());
-			jsonObject.put("bgUrl", user.getBackground());
+			jsonObject.put("name", name);
+			jsonObject.put("headUrl", headUrl);
+			jsonObject.put("bgUrl", bgUrl);
 			
 			HashMap<String,Object> rethm = eventService.listRelease(tUserId);
 			List<Object> list = (List<Object>) rethm.get("list");
@@ -334,7 +367,7 @@ public class UserSettingAction extends BaseAction {
 				jsonObject.remove("workEnd");
 				String birthday = "";
 				if(userDetail.getBirthday()!=null){
-					birthday = DateFormatUtil.dateToStringM(userDetail.getBirthday());
+					birthday = DateFormatUtil.dateToString(userDetail.getBirthday());
 				}
 				jsonObject.put("birthday", birthday);
 			}

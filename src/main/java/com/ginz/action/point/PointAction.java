@@ -129,7 +129,7 @@ public class PointAction extends BaseAction {
 				
 				//发送系统消息和推送消息给目标用户
 				String tValue = "收到用户:" + user.getNickName() + "转来的积分:" + point + "点!";
-				messageService.sendMessage(null, tUserId, tValue, tValue, null, "", DictionaryUtil.MESSAGE_TYPE_CONSUME);
+				messageService.sendMessage(userId, tUserId, tValue, tValue, null, "", DictionaryUtil.MESSAGE_TYPE_CONSUME);
 				if(tUser.getDeviceToken()!=null&&!tUser.getDeviceToken().equals("")){
 					PushIOS.pushSingleDevice(tValue, tUser.getDeviceToken());	//通知社区用户有人评论..
 				}

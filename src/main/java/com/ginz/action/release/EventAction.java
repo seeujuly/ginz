@@ -470,10 +470,11 @@ public class EventAction extends BaseAction {
 			String id = release.getId();
 			String uId = release.getUserId();
 			String picIds = release.getPicIds();
+			Date createDate = DateFormatUtil.toDate(release.getCreateTime());
 			
 			json.put("id", id);
 			json.put("subject", release.getSubject());
-			json.put("createTime", release.getCreateTime());
+			json.put("createTime", DateFormatUtil.dateToStringM(createDate));
 			
 			if(picIds!=null&&!picIds.equals("")){
 				String[] ids = picIds.split(",");
@@ -657,7 +658,7 @@ public class EventAction extends BaseAction {
 							}
 							
 							//发送系统通知给目标用户
-							messageService.sendMessage(null, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_PRAISE);
+							messageService.sendMessage(userId, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_PRAISE);
 						}
 					}
 				}
@@ -711,9 +712,9 @@ public class EventAction extends BaseAction {
 				out.print(jsonObject.toString());
 				
 				String uId = event.getUserId();	//发布信息的用户id
-				String value = "你的信息有了新评论!";
-				String value2 = "你的评论有了新回复!";
-				String value3 = "你评论过的信息有了新的评论!";
+				String value = user.getNickName() + "评论了你的信息:" + content;
+				String value2 = user.getNickName() + "回复了你的评论:" + content;
+				String value3 = "你评论过的信息有了新的评论:" + content;
 				if(!userId.equals(uId)){	//非本人发表评论
 					
 					AcUser u = accountService.loadUser(uId);
@@ -723,12 +724,12 @@ public class EventAction extends BaseAction {
 							if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
 								PushIOS.pushSingleDevice(value, u.getDeviceToken());	
 							}
-							messageService.sendMessage(null, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+							messageService.sendMessage(userId, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 						
 							//发送系统消息给回复的那条评论的发布人
 							PubComments c = replyService.loadComments(Long.parseLong(commentId));
 							if(c!=null){
-								messageService.sendMessage(null, c.getUserId(), value2, value2, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+								messageService.sendMessage(userId, c.getUserId(), value2, value2, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 							}
 						
 						}else{		//对信息发布新的评论
@@ -736,13 +737,13 @@ public class EventAction extends BaseAction {
 							if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
 								PushIOS.pushSingleDevice(value, u.getDeviceToken());	
 							}
-							messageService.sendMessage(null, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+							messageService.sendMessage(userId, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 						
 							//发送系统消息给其他已经评论过该信息的用户
 							List<PubComments> list = replyService.findComments(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' ");
 							if(list.size()>0){
 								for(PubComments c : list){
-									messageService.sendMessage(null, c.getUserId(), value3, value3, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+									messageService.sendMessage(userId, c.getUserId(), value3, value3, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 								}
 							}
 						}
@@ -753,14 +754,14 @@ public class EventAction extends BaseAction {
 						//发送系统消息给所回复评论的发布人
 						PubComments c = replyService.loadComments(Long.parseLong(commentId));
 						if(c!=null){
-							messageService.sendMessage(null, c.getUserId(), value2, value2, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+							messageService.sendMessage(userId, c.getUserId(), value2, value2, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 						}
 					}else{		//对自己的信息发布新的评论
 						//发送系统消息给其他已经评论过该信息的用户
 						List<PubComments> list = replyService.findComments(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' ");
 						if(list.size()>0){
 							for(PubComments c : list){
-								messageService.sendMessage(null, c.getUserId(), value3, value3, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+								messageService.sendMessage(userId, c.getUserId(), value3, value3, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 							}
 						}
 						
