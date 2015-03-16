@@ -91,110 +91,85 @@ public class LoginAction extends BaseAction {
 		
 		JSONObject jsonObject=new JSONObject();
 		String result = "";
-		String accountType = "";
-		Long id = null;		//用户id
 		String headUrl = "";	//头像地址
 		String name = "";	//用户名(昵称)
 		String userId = "";	//随机生成的用户名,10位数字
-		if(StringUtils.isNotEmpty(mobile)){	//个人用户
+		
+		String condition = "";
+		if(StringUtils.isNotEmpty(mobile)){
+			condition += " and mobile = '" + mobile + "' ";
+		}else if(StringUtils.isNotEmpty(email)){
+			condition += " and email = '" + email + "' ";
+		}
+		List<AcUser> uList = accountService.findUser(condition);
+		List<AcProperty> pList = accountService.findProperty(condition);
+		List<AcMerchant> mList = accountService.findMerchant(condition);
+		
+		if(uList.size()>0){		//个人用户
 			AcUser user = new AcUser();
 			user.setMobile(mobile);
+			user.setPassword(password);
 			AcUser u = accountService.loginUser(user);
-			if (u != null) {
-				user.setPassword(password);
-				AcUser u2 = accountService.loginUser(user);
-		    	if(u2 != null){
-		    		if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_00, u2.getStatus())){
-		    			result = "1";
-		    			id = u2.getId();
-		    			name = u2.getNickName();
-		    			userId = u2.getUserId();
-		    			headUrl = u2.getThumbnailUrl();
-		    		}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_01, u2.getStatus())){
-		    			result = "2";
-		    		}
-		    	}else{
-		    		result = "3";
-		    	}
-			}else{
-				result = "4";
-			}
-			accountType = DictionaryUtil.ACCOUNT_TYPE_01;
-		}else if(StringUtils.isNotEmpty(email)){
-			List<AcProperty> pList = accountService.findProperty(" and email = '" + email + "' ");
-			List<AcMerchant> mList = accountService.findMerchant(" and email = '" + email + "' ");
-			
-			if(pList.size()>0){	//社区用户
-				AcProperty property = new AcProperty();
-				property.setEmail(email);
-				property.setPassword(password);
-				AcProperty p = accountService.loginProperty(property);
-		    	if(p != null){
-		    		if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_00, p.getStatus())){
-		    			result = "1";
-		    			id = p.getId();
-		    			name = p.getPropertyName();
-		    			userId = p.getUserId();
-		    			headUrl = p.getThumbnailUrl();
-		    		}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_01, p.getStatus())){
-		    			result = "2";
-		    		}
-		    	}else{
-		    		result = "3";
-		    	}
-		    	accountType = DictionaryUtil.ACCOUNT_TYPE_02;
-			}else if(mList.size()>0){	//商户
-				
-				AcMerchant merchant = new AcMerchant();
-				merchant.setEmail(email);
-				merchant.setPassword(password);
-				AcMerchant m = accountService.loginMerchant(merchant);
-		    	if(m != null){
-		    		if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_00, m.getStatus())){
-		    			result = "1";
-		    			id = m.getId();
-		    			name = m.getMerchantName();
-		    			userId = m.getUserId();
-		    			headUrl = m.getThumbnailUrl();
-		    		}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_01, m.getStatus())){
-		    			result = "2";
-		    		}
-		    	}else{
-		    		result = "3";
-		    	}
-		    	accountType = DictionaryUtil.ACCOUNT_TYPE_03;
-			}else{
-				result = "4";
-			}
-			
+	    	if(u != null){
+	    		if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_00, u.getStatus())){
+	    			result = "1";
+	    			name = u.getNickName();
+	    			userId = u.getUserId();
+	    			headUrl = u.getThumbnailUrl();
+	    		}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_01, u.getStatus())){
+	    			result = "2";
+	    		}
+	    	}else{
+	    		result = "3";
+	    	}
+		}else if(pList.size()>0){		//社区用户
+			AcProperty property = new AcProperty();
+			property.setEmail(email);
+			property.setPassword(password);
+			AcProperty p = accountService.loginProperty(property);
+	    	if(p != null){
+	    		if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_00, p.getStatus())){
+	    			result = "1";
+	    			name = p.getPropertyName();
+	    			userId = p.getUserId();
+	    			headUrl = p.getThumbnailUrl();
+	    		}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_01, p.getStatus())){
+	    			result = "2";
+	    		}
+	    	}else{
+	    		result = "3";
+	    	}
+		}else if(mList.size()>0){	//商户
+			AcMerchant merchant = new AcMerchant();
+			merchant.setEmail(email);
+			merchant.setPassword(password);
+			AcMerchant m = accountService.loginMerchant(merchant);
+	    	if(m != null){
+	    		if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_00, m.getStatus())){
+	    			result = "1";
+	    			name = m.getMerchantName();
+	    			userId = m.getUserId();
+	    			headUrl = m.getThumbnailUrl();
+	    		}else if(StringUtils.equals(DictionaryUtil.ACCOUNT_STATUS_01, m.getStatus())){
+	    			result = "2";
+	    		}
+	    	}else{
+	    		result = "3";
+	    	}
+		}else{
+			result = "4";
 		}
+		
 		if(StringUtils.equals("1", result)){
 			jsonObject.put("result", "1");
 	    	jsonObject.put("value", "欢迎回来!");
-	    	jsonObject.put("id", id);
 	    	jsonObject.put("name", name);
 	    	jsonObject.put("userId", userId);
 	    	jsonObject.put("headUrl", headUrl);
 	    	
 	    	//发送系统消息给目标用户
-			/*MsgMessageInfo messageInfo = new MsgMessageInfo();
-			messageInfo.setTargetUserId(id);
-			messageInfo.setTargetAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
-			messageInfo.setCreateTime(new Date());
-			messageInfo.setSubject(name + " welcome!");
-			messageInfo.setContent(name + " welcome!");
-			messageInfo.setMessageType(DictionaryUtil.MESSAGE_TYPE_SYS);
-			messageInfo.setFlag(DictionaryUtil.DETELE_FLAG_00);
-			MsgMessageInfo messageInfo2 = messageService.saveMessageInfo(messageInfo);
-			
-			MsgMessageBox messageBox = new MsgMessageBox();
-			messageBox.setMessageId(messageInfo2.getId());
-			messageBox.setUserId(id);
-			messageBox.setAccountType(DictionaryUtil.ACCOUNT_TYPE_01);
-			messageBox.setReceiveDate(new Date());
-			messageBox.setReadFlag(DictionaryUtil.MESSAGE_UNREAD);
-			messageBox.setFlag(DictionaryUtil.DETELE_FLAG_00);
-			messageService.saveMessageBox(messageBox);*/
+	    	/*String value = name + ",welcome to ginz!";
+			messageService.sendMessage("", userId, value, value, null, "", DictionaryUtil.MESSAGE_TYPE_SYS);*/
 	    	
 		}else if(StringUtils.equals("2", result)){
 			jsonObject.put("result", "2");
@@ -206,7 +181,6 @@ public class LoginAction extends BaseAction {
 			jsonObject.put("result", "4");
 			jsonObject.put("value", "账户不存在!");
 		}
-		jsonObject.put("accountType", accountType);
 		
 		out.print(jsonObject.toString());
 	}
@@ -230,6 +204,9 @@ public class LoginAction extends BaseAction {
 		
 		try {
 			if(StringUtils.isNotEmpty(deviceToken)&&StringUtils.isNotEmpty(deviceAccount)){
+				//保存之前清除原有deviceToken信息记录
+				deleteDeviceInfo(deviceToken);
+				
 				if(StringUtils.equals(userId.substring(0, 1), "u")){
 					AcUser user = accountService.loadUser(userId);
 					user.setDeviceAccount(deviceAccount);
@@ -254,6 +231,36 @@ public class LoginAction extends BaseAction {
 		JSONObject jsonObject=new JSONObject();
 		jsonObject.put("value", "SUCCESS!");
 		out.print(jsonObject.toString());
+		
+	}
+	
+	public void deleteDeviceInfo(String deviceToken){
+		
+		if(StringUtils.isNotEmpty(deviceToken)){
+			String condition = " and deviceToken = '" + deviceToken + "' ";
+			List<AcUser> uList = accountService.findUser(condition);
+			List<AcProperty> pList = accountService.findProperty(condition);
+			List<AcMerchant> mList = accountService.findMerchant(condition);
+			if(uList.size()>0){
+				for(AcUser user : uList){
+					user.setDeviceToken("");
+					user.setDeviceAccount("");
+					accountService.updateUser(user);
+				}
+			}else if(pList.size()>0){
+				for(AcProperty property : pList){
+					property.setDeviceToken("");
+					property.setDeviceAccount("");
+					accountService.updateProperty(property);
+				}
+			}else if(mList.size()>0){
+				for(AcMerchant merchant : mList){
+					merchant.setDeviceToken("");
+					merchant.setDeviceAccount("");
+					accountService.updateMerchant(merchant);
+				}
+			}
+		}
 		
 	}
 

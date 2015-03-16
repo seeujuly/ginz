@@ -97,10 +97,20 @@ public class EventServiceImpl implements EventService {
 		
 		HashMap<String, Object> hm = new HashMap<String, Object>();
 		StringBuffer sb = new StringBuffer();
-		sb.append(" select t.id,t.subject,t.picIds,3 releaseType, t.createTime ");
-		sb.append("  from pub_activities t where t.userId = '" + userId + "'");
-		sb.append(" UNION SELECT t1.id,t1.subject,t1.picIds,2 releaseType,");
-		sb.append(" t1.createTime from pub_event t1 WHERE t1.userId = '" + userId + "'");
+		
+		if(StringUtils.equals(userId.substring(0, 1), "u")){
+			sb.append(" select t.id,t.subject,t.picIds,3 releaseType, t.createTime ");
+			sb.append(" from pub_activities t where t.userId = '" + userId + "'");
+			sb.append(" UNION SELECT t1.id,t1.subject,t1.picIds,2 releaseType,");
+			sb.append(" t1.createTime from pub_event t1 WHERE t1.userId = '" + userId + "'");
+		}else if(StringUtils.equals(userId.substring(0, 1), "p")){
+			sb.append(" select t.id,t.subject,t.picIds,1 releaseType, t.createTime ");
+			sb.append(" from pub_notice t where t.property_id = '" + userId + "'");
+		}else if(StringUtils.equals(userId.substring(0, 1), "m")){
+			
+		}
+		
+		
 		sb.append(" ORDER BY createTime DESC ");	
 		hm.put("list", eventDao.queryBySql(sb.toString()));
 		hm.put("cnt", eventDao.queryBySql(sb.toString()).size());

@@ -33,6 +33,8 @@ import org.apache.struts2.dispatcher.multipart.MultiPartRequestWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ginz.action.BaseAction;
+import com.ginz.model.AcMerchant;
+import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
 import com.ginz.model.AcUserDetail;
 import com.ginz.model.Picture;
@@ -378,7 +380,7 @@ public class ActivitiesAction extends BaseAction {
 						notIn = valueString.substring(valueString.indexOf("|")+1,valueString.length());
 						notIn = notIn.replace(",", "|");
 					}else{
-						in = in.replace(",", "|");
+						in = valueString.replace(",", "|");
 					}
 				}
 			
@@ -434,7 +436,7 @@ public class ActivitiesAction extends BaseAction {
 					}
 					
 					if(todayList.size()>0){
-						JSONArray todayArray = addToArray(todayList,userId);
+						JSONArray todayArray = createArray(todayList,userId);
 						if(todayArray.size()>0){
 							for(int i=0;i<todayArray.size();i++){
 								JSONObject json = todayArray.getJSONObject(i);
@@ -443,7 +445,7 @@ public class ActivitiesAction extends BaseAction {
 						}
 					}
 					if(ztList.size()>0){
-						JSONArray todayArray = addToArray(ztList,userId);
+						JSONArray todayArray = createArray(ztList,userId);
 						if(todayArray.size()>0){
 							for(int i=0;i<todayArray.size();i++){
 								JSONObject json = todayArray.getJSONObject(i);
@@ -452,7 +454,7 @@ public class ActivitiesAction extends BaseAction {
 						}
 					}
 					if(qtList.size()>0){
-						JSONArray todayArray = addToArray(qtList,userId);
+						JSONArray todayArray = createArray(qtList,userId);
 						if(todayArray.size()>0){
 							for(int i=0;i<todayArray.size();i++){
 								JSONObject json = todayArray.getJSONObject(i);
@@ -461,7 +463,7 @@ public class ActivitiesAction extends BaseAction {
 						}
 					}
 					if(dqtList.size()>0){
-						JSONArray todayArray = addToArray(dqtList,userId);
+						JSONArray todayArray = createArray(dqtList,userId);
 						if(todayArray.size()>0){
 							for(int i=0;i<todayArray.size();i++){
 								JSONObject json = todayArray.getJSONObject(i);
@@ -470,7 +472,7 @@ public class ActivitiesAction extends BaseAction {
 						}
 					}
 					if(otherList.size()>0){
-						JSONArray todayArray = addToArray(otherList,userId);
+						JSONArray todayArray = createArray(otherList,userId);
 						if(todayArray.size()>0){
 							for(int i=0;i<todayArray.size();i++){
 								JSONObject json = todayArray.getJSONObject(i);
@@ -518,8 +520,8 @@ public class ActivitiesAction extends BaseAction {
 		
 	}
 	
-	//按相似度对List重新排序，并添加到jsonArray
-	public JSONArray addToArray(List<ReleaseDemo> releaseList,String userId){
+	//按相似度对List重新排序，并添加到JSONArray
+	public JSONArray createArray(List<ReleaseDemo> releaseList,String userId){
 		JSONArray jsonArray = new JSONArray();
 		
 		Collections.sort(releaseList, new Comparator<ReleaseDemo>() {	//按相似度重新排序releaseList
@@ -584,32 +586,41 @@ public class ActivitiesAction extends BaseAction {
 		if(list.size()>0){
 			AcUserDetail userDetail = list.get(0);
 			if(userDetail != null){
-				if(userDetail.getPersonalTag()!=null&&!userDetail.getPersonalTag().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getPersonalTag())){
 					valueString += "," + userDetail.getPersonalTag();
 				}
-				if(userDetail.getCatering()!=null&&!userDetail.getCatering().equals("")){
-					
+				if(StringUtils.isNotEmpty(userDetail.getSystemTag())){
+					valueString += "," + userDetail.getSystemTag();
 				}
-				if(userDetail.getSocialContact()!=null&&!userDetail.getSocialContact().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getCatering())){
+					valueString += "," + userDetail.getCatering();
+				}
+				if(StringUtils.isNotEmpty(userDetail.getSocialContact())){
 					valueString += "," + userDetail.getSocialContact();
 				}
-				if(userDetail.getTravel()!=null&&!userDetail.getTravel().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getTravel())){
 					valueString += "," + userDetail.getTravel();
 				}
-				if(userDetail.getSports()!=null&&!userDetail.getSports().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getSports())){
 					valueString += "," + userDetail.getSports();
 				}
-				if(userDetail.getMusic()!=null&&!userDetail.getMusic().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getMusic())){
 					valueString += "," + userDetail.getMusic();
 				}
-				if(userDetail.getOthers()!=null&&!userDetail.getOthers().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getOthers())){
 					valueString += "," + userDetail.getOthers();
 				}
-				if(userDetail.getCommunityNeed()!=null&&!userDetail.getCommunityNeed().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getCommunityNeed())){
 					valueString += "," + userDetail.getCommunityNeed();
 				}
-				if(userDetail.getDislike()!=null&&!userDetail.getDislike().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getDislike())){
 					valueString += "|" + userDetail.getDislike();
+				}
+				
+				if(StringUtils.isNotEmpty(valueString)){
+					if(",".equals(valueString.charAt(0)+"")){	//char先转成string再比较
+						valueString = valueString.substring(1,valueString.length());
+					}
 				}
 			}
 		}
@@ -824,21 +835,19 @@ public class ActivitiesAction extends BaseAction {
 			if(activity != null){
 				String uId = activity.getUserId();
 				if(!userId.equals(uId)){	//如果是本人点赞，不发推送消息
-					AcUser u = accountService.loadUser(uId);
+					AcUser user = accountService.loadUser(userId);	//点赞的用户
+					AcUser u = accountService.loadUser(uId);		//被点赞的用户
 					if(u != null){
-						AcUser user = accountService.loadUser(userId);
-						if(user != null){
-							String value = user.getNickName() + "赞了你的信息!";
-							
-							//发送推送给目标用户
-							if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
-								PushIOS.pushSingleDevice(value, u.getDeviceToken());	//通知用户有人点赞..
-							}
-							
-							//发送系统通知给目标用户
-							messageService.sendMessage(userId, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_PRAISE);
-
+						String value = "赞了你的信息!";
+						
+						//发送推送给目标用户
+						if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
+							PushIOS.pushSingleDevice(user.getNickName() + value, u.getDeviceToken());	//通知用户有人点赞..
 						}
+						
+						//发送系统通知给目标用户
+						messageService.sendMessage(userId, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_PRAISE);
+
 					}
 				}
 			}
@@ -867,74 +876,54 @@ public class ActivitiesAction extends BaseAction {
 		String commentId = valueMap.get("commentId");	//回复的评论id，非回复评论而是直接对活动发表评论则为空或是0
 		String content = valueMap.get("content");
 		
-		AcUser user = accountService.loadUser(userId);
-		if(user != null){
-			PubActivities activity = activitiesService.loadActivities(Long.parseLong(id));
-			if(activity != null){
-				PubComments comment = new PubComments();
-				comment.setReleaseId(Long.parseLong(id));
-				comment.setReleaseType(DictionaryUtil.RELEASE_TYPE_03);
-				comment.setContent(content);
-				comment.setUserId(userId);
-				comment.setCreateTime(new Date());
-				if(StringUtils.isNotEmpty(commentId)){
-					comment.setFollowId(Long.parseLong(commentId));
-				}
-				comment.setFlag(DictionaryUtil.DETELE_FLAG_00);
-				replyService.saveComments(comment);
-				
-				int num = replyService.countComment(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "'");
-				jsonObject.put("result", "1");
-				jsonObject.put("value", "SUCCESS!");
-				jsonObject.put("number", num+"");	//更新评论数量
-				out.print(jsonObject.toString());
-				
-				String uId = activity.getUserId();	//发布信息的用户id
-				String value = user.getNickName() + "评论了你的信息:" + content;
-				String value2 = user.getNickName() + "回复了你的评论:" + content;
-				String value3 = "你评论过的信息有了新的评论:" + content;
-				if(!userId.equals(uId)){	//非本人发表评论
-					
-					AcUser u = accountService.loadUser(uId);
-					if(u != null){
-						if(StringUtils.isNotEmpty(commentId)){		//回复评论
-							//推送并发送系统消息给信息发布人
-							if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
-								PushIOS.pushSingleDevice(value, u.getDeviceToken());	
-							}
-							messageService.sendMessage(userId, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
-						
-							//发送系统消息给回复的那条评论的发布人
-							PubComments c = replyService.loadComments(Long.parseLong(commentId));
-							if(c!=null){
-								messageService.sendMessage(userId, c.getUserId(), value2, value2, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
-							}
-						
-						}else{		//对信息发布新的评论
-							//推送并发送系统消息给信息发布人
-							if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
-								PushIOS.pushSingleDevice(value, u.getDeviceToken());	
-							}
-							messageService.sendMessage(userId, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
-						
-							//发送系统消息给其他已经评论过该信息的用户
-							List<PubComments> list = replyService.findComments(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' ");
-							if(list.size()>0){
-								for(PubComments c : list){
-									messageService.sendMessage(userId, c.getUserId(), value3, value3, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
-								}
-							}
-						}
-					}
-					
-				}else{	//本人发表评论，不发推送消息
+		PubActivities activity = activitiesService.loadActivities(Long.parseLong(id));
+		if(activity != null){
+			PubComments comment = new PubComments();
+			comment.setReleaseId(Long.parseLong(id));
+			comment.setReleaseType(DictionaryUtil.RELEASE_TYPE_03);
+			comment.setContent(content);
+			comment.setUserId(userId);
+			comment.setCreateTime(new Date());
+			if(StringUtils.isNotEmpty(commentId)){
+				comment.setFollowId(Long.parseLong(commentId));
+			}
+			comment.setFlag(DictionaryUtil.DETELE_FLAG_00);
+			replyService.saveComments(comment);
+			
+			int num = replyService.countComment(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "'");
+			jsonObject.put("result", "1");
+			jsonObject.put("value", "SUCCESS!");
+			jsonObject.put("number", num+"");	//更新评论数量
+			out.print(jsonObject.toString());
+			
+			String uId = activity.getUserId();	//发布信息的用户id
+			String value = "评论了你的信息:" + content;
+			String value2 = "回复了你的评论:" + content;
+			String value3 = "你评论过的信息有了新的评论:" + content;
+			if(!userId.equals(uId)){	//非本人发表评论
+				AcUser user = accountService.loadUser(userId);	//评论的用户
+				AcUser u = accountService.loadUser(uId);		//被评论的用户
+				if(u != null){
 					if(StringUtils.isNotEmpty(commentId)){		//回复评论
-						//发送系统消息给所回复评论的发布人
+						//推送并发送系统消息给信息发布人
+						if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
+							PushIOS.pushSingleDevice(user.getNickName() + value, u.getDeviceToken());	
+						}
+						messageService.sendMessage(userId, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+					
+						//发送系统消息给回复的那条评论的发布人
 						PubComments c = replyService.loadComments(Long.parseLong(commentId));
 						if(c!=null){
 							messageService.sendMessage(userId, c.getUserId(), value2, value2, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 						}
-					}else{		//对自己的信息发布新的评论
+					
+					}else{		//对信息发布新的评论
+						//推送并发送系统消息给信息发布人
+						if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
+							PushIOS.pushSingleDevice(user.getNickName() + value, u.getDeviceToken());	
+						}
+						messageService.sendMessage(userId, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+					
 						//发送系统消息给其他已经评论过该信息的用户
 						List<PubComments> list = replyService.findComments(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' ");
 						if(list.size()>0){
@@ -942,13 +931,30 @@ public class ActivitiesAction extends BaseAction {
 								messageService.sendMessage(userId, c.getUserId(), value3, value3, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 							}
 						}
-						
 					}
 				}
-			}else{
-				jsonObject.put("result", "2");
-				jsonObject.put("value", "该信息已被删除!");
+				
+			}else{	//本人发表评论，不发推送消息
+				if(StringUtils.isNotEmpty(commentId)){		//回复评论
+					//发送系统消息给所回复评论的发布人
+					PubComments c = replyService.loadComments(Long.parseLong(commentId));
+					if(c!=null){
+						messageService.sendMessage(userId, c.getUserId(), value2, value2, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+					}
+				}else{		//对自己的信息发布新的评论
+					//发送系统消息给其他已经评论过该信息的用户
+					List<PubComments> list = replyService.findComments(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' ");
+					if(list.size()>0){
+						for(PubComments c : list){
+							messageService.sendMessage(userId, c.getUserId(), value3, value3, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_03, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+						}
+					}
+					
+				}
 			}
+		}else{
+			jsonObject.put("result", "2");
+			jsonObject.put("value", "该信息已被删除!");
 		}
 		countSysTab(userId);
 	}
@@ -975,10 +981,27 @@ public class ActivitiesAction extends BaseAction {
 		if(list.size()>0){
 			for(PubPraise praise:list){
 				JSONObject json = new JSONObject();
-				AcUser user = accountService.loadUser(praise.getUserId());
-				if(user != null){
-					json.put("userId", user.getUserId());
-					json.put("name", user.getNickName());
+				String userId = praise.getUserId();
+				if(StringUtils.isNotEmpty(userId)){
+					if(StringUtils.equals(userId.substring(0, 1), "u")){
+						AcUser user = accountService.loadUser(userId);
+						if(user != null){
+							json.put("userId", user.getUserId());
+							json.put("name", user.getNickName());
+						}
+					}else if(StringUtils.equals(userId.substring(0, 1), "p")){
+						AcProperty property = accountService.loadProperty(userId);
+						if(property!=null){
+							json.put("userId", property.getUserId());
+							json.put("name", property.getPropertyName());
+						}
+					}else if(StringUtils.equals(userId.substring(0, 1), "m")){
+						AcMerchant merchant = accountService.loadMerchant(userId);
+						if(merchant!=null){
+							json.put("userId", merchant.getUserId());
+							json.put("name", merchant.getMerchantName());
+						}
+					}
 				}
 				jsonArray.add(json);
 			}
@@ -1023,11 +1046,31 @@ public class ActivitiesAction extends BaseAction {
 				json.put("content", comment.getContent());
 				String createTime = DateFormatUtil.dateToStringM(comment.getCreateTime());
 				json.put("createTime", createTime);
-				AcUser user = accountService.loadUser(comment.getUserId());
-				if(user != null){
-					json.put("userId", user.getUserId());
-					json.put("name", user.getNickName());
-					json.put("headUrl", user.getHeadPortrait());
+				
+				String userId = comment.getUserId();
+				if(StringUtils.isNotEmpty(userId)){
+					if(StringUtils.equals(userId.substring(0, 1), "u")){
+						AcUser user = accountService.loadUser(comment.getUserId());
+						if(user != null){
+							json.put("userId", user.getUserId());
+							json.put("name", user.getNickName());
+							json.put("headUrl", user.getHeadPortrait());
+						}
+					}else if(StringUtils.equals(userId.substring(0, 1), "p")){
+						AcProperty property = accountService.loadProperty(userId);
+						if(property!=null){
+							json.put("userId", property.getUserId());
+							json.put("name", property.getPropertyName());
+							json.put("headUrl", property.getPicUrl());
+						}
+					}else if(StringUtils.equals(userId.substring(0, 1), "m")){
+						AcMerchant merchant = accountService.loadMerchant(userId);
+						if(merchant!=null){
+							json.put("userId", merchant.getUserId());
+							json.put("name", merchant.getMerchantName());
+							json.put("headUrl", merchant.getPicUrl());
+						}
+					}
 				}
 				jsonArray.add(json);
 			}

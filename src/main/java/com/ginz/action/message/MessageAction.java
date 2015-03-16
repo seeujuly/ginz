@@ -18,6 +18,8 @@ import org.apache.struts2.convention.annotation.Namespace;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ginz.action.BaseAction;
+import com.ginz.model.AcMerchant;
+import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
 import com.ginz.model.MsgMessageBox;
 import com.ginz.model.MsgMessageInfo;
@@ -121,73 +123,86 @@ public class MessageAction extends BaseAction {
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String userId = valueMap.get("userId");	//用户id
 		
-		AcUser user = accountService.loadUser(userId);
 		try {
-			if(user!=null){
-				String condition = " and userId = '" + userId + "' and readFlag = '" + DictionaryUtil.MESSAGE_UNREAD + "' ";
-				List<MsgMessageBox> list = messageService.listMessageBox(condition);
-				if(list.size()>0){
-					JSONArray jsonArray = new JSONArray();
-					for(MsgMessageBox message:list){		//（消息id，发送人id/，头像url，内容）
-						JSONObject json = new JSONObject();
-						long messageId = message.getMessageId();
-						MsgMessageInfo messageInfo = messageService.loadMessageInfo(messageId);
-						if(messageInfo!=null){
-							json.put("messageId", messageInfo.getId());
-							json.put("subject", messageInfo.getSubject());
-							json.put("messageType", messageInfo.getMessageType());
-							json.put("releaseType", messageInfo.getReleaseType());
-							json.put("releaseId", messageInfo.getReleaseId());
-							String createTime = DateFormatUtil.dateToStringM(messageInfo.getCreateTime());
-							json.put("createTime", createTime);
-							
-							if(StringUtils.isNotEmpty(messageInfo.getReleaseType())&&messageInfo.getReleaseId()!=null){
-								String picIds = "";
-								if(StringUtils.equals(messageInfo.getReleaseType(), DictionaryUtil.RELEASE_TYPE_01)){	//社区公告
-									PubNotice notice = noticeService.loadNotice(messageInfo.getReleaseId());
-									if(notice != null){
-										picIds = notice.getPicIds();
-									}
-								}else if(StringUtils.equals(messageInfo.getReleaseType(), DictionaryUtil.RELEASE_TYPE_02)){		//社区生活
-									PubEvent event = eventService.loadEvent(messageInfo.getReleaseId());
-									if(event != null){
-										picIds = event.getPicIds(); 
-									}
-								}else if(StringUtils.equals(messageInfo.getReleaseType(), DictionaryUtil.RELEASE_TYPE_03)){		//活动/交易
-									PubActivities activity = activitiesService.loadActivities(messageInfo.getReleaseId());
-									if(activity != null){
-										picIds = activity.getPicIds(); 
-									}
+			String condition = " and userId = '" + userId + "' ";
+			List<MsgMessageBox> list = messageService.listMessageBox(condition);
+			if(list.size()>0){
+				JSONArray jsonArray = new JSONArray();
+				for(MsgMessageBox message:list){		//（消息id，发送人id/，头像url，内容）
+					JSONObject json = new JSONObject();
+					long messageId = message.getMessageId();
+					MsgMessageInfo messageInfo = messageService.loadMessageInfo(messageId);
+					if(messageInfo!=null){
+						json.put("messageId", messageInfo.getId());
+						json.put("subject", messageInfo.getSubject());
+						json.put("messageType", messageInfo.getMessageType());
+						json.put("releaseType", messageInfo.getReleaseType());
+						json.put("releaseId", messageInfo.getReleaseId());
+						String createTime = DateFormatUtil.dateToStringM(messageInfo.getCreateTime());
+						json.put("createTime", createTime);
+						
+						if(StringUtils.isNotEmpty(messageInfo.getReleaseType())&&messageInfo.getReleaseId()!=null){
+							String picIds = "";
+							if(StringUtils.equals(messageInfo.getReleaseType(), DictionaryUtil.RELEASE_TYPE_01)){	//社区公告
+								PubNotice notice = noticeService.loadNotice(messageInfo.getReleaseId());
+								if(notice != null){
+									picIds = notice.getPicIds();
 								}
-								if(picIds!=null&&!picIds.equals("")){
-									String[] ids = picIds.split(",");
-									if(ids.length>0){
-										Picture picture = pictureService.loadPicture(Long.parseLong(ids[0]));
-										if(picture!=null){
-											json.put("picUrl", picture.getThumbnailUrl());
-										}
-									}
+							}else if(StringUtils.equals(messageInfo.getReleaseType(), DictionaryUtil.RELEASE_TYPE_02)){		//社区生活
+								PubEvent event = eventService.loadEvent(messageInfo.getReleaseId());
+								if(event != null){
+									picIds = event.getPicIds(); 
+								}
+							}else if(StringUtils.equals(messageInfo.getReleaseType(), DictionaryUtil.RELEASE_TYPE_03)){		//活动/交易
+								PubActivities activity = activitiesService.loadActivities(messageInfo.getReleaseId());
+								if(activity != null){
+									picIds = activity.getPicIds(); 
 								}
 							}
-							
-							if(messageInfo.getUserId()!=null){
-								String uId = messageInfo.getUserId();
-								AcUser u = accountService.loadUser(uId);
-								if(u!=null){
-									json.put("userId", uId);
-									json.put("name", u.getNickName());
-									json.put("headUrl", u.getHeadPortrait());
+							if(picIds!=null&&!picIds.equals("")){
+								String[] ids = picIds.split(",");
+								if(ids.length>0){
+									Picture picture = pictureService.loadPicture(Long.parseLong(ids[0]));
+									if(picture!=null){
+										json.put("picUrl", picture.getThumbnailUrl());
+									}
 								}
 							}
 						}
-						jsonArray.add(json);
+						
+						String uId = messageInfo.getUserId();
+						if(StringUtils.isNotEmpty(uId)){
+							if(StringUtils.equals(uId.substring(0, 1), "u")){
+								AcUser user = accountService.loadUser(uId);
+								if(user != null){
+									json.put("userId", user.getUserId());
+									json.put("name", user.getNickName());
+									json.put("headUrl", user.getHeadPortrait());
+								}
+							}else if(StringUtils.equals(uId.substring(0, 1), "p")){
+								AcProperty property = accountService.loadProperty(uId);
+								if(property!=null){
+									json.put("userId", property.getUserId());
+									json.put("name", property.getPropertyName());
+									json.put("headUrl", property.getPicUrl());
+								}
+							}else if(StringUtils.equals(uId.substring(0, 1), "m")){
+								AcMerchant merchant = accountService.loadMerchant(uId);
+								if(merchant!=null){
+									json.put("userId", merchant.getUserId());
+									json.put("name", merchant.getMerchantName());
+									json.put("headUrl", merchant.getPicUrl());
+								}
+							}
+						}
 					}
-					jsonObject.put("result", "1");
-					jsonObject.put("value", jsonArray);
-				}else{
-					jsonObject.put("result", "2");
-					jsonObject.put("value", "目前没有通知消息!");
+					jsonArray.add(json);
 				}
+				jsonObject.put("result", "1");
+				jsonObject.put("value", jsonArray);
+			}else{
+				jsonObject.put("result", "2");
+				jsonObject.put("value", "目前没有通知消息!");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -217,21 +232,46 @@ public class MessageAction extends BaseAction {
 			jsonObject.put("messageId", messageId);
 			jsonObject.put("subject", messageInfo.getSubject());
 			jsonObject.put("content", messageInfo.getContent());
-			if(messageInfo.getUserId()!=null){
-				String userId = messageInfo.getUserId();
-				AcUser user = accountService.loadUser(userId);
-				if(user!=null){
-					jsonObject.put("userId", userId);
-					jsonObject.put("name", user.getNickName());
-					jsonObject.put("headUrl", user.getHeadPortrait());
+			
+			String uId = messageInfo.getUserId();
+			if(StringUtils.isNotEmpty(uId)){
+				if(StringUtils.equals(uId.substring(0, 1), "u")){
+					AcUser user = accountService.loadUser(uId);
+					if(user != null){
+						jsonObject.put("userId", user.getUserId());
+						jsonObject.put("name", user.getNickName());
+						jsonObject.put("headUrl", user.getHeadPortrait());
+					}
+				}else if(StringUtils.equals(uId.substring(0, 1), "p")){
+					AcProperty property = accountService.loadProperty(uId);
+					if(property!=null){
+						jsonObject.put("userId", property.getUserId());
+						jsonObject.put("name", property.getPropertyName());
+						jsonObject.put("headUrl", property.getPicUrl());
+					}
+				}else if(StringUtils.equals(uId.substring(0, 1), "m")){
+					AcMerchant merchant = accountService.loadMerchant(uId);
+					if(merchant!=null){
+						jsonObject.put("userId", merchant.getUserId());
+						jsonObject.put("name", merchant.getMerchantName());
+						jsonObject.put("headUrl", merchant.getPicUrl());
+					}
 				}
 			}
+			
 			String createTime = DateFormatUtil.dateToStringM(messageInfo.getCreateTime());
 			jsonObject.put("createTime", createTime);
 			jsonObject.put("messageType", messageInfo.getMessageType());
+		
+			MsgMessageBox messageBox = messageService.loadMessageBox(Long.parseLong(messageId));
+			if(messageBox!=null){
+				messageBox.setReadFlag(DictionaryUtil.MESSAGE_READ);
+				messageService.updateMessageBox(messageBox);
+			}
+			
 		}
 		out.print(jsonObject.toString());
-		
+
 	}
 	
 	//删除通知
@@ -258,7 +298,6 @@ public class MessageAction extends BaseAction {
 					messageService.deleteMessageBox(messageBox.getId());
 				}
 				messageService.deleteMessageInfo(Long.parseLong(messageId));
-				
 			}
 		}
 		jsonObject.put("value", "SUCCESS!");

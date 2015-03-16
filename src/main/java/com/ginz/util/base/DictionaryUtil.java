@@ -29,8 +29,8 @@ public class DictionaryUtil {
 	public static final String EMOTIONAL_STATE_03 = "3";	//已育
 	
 	//发布信息类型
-	public static final String RELEASE_TYPE_01 = "1";	//社区公告
-	public static final String RELEASE_TYPE_02 = "2";	//社区生活
+	public static final String RELEASE_TYPE_01 = "1";	//社区公告notice
+	public static final String RELEASE_TYPE_02 = "2";	//社区生活event
 	public static final String RELEASE_TYPE_03 = "3";	//活动/交易
 	public static final String RELEASE_TYPE_04 = "4";	//社区商户
 	public static final String RELEASE_TYPE_05 = "5";	//互联网商户

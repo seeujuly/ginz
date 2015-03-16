@@ -421,7 +421,7 @@ public class SearchAction extends BaseAction {
 		}
 		
 		if(StringUtils.equals(userId.substring(0, 1), "u")){		//个人用户查看自己所属小区公告
-			List<AcUser> userList = accountService.findUser(" userId = '" + userId + "' ");
+			List<AcUser> userList = accountService.findUser(" and userId = '" + userId + "' ");
 			if(userList.size()>0){
 				AcUser user = userList.get(0);
 				if(user!=null){

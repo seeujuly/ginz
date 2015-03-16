@@ -10,15 +10,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import com.ginz.model.AcUser;
-import com.ginz.util.timer.TimeTask;
-
 public class Test {
 
 	public static void main(String[] args) throws IOException, ParseException {
-
-		TimeTask tt = new TimeTask();
-		tt.getPersonalTabs();
+		String valueString = ",拉风老年,猫奴,周末,防骗子,求安慰,晚饭,求人肉,识货,旅行,宠物|看书";
+		boolean flag = ",".equals(valueString.charAt(0)+"");
+		System.out.println(flag);
 	}
 	
 	public static void sort(Map<String, Integer> map) {

@@ -94,59 +94,121 @@ public class PointAction extends BaseAction {
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String userId = valueMap.get("userId");	//用户id
+		String userId = valueMap.get("userId");		//转账用户id
 		String tUserId = valueMap.get("tUserId");	//目标用户id
-		String point = valueMap.get("point");	//转账积分
+		String pointNum = valueMap.get("point");	//转账积分
 		
-		AcUser user = accountService.loadUser(userId);
-		AcUser tUser = accountService.loadUser(tUserId);
+		String name = "";							//转账用户昵称
+		String tName = "";							//目标用户昵称
+		String tDeviceToken = "";					//目标用户DeviceToken
+		Long point = 0L;							//转账用户积分
+		Long tPoint = 0L;							//目标用户积分
+		boolean flag = true;						//判断转账用户是否有足够积分
 		
-		Date nowDate = new Date();
-		
-		if(user!=null&&tUser!=null){
-			
-			if(user.getPoint()>=Long.parseLong(point)){
-				
-				user.setPoint(user.getPoint() - Long.parseLong(point));
-				accountService.updateUser(user);
-				
-				tUser.setPoint(tUser.getPoint() + Long.parseLong(point));
-				accountService.updateUser(tUser);
-				
-				TransactionRecords record = new TransactionRecords();
-				record.setUserId(userId);
-				record.setTargetUserId(tUserId);
-				record.setPoint(Long.parseLong(point));
-				record.setTransaction_type(DictionaryUtil.TRANSACTION_NORMAL);
-				record.setDescription("");
-				record.setCreateTime(nowDate);
-				record.setFlag(DictionaryUtil.DETELE_FLAG_00);
-				pointService.saveTransactionRecords(record);
-				
-				//发送系统消息给发起用户
-				String value = "操作成功，已成功转给用户:" + tUser.getNickName() + point + "积分!";
-				messageService.sendMessage(null, userId, value, value, null, "", DictionaryUtil.MESSAGE_TYPE_CONSUME);
-				
-				//发送系统消息和推送消息给目标用户
-				String tValue = "收到用户:" + user.getNickName() + "转来的积分:" + point + "点!";
-				messageService.sendMessage(userId, tUserId, tValue, tValue, null, "", DictionaryUtil.MESSAGE_TYPE_CONSUME);
-				if(tUser.getDeviceToken()!=null&&!tUser.getDeviceToken().equals("")){
-					PushIOS.pushSingleDevice(tValue, tUser.getDeviceToken());	//通知社区用户有人评论..
+		//判断转账用户的账户类型，并获取名称、积分信息
+		if(StringUtils.equals(userId.substring(0, 1), "u")){
+			AcUser user = accountService.loadUser(userId);
+			if(user!=null){
+				name = user.getNickName();
+				point = user.getPoint();
+				if(point>=Long.parseLong(pointNum)){
+					user.setPoint(point - Long.parseLong(pointNum));
+					accountService.updateUser(user);
+				}else{
+					flag = false;
 				}
-				
-				jsonObject.put("result", "1");
-				jsonObject.put("value", "SUCCESS!");
-			}else{
-				//发送系统消息给发起用户
-				String value = "操作失败，您的账户积分不足，剩余积分为:" + user.getPoint() + "点!";
-				messageService.sendMessage(null, userId, value, value, null, "", DictionaryUtil.MESSAGE_TYPE_CONSUME);
-	
-				jsonObject.put("result", "2");
-				jsonObject.put("value", "操作失败，您的剩余积分不足!");
+			}
+		}else if(StringUtils.equals(userId.substring(0, 1), "p")){
+			AcProperty property = accountService.loadProperty(userId);
+			if(property!=null){
+				name = property.getPropertyName();
+				point = property.getPoint();
+				if(point>=Long.parseLong(pointNum)){
+					property.setPoint(point - Long.parseLong(pointNum));
+					accountService.updateProperty(property);
+				}else{
+					flag = false;
+				}
+			}
+		}else if(StringUtils.equals(userId.substring(0, 1), "m")){
+			AcMerchant merchant = accountService.loadMerchant(userId);
+			if(merchant!=null){
+				name = merchant.getMerchantName();
+				point = merchant.getPoint();
+				if(point>=Long.parseLong(pointNum)){
+					merchant.setPoint(point - Long.parseLong(pointNum));
+					accountService.updateMerchant(merchant);
+				}else{
+					flag = false;
+				}
+			}
+		}	
+		
+		if(flag){
+			//判断目标用户的账户类型，并获取名称、积分信息
+			if(StringUtils.equals(tUserId.substring(0, 1), "u")){
+				AcUser tUser = accountService.loadUser(tUserId);
+				if(tUser!=null){
+					tName = tUser.getNickName();
+					tPoint = tUser.getPoint();
+					tDeviceToken = tUser.getDeviceToken();
+					tUser.setPoint(tPoint + Long.parseLong(pointNum));
+					accountService.updateUser(tUser);
+				}
+			}else if(StringUtils.equals(tUserId.substring(0, 1), "p")){
+				AcProperty tProperty = accountService.loadProperty(tUserId);
+				if(tProperty!=null){
+					tName = tProperty.getPropertyName();
+					tPoint = tProperty.getPoint();
+					tDeviceToken = tProperty.getDeviceToken();
+					tProperty.setPoint(tPoint + Long.parseLong(pointNum));
+					accountService.updateProperty(tProperty);
+				}
+			}else if(StringUtils.equals(tUserId.substring(0, 1), "m")){
+				AcMerchant tMerchant = accountService.loadMerchant(tUserId);
+				if(tMerchant!=null){
+					tName = tMerchant.getMerchantName();
+					tPoint = tMerchant.getPoint();
+					tDeviceToken = tMerchant.getDeviceToken();
+					tMerchant.setPoint(tPoint + Long.parseLong(pointNum));
+					accountService.updateMerchant(tMerchant);
+				}
 			}
 			
+			Date nowDate = new Date();
+			TransactionRecords record = new TransactionRecords();
+			record.setUserId(userId);
+			record.setTargetUserId(tUserId);
+			record.setPoint(Long.parseLong(pointNum));
+			record.setTransaction_type(DictionaryUtil.TRANSACTION_NORMAL);
+			record.setDescription("");
+			record.setCreateTime(nowDate);
+			record.setFlag(DictionaryUtil.DETELE_FLAG_00);
+			pointService.saveTransactionRecords(record);
+			
+			//发送系统消息给转账用户
+			String value = "操作成功，已成功转给用户:" + tName + pointNum + "积分!";
+			messageService.sendMessage(null, userId, value, value, null, "", DictionaryUtil.MESSAGE_TYPE_CONSUME);
+			
+			//发送系统消息和推送消息给目标用户
+			String tValue = "收到用户:" + name + "转来的积分:" + pointNum + "点!";
+			messageService.sendMessage(userId, tUserId, tValue, tValue, null, "", DictionaryUtil.MESSAGE_TYPE_CONSUME);
+			if(tDeviceToken!=null&&!tDeviceToken.equals("")){
+				PushIOS.pushSingleDevice(tValue, tDeviceToken);	//通知社区用户有人评论..
+			}
+			
+			jsonObject.put("result", "1");
+			jsonObject.put("value", "SUCCESS!");
+			
+		}else{
+			//发送系统消息给发起用户
+			String value = "操作失败，您的账户积分不足，剩余积分为:" + point + "点!";
+			messageService.sendMessage(null, userId, value, value, null, "", DictionaryUtil.MESSAGE_TYPE_CONSUME);
+			
+			jsonObject.put("result", "2");
+			jsonObject.put("value", "操作失败，您的剩余积分不足!");
 		}
-		
+			
 		out.print(jsonObject.toString());
 		
 	}
@@ -168,43 +230,40 @@ public class PointAction extends BaseAction {
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
 		String userId = valueMap.get("userId");	//用户id
 		
-		AcUser user = accountService.loadUser(userId);
+		String condition = "";
+		condition = "and (userId =  '" + userId + "' ";
+		condition += "OR targetUserId = '" + userId + "')";
+		List<TransactionRecords> list =  pointService.listTransactionRecords(condition);
 		
-		if(user!=null){
-			String condition = "";
-			condition = "and (userId =  '" + userId + "' ";
-			condition += "OR targetUserId = '" + userId + "')";
-			List<TransactionRecords> list =  pointService.listTransactionRecords(condition);
-			
-			if(list.size()>0){
-				JSONArray jsonArray = new JSONArray();
-				for(TransactionRecords record:list){
-					JSONObject json = new JSONObject();
-					if(StringUtils.equals(userId, record.getUserId())){
-						json.put("sender", record.getUserId());
-						json.put("receiver", record.getTargetUserId());
-						
-					}else{
-						json.put("sender", record.getTargetUserId());
-						json.put("receiver", record.getUserId());
-					}
-					json.put("point", record.getPoint());
-					json.put("transactionType", record.getTransaction_type());
-					json.put("description", record.getDescription());
+		if(list.size()>0){
+			JSONArray jsonArray = new JSONArray();
+			for(TransactionRecords record:list){
+				JSONObject json = new JSONObject();
+				if(StringUtils.equals(userId, record.getUserId())){
+					json.put("sender", record.getUserId());
+					json.put("receiver", record.getTargetUserId());
 					
-					String createTime = DateFormatUtil.dateToStringM(record.getCreateTime());
-					json.put("createTime", createTime);
-					
-					jsonArray.add(json);
+				}else{
+					json.put("sender", record.getTargetUserId());
+					json.put("receiver", record.getUserId());
 				}
+				json.put("point", record.getPoint());
+				json.put("transactionType", record.getTransaction_type());
+				json.put("description", record.getDescription());
 				
-				jsonObject.put("result", "1");
-				jsonObject.put("value", jsonArray);
-			}else{
-				jsonObject.put("result", "2");
-				jsonObject.put("value", "没有任何的交易信息!");
+				String createTime = DateFormatUtil.dateToStringM(record.getCreateTime());
+				json.put("createTime", createTime);
+				
+				jsonArray.add(json);
 			}
+			
+			jsonObject.put("result", "1");
+			jsonObject.put("value", jsonArray);
+		}else{
+			jsonObject.put("result", "2");
+			jsonObject.put("value", "没有任何的交易信息!");
 		}
+		
 		out.print(jsonObject.toString());
 		
 	}

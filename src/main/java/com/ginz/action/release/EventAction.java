@@ -34,6 +34,8 @@ import org.apache.struts2.dispatcher.multipart.MultiPartRequestWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ginz.action.BaseAction;
+import com.ginz.model.AcMerchant;
+import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
 import com.ginz.model.AcUserDetail;
 import com.ginz.model.Picture;
@@ -282,7 +284,7 @@ public class EventAction extends BaseAction {
 		
 	}
 	
-	//个人用户获取个人动态信息列表
+	//获取个人动态信息列表
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void getEventList() throws IOException, ParseException{
 		
@@ -290,170 +292,176 @@ public class EventAction extends BaseAction {
 		HttpServletRequest request = ServletActionContext.getRequest();
 		response.setContentType("text/html;charset=utf-8");
 		PrintWriter out = response.getWriter();
+		JSONObject jsonObject=new JSONObject();
 		
 		Map<String,String[]> map = request.getParameterMap();
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String userId = valueMap.get("userId");	//需要查看的个人用户id
+		String userId = valueMap.get("userId");	//需要查看的用户id
 		String page = valueMap.get("page");
 		int rows = 20;
 
-		JSONArray jsonArray = new JSONArray();
-		JSONObject jsonObject=new JSONObject();
+		String valueString = "";
+		String in = "";
+		String notIn = "";
 		
-		AcUser user = accountService.loadUser(userId);
+		if(StringUtils.equals(userId.substring(0, 1), "u")){
+			AcUser user = accountService.loadUser(userId);
+			if(user!=null){
+				valueString = getHobbies(user.getUserId());
+				if(!valueString.equals("")){
+					if(valueString.contains("|")){
+						in = valueString.substring(0, valueString.indexOf("|"));;
+						in = in.replace(",", "|");
+						notIn = valueString.substring(valueString.indexOf("|")+1,valueString.length());
+						notIn = notIn.replace(",", "|");
+					}else{
+						in = valueString.replace(",", "|");
+					}
+				}
+			}
+		}else if(StringUtils.equals(userId.substring(0, 1), "p")){
+			AcProperty property = accountService.loadProperty(userId);
+			if(property!=null){
+				in = property.getPropertyName();
+			}
+		}else if(StringUtils.equals(userId.substring(0, 1), "m")){
+			AcMerchant merchant = accountService.loadMerchant(userId);
+			if(merchant!=null){
+				in = merchant.getMerchantName();
+			}
+		}
 		
-		if(user!=null){
-			String valueString = getHobbies(user.getUserId());
-			String in = "";
-			String notIn = "";
-			if(!valueString.equals("")){
-				if(valueString.contains("|")){
-					in = valueString.substring(0, valueString.indexOf("|"));;
-					in = in.replace(",", "|");
-					notIn = valueString.substring(valueString.indexOf("|")+1,valueString.length());
-					notIn = notIn.replace(",", "|");
+		List<ReleaseDemo> todayList = new ArrayList();	//今天发布的消息列表
+		List<ReleaseDemo> ztList = new ArrayList();		//昨天发布的消息列表
+		List<ReleaseDemo> qtList = new ArrayList();		//前天发布的消息列表
+		List<ReleaseDemo> dqtList = new ArrayList();	//大前天发布的消息列表
+		List<ReleaseDemo> otherList = new ArrayList();	//大前天之前发布的消息列表
+		
+		HashMap<String,Object> rethm = eventService.seachEvents(in, notIn);
+		List<Object> list = (List<Object>) rethm.get("list");	//查询内容与用户兴趣爱好接近的信息
+		if(list != null && !list.isEmpty()){
+			Iterator iterator = list.iterator();
+			while(iterator.hasNext()){	//遍历后放入临时对象ReleaseDemo中，形成临时的releaseList
+				Object[] obj = (Object[]) iterator.next();
+				String subject = String.valueOf(obj[1]==null?"":obj[1]);
+				String label = String.valueOf(obj[5]==null?"":obj[5]);
+				String createTime = String.valueOf(obj[2]==null?"":obj[2]);
+				
+				ReleaseDemo release = new ReleaseDemo();
+				release.setId(String.valueOf(obj[0]==null?"":obj[0]));
+				release.setSubject(subject);
+				release.setCreateTime(createTime);
+				release.setUserId(String.valueOf(obj[3]==null?"":obj[3]));
+				release.setPicIds(String.valueOf(obj[4]==null?"":obj[4]));
+				release.setLabel(label);
+				
+				if(StringUtils.isEmpty(in)){
+					release.setSimilarity(0);
 				}else{
-					in = in.replace(",", "|");
+					double similarity =	CosineSimilarAlgorithm.getSimilarity(subject + label, in);	//计算信息主题内容标签和用户兴趣爱好的相似度
+					if(similarity>0){
+						release.setSimilarity(similarity);
+					}else{
+						release.setSimilarity(0.0);
+					}
+				}
+				
+				if(StringUtils.isNotEmpty(createTime)){
+					int flag = DateFormatUtil.judgeDate(DateFormatUtil.toDate(createTime));
+					if(flag==0){
+						todayList.add(release);
+					}else if(flag==-1){
+						ztList.add(release);
+					}else if(flag==-2){
+						qtList.add(release);
+					}else if(flag==-3){
+						dqtList.add(release);
+					}else if(flag<-3){
+						otherList.add(release);
+					}
 				}
 			}
 			
-			List<ReleaseDemo> todayList = new ArrayList();	//今天发布的消息列表
-			List<ReleaseDemo> ztList = new ArrayList();		//昨天发布的消息列表
-			List<ReleaseDemo> qtList = new ArrayList();		//前天发布的消息列表
-			List<ReleaseDemo> dqtList = new ArrayList();	//大前天发布的消息列表
-			List<ReleaseDemo> otherList = new ArrayList();	//大前天之前发布的消息列表
+			JSONArray jsonArray = mergeToArray(userId,todayList,ztList,qtList,dqtList,otherList);	//把今天，昨天，前天，大前天，以及更早的详细列表合并到一个JSONArray中
 			
-			HashMap<String,Object> rethm = eventService.seachEvents(in, notIn);
-			List<Object> list = (List<Object>) rethm.get("list");	//查询内容与用户兴趣爱好接近的信息
-			if(list != null && !list.isEmpty()){
-				Iterator iterator = list.iterator();
-				while(iterator.hasNext()){	//遍历后放入临时对象ReleaseDemo中，形成临时的releaseList
-					Object[] obj = (Object[]) iterator.next();
-					String subject = String.valueOf(obj[1]==null?"":obj[1]);
-					String label = String.valueOf(obj[5]==null?"":obj[5]);
-					String createTime = String.valueOf(obj[2]==null?"":obj[2]);
-					
-					ReleaseDemo release = new ReleaseDemo();
-					release.setId(String.valueOf(obj[0]==null?"":obj[0]));
-					release.setSubject(subject);
-					release.setCreateTime(createTime);
-					release.setUserId(String.valueOf(obj[3]==null?"":obj[3]));
-					release.setPicIds(String.valueOf(obj[4]==null?"":obj[4]));
-					release.setLabel(label);
-					
-					if(StringUtils.isEmpty(in)){
-						release.setSimilarity(0);
+	        int pageNum = Integer.parseInt(page);
+	        if(pageNum == 1){
+				if(jsonArray.size()<rows){
+					jsonObject.put("value", jsonArray);
+				}else{
+					jsonObject.put("value", jsonArray.subList(0,rows));
+				}
+				jsonObject.put("result", "1");
+				jsonObject.put("page", page);
+			}else if(pageNum > 1){
+				if(jsonArray.size()<=(pageNum-1)*rows){
+					jsonObject.put("result", "2");
+					jsonObject.put("page", page);
+					jsonObject.put("value", "没有更多的社区生活信息!");
+				}else{
+					if((jsonArray.size()>(pageNum-1)*rows)&&jsonArray.size()<pageNum*rows){
+						jsonObject.put("value", jsonArray.subList((pageNum-1)*rows, jsonArray.size()));
 					}else{
-						double similarity =	CosineSimilarAlgorithm.getSimilarity(subject + label, in);	//计算信息主题内容标签和用户兴趣爱好的相似度
-						if(similarity>0){
-							release.setSimilarity(similarity);
-						}else{
-							release.setSimilarity(0.0);
-						}
-					}
-					
-					if(StringUtils.isNotEmpty(createTime)){
-						int flag = DateFormatUtil.judgeDate(DateFormatUtil.toDate(createTime));
-						if(flag==0){
-							todayList.add(release);
-						}else if(flag==-1){
-							ztList.add(release);
-						}else if(flag==-2){
-							qtList.add(release);
-						}else if(flag==-3){
-							dqtList.add(release);
-						}else if(flag<-3){
-							otherList.add(release);
-						}
-					}
-				}
-				
-				if(todayList.size()>0){
-					JSONArray todayArray = addToArray(todayList,userId);
-					if(todayArray.size()>0){
-						for(int i=0;i<todayArray.size();i++){
-							JSONObject json = todayArray.getJSONObject(i);
-							jsonArray.add(json);
-						}
-					}
-				}
-				if(ztList.size()>0){
-					JSONArray todayArray = addToArray(ztList,userId);
-					if(todayArray.size()>0){
-						for(int i=0;i<todayArray.size();i++){
-							JSONObject json = todayArray.getJSONObject(i);
-							jsonArray.add(json);
-						}
-					}
-				}
-				if(qtList.size()>0){
-					JSONArray todayArray = addToArray(qtList,userId);
-					if(todayArray.size()>0){
-						for(int i=0;i<todayArray.size();i++){
-							JSONObject json = todayArray.getJSONObject(i);
-							jsonArray.add(json);
-						}
-					}
-				}
-				if(dqtList.size()>0){
-					JSONArray todayArray = addToArray(dqtList,userId);
-					if(todayArray.size()>0){
-						for(int i=0;i<todayArray.size();i++){
-							JSONObject json = todayArray.getJSONObject(i);
-							jsonArray.add(json);
-						}
-					}
-				}
-				if(otherList.size()>0){
-					JSONArray todayArray = addToArray(otherList,userId);
-					if(todayArray.size()>0){
-						for(int i=0;i<todayArray.size();i++){
-							JSONObject json = todayArray.getJSONObject(i);
-							jsonArray.add(json);
-						}
-					}
-				}
-				
-		        int pageNum = Integer.parseInt(page);
-		        if(pageNum == 1){
-					if(jsonArray.size()<rows){
-						jsonObject.put("value", jsonArray);
-					}else{
-						jsonObject.put("value", jsonArray.subList(0,rows));
+						jsonObject.put("value", jsonArray.subList((pageNum-1)*rows, pageNum*rows));
 					}
 					jsonObject.put("result", "1");
 					jsonObject.put("page", page);
-				}else if(pageNum > 1){
-					if(jsonArray.size()<=(pageNum-1)*rows){
-						jsonObject.put("result", "2");
-						jsonObject.put("page", page);
-						jsonObject.put("value", "没有更多的积分互动信息!");
-					}else{
-						if((jsonArray.size()>(pageNum-1)*rows)&&jsonArray.size()<pageNum*rows){
-							jsonObject.put("value", jsonArray.subList((pageNum-1)*rows, jsonArray.size()));
-						}else{
-							jsonObject.put("value", jsonArray.subList((pageNum-1)*rows, pageNum*rows));
-						}
-						jsonObject.put("result", "1");
-						jsonObject.put("page", page);
-					}
 				}
-
-			}else{
-				jsonObject.put("result", "2");
-				jsonObject.put("page", page);
-				jsonObject.put("value", "没有更多的积分互动信息!");
 			}
-			
+
+		}else{
+			jsonObject.put("result", "2");
+			jsonObject.put("page", page);
+			jsonObject.put("value", "没有更多的社区生活信息!");
 		}
+			
 		out.print(jsonObject.toString());
 		
 	}
 	
-	//按相似度对List重新排序，并添加到jsonArray
-	public JSONArray addToArray(List<ReleaseDemo> releaseList,String userId){
+	//把今天，昨天，前天，大前天，以及更早的详细列表合并到一个JSONArray中
+	public JSONArray mergeToArray(String userId, List<ReleaseDemo> todayList, List<ReleaseDemo> ztList, List<ReleaseDemo> qtList, List<ReleaseDemo> dqtList, List<ReleaseDemo> otherList){
+		
+		JSONArray jsonArray = new JSONArray();
+		if(todayList.size()>0){
+			JSONArray todayArray = createArray(todayList,userId);	//按相似度对List重新排序，并添加到JSONArray
+			addToArray(todayArray, jsonArray);						//遍历一个JSONArray并添加进另一个总的JSONArray中
+		}
+		if(ztList.size()>0){
+			JSONArray todayArray = createArray(ztList,userId);
+			addToArray(todayArray, jsonArray);
+		}
+		if(qtList.size()>0){
+			JSONArray todayArray = createArray(qtList,userId);
+			addToArray(todayArray, jsonArray);
+		}
+		if(dqtList.size()>0){
+			JSONArray todayArray = createArray(dqtList,userId);
+			addToArray(todayArray, jsonArray);
+		}
+		if(otherList.size()>0){
+			JSONArray todayArray = createArray(otherList,userId);
+			addToArray(todayArray, jsonArray);
+		}
+		return jsonArray;
+		
+	}
+	
+	//遍历一个JSONArray并添加进另一个总的JSONArray中
+	public JSONArray addToArray(JSONArray sonArray, JSONArray mainArray){
+		if(sonArray.size()>0){
+			for(int i=0;i<sonArray.size();i++){
+				JSONObject json = sonArray.getJSONObject(i);
+				mainArray.add(json);
+			}
+		}
+		return mainArray;
+	}
+	
+	//按相似度对List重新排序，并添加到JSONArray
+	public JSONArray createArray(List<ReleaseDemo> releaseList,String userId){
 		JSONArray jsonArray = new JSONArray();
 		
 		Collections.sort(releaseList, new Comparator<ReleaseDemo>() {	//按相似度重新排序releaseList
@@ -518,32 +526,41 @@ public class EventAction extends BaseAction {
 		if(list.size()>0){
 			AcUserDetail userDetail = list.get(0);
 			if(userDetail != null){
-				if(userDetail.getPersonalTag()!=null&&!userDetail.getPersonalTag().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getPersonalTag())){
 					valueString += "," + userDetail.getPersonalTag();
 				}
-				if(userDetail.getCatering()!=null&&!userDetail.getCatering().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getSystemTag())){
+					valueString += "," + userDetail.getSystemTag();
+				}
+				if(StringUtils.isNotEmpty(userDetail.getCatering())){
 					valueString += "," + userDetail.getCatering();
 				}
-				if(userDetail.getSocialContact()!=null&&!userDetail.getSocialContact().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getSocialContact())){
 					valueString += "," + userDetail.getSocialContact();
 				}
-				if(userDetail.getTravel()!=null&&!userDetail.getTravel().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getTravel())){
 					valueString += "," + userDetail.getTravel();
 				}
-				if(userDetail.getSports()!=null&&!userDetail.getSports().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getSports())){
 					valueString += "," + userDetail.getSports();
 				}
-				if(userDetail.getMusic()!=null&&!userDetail.getMusic().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getMusic())){
 					valueString += "," + userDetail.getMusic();
 				}
-				if(userDetail.getOthers()!=null&&!userDetail.getOthers().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getOthers())){
 					valueString += "," + userDetail.getOthers();
 				}
-				if(userDetail.getCommunityNeed()!=null&&!userDetail.getCommunityNeed().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getCommunityNeed())){
 					valueString += "," + userDetail.getCommunityNeed();
 				}
-				if(userDetail.getDislike()!=null&&!userDetail.getDislike().equals("")){
+				if(StringUtils.isNotEmpty(userDetail.getDislike())){
 					valueString += "|" + userDetail.getDislike();
+				}
+				
+				if(StringUtils.isNotEmpty(valueString)){
+					if(",".equals(valueString.charAt(0)+"")){	//char先转成string再比较
+						valueString = valueString.substring(1,valueString.length());
+					}
 				}
 			}
 		}
@@ -624,7 +641,7 @@ public class EventAction extends BaseAction {
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String userId = valueMap.get("userId");	//点赞操作的用户id-个人用户
+		String userId = valueMap.get("userId");	//点赞操作的用户id
 		String id = valueMap.get("id");	//个人动态信息id
 		
 		int num = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
@@ -652,26 +669,23 @@ public class EventAction extends BaseAction {
 			if(event != null){
 				String uId = event.getUserId();
 				if(!userId.equals(uId)){	//如果是本人点赞，不发推送消息
-					AcUser u = accountService.loadUser(uId);
+					AcUser user = accountService.loadUser(userId);	//点赞的用户
+					AcUser u = accountService.loadUser(uId);		//被点赞的用户
 					if(u!=null){
-						AcUser user = accountService.loadUser(userId);
-						if(user != null){
-							String value = user.getNickName() + "赞了你的信息!";
-							
-							//发送推送给目标用户
-							if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
-								PushIOS.pushSingleDevice(value, u.getDeviceToken());	//通知个人用户有人点赞..
-							}
-							
-							//发送系统通知给目标用户
-							messageService.sendMessage(userId, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_PRAISE);
+						String value = "赞了你的信息!";
+						
+						//发送推送给目标用户
+						if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
+							PushIOS.pushSingleDevice(user.getNickName() + value, u.getDeviceToken());	//通知个人用户有人点赞..
 						}
+						
+						//发送系统通知给目标用户
+						messageService.sendMessage(userId, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_PRAISE);
 					}
 				}
 			}
 		}
 		out.print(jsonObject.toString());
-		
 		countSysTab(userId);
 		
 	}
@@ -690,79 +704,59 @@ public class EventAction extends BaseAction {
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String userId = valueMap.get("userId");	//发表评论的用户id-个人用户
+		String userId = valueMap.get("userId");	//发表评论的用户id
 		String id = valueMap.get("id");	//社区生活信息id
 		String commentId = valueMap.get("commentId");	//回复的评论id，非回复评论而是直接对活动发表评论则为空或是0
 		String content = valueMap.get("content");
-		
-		AcUser user = accountService.loadUser(userId);
-		if(user != null){
-			PubEvent event = eventService.loadEvent(Long.parseLong(id));
-			if(event != null){
-				PubComments comment = new PubComments();
-				comment.setReleaseId(Long.parseLong(id));
-				comment.setReleaseType(DictionaryUtil.RELEASE_TYPE_02);
-				comment.setContent(content);
-				comment.setUserId(userId);
-				comment.setCreateTime(new Date());
-				if(StringUtils.isNotEmpty(commentId)){
-					comment.setFollowId(Long.parseLong(commentId));
-				}
-				comment.setFlag(DictionaryUtil.DETELE_FLAG_00);
-				replyService.saveComments(comment);
-				
-				int num = replyService.countComment(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
-				jsonObject.put("result", "1");
-				jsonObject.put("value", "SUCCESS!");
-				jsonObject.put("number", num);	//更新评论数量
-				out.print(jsonObject.toString());
-				
-				String uId = event.getUserId();	//发布信息的用户id
-				String value = user.getNickName() + "评论了你的信息:" + content;
-				String value2 = user.getNickName() + "回复了你的评论:" + content;
-				String value3 = "你评论过的信息有了新的评论:" + content;
-				if(!userId.equals(uId)){	//非本人发表评论
-					
-					AcUser u = accountService.loadUser(uId);
-					if(u != null){
-						if(StringUtils.isNotEmpty(commentId)){		//回复评论
-							//推送并发送系统消息给信息发布人
-							if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
-								PushIOS.pushSingleDevice(value, u.getDeviceToken());	
-							}
-							messageService.sendMessage(userId, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
-						
-							//发送系统消息给回复的那条评论的发布人
-							PubComments c = replyService.loadComments(Long.parseLong(commentId));
-							if(c!=null){
-								messageService.sendMessage(userId, c.getUserId(), value2, value2, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
-							}
-						
-						}else{		//对信息发布新的评论
-							//推送并发送系统消息给信息发布人
-							if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
-								PushIOS.pushSingleDevice(value, u.getDeviceToken());	
-							}
-							messageService.sendMessage(userId, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
-						
-							//发送系统消息给其他已经评论过该信息的用户
-							List<PubComments> list = replyService.findComments(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' ");
-							if(list.size()>0){
-								for(PubComments c : list){
-									messageService.sendMessage(userId, c.getUserId(), value3, value3, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
-								}
-							}
-						}
-					}
-					
-				}else{	//本人发表评论，不发推送消息
+
+		PubEvent event = eventService.loadEvent(Long.parseLong(id));
+		if(event != null){
+			PubComments comment = new PubComments();
+			comment.setReleaseId(Long.parseLong(id));
+			comment.setReleaseType(DictionaryUtil.RELEASE_TYPE_02);
+			comment.setContent(content);
+			comment.setUserId(userId);
+			comment.setCreateTime(new Date());
+			if(StringUtils.isNotEmpty(commentId)){
+				comment.setFollowId(Long.parseLong(commentId));
+			}
+			comment.setFlag(DictionaryUtil.DETELE_FLAG_00);
+			replyService.saveComments(comment);
+			
+			int num = replyService.countComment(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_02 + "'");
+			jsonObject.put("result", "1");
+			jsonObject.put("value", "SUCCESS!");
+			jsonObject.put("number", num);	//更新评论数量
+			out.print(jsonObject.toString());
+			
+			String uId = event.getUserId();	//发布信息的用户id
+			String value = "评论了你的信息:" + content;
+			String value2 = "回复了你的评论:" + content;
+			String value3 = "你评论过的信息有了新的评论:" + content;
+			if(!userId.equals(uId)){	//非本人发表评论
+				AcUser user = accountService.loadUser(userId);	//评论的用户
+				AcUser u = accountService.loadUser(uId);		//被评论的用户
+				if(u != null){
 					if(StringUtils.isNotEmpty(commentId)){		//回复评论
-						//发送系统消息给所回复评论的发布人
+						//推送并发送系统消息给信息发布人
+						if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
+							PushIOS.pushSingleDevice(user.getNickName() + value, u.getDeviceToken());	
+						}
+						messageService.sendMessage(userId, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+					
+						//发送系统消息给回复的那条评论的发布人
 						PubComments c = replyService.loadComments(Long.parseLong(commentId));
 						if(c!=null){
 							messageService.sendMessage(userId, c.getUserId(), value2, value2, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 						}
-					}else{		//对自己的信息发布新的评论
+					
+					}else{		//对信息发布新的评论
+						//推送并发送系统消息给信息发布人
+						if(u.getDeviceToken()!=null&&!u.getDeviceToken().equals("")){
+							PushIOS.pushSingleDevice(user.getNickName() + value, u.getDeviceToken());	
+						}
+						messageService.sendMessage(userId, uId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+					
 						//发送系统消息给其他已经评论过该信息的用户
 						List<PubComments> list = replyService.findComments(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' ");
 						if(list.size()>0){
@@ -770,14 +764,32 @@ public class EventAction extends BaseAction {
 								messageService.sendMessage(userId, c.getUserId(), value3, value3, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 							}
 						}
-						
 					}
 				}
-			}else{
-				jsonObject.put("result", "2");
-				jsonObject.put("value", "该信息已被删除!");
+				
+			}else{	//本人发表评论，不发推送消息
+				if(StringUtils.isNotEmpty(commentId)){		//回复评论
+					//发送系统消息给所回复评论的发布人
+					PubComments c = replyService.loadComments(Long.parseLong(commentId));
+					if(c!=null){
+						messageService.sendMessage(userId, c.getUserId(), value2, value2, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+					}
+				}else{		//对自己的信息发布新的评论
+					//发送系统消息给其他已经评论过该信息的用户
+					List<PubComments> list = replyService.findComments(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_03 + "' ");
+					if(list.size()>0){
+						for(PubComments c : list){
+							messageService.sendMessage(userId, c.getUserId(), value3, value3, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_02, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+						}
+					}
+					
+				}
 			}
+		}else{
+			jsonObject.put("result", "2");
+			jsonObject.put("value", "该信息已被删除!");
 		}
+		
 		countSysTab(userId);
 		
 	}
@@ -804,10 +816,30 @@ public class EventAction extends BaseAction {
 		if(list.size()>0){
 			for(PubPraise praise:list){
 				JSONObject json = new JSONObject();
-				AcUser user = accountService.loadUser(praise.getUserId());
-				if(user != null){
-					json.put("userId", user.getUserId());
-					json.put("name", user.getNickName());
+				String userId = praise.getUserId();
+				if(StringUtils.isNotEmpty(userId)){
+					if(StringUtils.equals(userId.substring(0, 1), "u")){
+						AcUser user = accountService.loadUser(userId);
+						if(user != null){
+							json.put("userId", user.getUserId());
+							json.put("name", user.getNickName());
+							json.put("headUrl", user.getHeadPortrait());
+						}
+					}else if(StringUtils.equals(userId.substring(0, 1), "p")){
+						AcProperty property = accountService.loadProperty(userId);
+						if(property!=null){
+							json.put("userId", property.getUserId());
+							json.put("name", property.getPropertyName());
+							json.put("headUrl", property.getPicUrl());
+						}
+					}else if(StringUtils.equals(userId.substring(0, 1), "m")){
+						AcMerchant merchant = accountService.loadMerchant(userId);
+						if(merchant!=null){
+							json.put("userId", merchant.getUserId());
+							json.put("name", merchant.getMerchantName());
+							json.put("headUrl", merchant.getPicUrl());
+						}
+					}
 				}
 				jsonArray.add(json);
 			}
@@ -852,11 +884,31 @@ public class EventAction extends BaseAction {
 				json.put("content", comment.getContent());
 				String createTime = DateFormatUtil.dateToStringM(comment.getCreateTime());
 				json.put("createTime", createTime);
-				AcUser user = accountService.loadUser(comment.getUserId());
-				if(user != null){
-					json.put("userId", user.getUserId());
-					json.put("name", user.getNickName());
-					json.put("headUrl", user.getHeadPortrait());
+				
+				String userId = comment.getUserId();
+				if(StringUtils.isNotEmpty(userId)){
+					if(StringUtils.equals(userId.substring(0, 1), "u")){
+						AcUser user = accountService.loadUser(userId);
+						if(user != null){
+							json.put("userId", user.getUserId());
+							json.put("name", user.getNickName());
+							json.put("headUrl", user.getHeadPortrait());
+						}
+					}else if(StringUtils.equals(userId.substring(0, 1), "p")){
+						AcProperty property = accountService.loadProperty(userId);
+						if(property!=null){
+							json.put("userId", property.getUserId());
+							json.put("name", property.getPropertyName());
+							json.put("headUrl", property.getPicUrl());
+						}
+					}else if(StringUtils.equals(userId.substring(0, 1), "m")){
+						AcMerchant merchant = accountService.loadMerchant(userId);
+						if(merchant!=null){
+							json.put("userId", merchant.getUserId());
+							json.put("name", merchant.getMerchantName());
+							json.put("headUrl", merchant.getPicUrl());
+						}
+					}
 				}
 				jsonArray.add(json);
 			}

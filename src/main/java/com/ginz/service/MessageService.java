@@ -20,6 +20,8 @@ public interface MessageService {
 	public MsgMessageBox loadMessageBox(Long id);
 
 	public MsgMessageBox saveMessageBox(MsgMessageBox messageBox);
+	
+	public MsgMessageBox updateMessageBox(MsgMessageBox messageBox);
 
 	public void deleteMessageBox(Long id);
 

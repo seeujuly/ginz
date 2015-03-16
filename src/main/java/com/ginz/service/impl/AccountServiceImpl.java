@@ -16,6 +16,7 @@ import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
 import com.ginz.model.AcUserDetail;
 import com.ginz.service.AccountService;
+import com.ginz.util.base.DictionaryUtil;
 import com.ginz.util.base.Encrypt;
 
 @Service("accountService")
@@ -94,10 +95,13 @@ public class AccountServiceImpl implements AccountService {
 	
 	@Override
 	public AcUser loadUser(String userId){
-		String hql = "from AcUser where userId = '" + userId + "' ";
+		String hql = "from AcUser where userId = '" + userId + "' and status = '" + DictionaryUtil.ACCOUNT_STATUS_00 + "' ";
 		List<AcUser> list = userDao.find(hql);
-		return list.get(0);
-		
+		if(list.size()>0){
+			return list.get(0);
+		}else{
+			return null;
+		}
 	}
 
 	@Override
@@ -241,7 +245,7 @@ public class AccountServiceImpl implements AccountService {
 	
 	@Override
 	public AcProperty loadProperty(String userId){
-		String hql = "from AcProperty where userId = '" + userId + "' ";
+		String hql = "from AcProperty where userId = '" + userId + "' and status = '" + DictionaryUtil.ACCOUNT_STATUS_00 + "' ";
 		List<AcProperty> list = propertyDao.find(hql);
 		return list.get(0);
 		
@@ -324,7 +328,7 @@ public class AccountServiceImpl implements AccountService {
 
 	@Override
 	public AcMerchant loadMerchant(String userId){
-		String hql = "from AcMerchant where userId = '" + userId + "' ";
+		String hql = "from AcMerchant where userId = '" + userId + "' and status = '" + DictionaryUtil.ACCOUNT_STATUS_00 + "' ";
 		List<AcMerchant> list = merchantDao.find(hql);
 		return list.get(0);
 		

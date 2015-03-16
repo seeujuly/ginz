@@ -1,18 +1,20 @@
 package com.ginz.util.base;
 
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
+import java.io.OutputStreamWriter;
 import java.io.RandomAccessFile;
 import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
 
 /**
  * 文件操作类
@@ -166,41 +168,25 @@ public class FileUtil {
 	}
 	
 	/**
-	 * 以PrintWriter来实现写入
+	 * 实现写入文件
 	 * @param destFile目标文件
 	 * @param content写入内容
 	 */
 	public static void write(String destFile,String content){
-		//String path="e://a.txt";  
-        try{  
-            FileWriter fw = new FileWriter(destFile,true);  
-            //fw.write(content);
-            PrintWriter pw = new PrintWriter(fw);  
-            pw.println(content);  
-            pw.close();  
-            fw.close();  
-        }catch (IOException e){  
-            e.printStackTrace();  
-        }  
-	}
-	
-	/**
-	 * 以BufferedWriter来实现写入
-	 * @param destFile目标文件
-	 * @param content1写入内容1
-	 * @param content2写入内容2
-	 */
-	public static void write(String destFile,String content,String content2){
-        try {   
-             FileWriter fw = new FileWriter(destFile,true);   
-             BufferedWriter bw = new BufferedWriter(fw);   
-             bw.newLine();   
-			 bw.write(content);   
-			 bw.close();  
-			 fw.close();   
-        } catch (IOException e) {   
-          e.printStackTrace();   
-        }   
+        
+        try {
+			File file = new File(destFile);
+			Writer writer = new OutputStreamWriter(new FileOutputStream(file), "UTF-8");
+			writer.write(content);
+			writer.close();
+		} catch (UnsupportedEncodingException e) {
+			e.printStackTrace();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+        
 	}
 	
 	/** 

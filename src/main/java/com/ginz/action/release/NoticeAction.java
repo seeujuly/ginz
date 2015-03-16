@@ -29,6 +29,7 @@ import org.apache.struts2.dispatcher.multipart.MultiPartRequestWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.ginz.action.BaseAction;
+import com.ginz.model.AcMerchant;
 import com.ginz.model.AcProperty;
 import com.ginz.model.AcUser;
 import com.ginz.model.Picture;
@@ -193,7 +194,9 @@ public class NoticeAction extends BaseAction{
 		
 		PubNotice notice = new PubNotice();
 		notice.setPropertyId(userId);
-		notice.setCommunityId(Long.parseLong(communityId));
+		if(StringUtils.isNotEmpty(communityId)){
+			notice.setCommunityId(Long.parseLong(communityId));
+		}
 		notice.setSubject(subject);
 		notice.setPicIds(picIds);
 		notice.setCreateTime(nowDate);
@@ -306,7 +309,7 @@ public class NoticeAction extends BaseAction{
 		
 	}
 	
-	//个人用户获取公告列表
+	//获取公告列表
 	@SuppressWarnings("unchecked")
 	public void getNoticeList() throws IOException{
 		
@@ -319,79 +322,85 @@ public class NoticeAction extends BaseAction{
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String userId = valueMap.get("userId");	//个人用户id
+		String userId = valueMap.get("userId");	//用户id
 		String page = valueMap.get("page");
-		int rows = 10;
+		int rows = 20;
 
 		JSONArray jsonArray = new JSONArray();
 		JSONObject jsonObject=new JSONObject();
 		
-		AcUser user = new AcUser();
-		if(userId!=null&&!userId.equals("")){
-			user = accountService.loadUser(userId);
-		}
-	
-		if(user!=null){
-			Long communityId = user.getCommunityId();
-			if(communityId!=null&&communityId!=0){
-				if(Integer.parseInt(page)>1){
-					rows = 5;
-				}
-				List<PubNotice> noticeList = noticeService.findNotice(" and communityId = " + communityId + " order by createTime desc ", Integer.parseInt(page), rows);
-				if(noticeList.size()>0){
-					for(PubNotice notice:noticeList){
-						int praiseNum = replyService.countPraise(" and releaseId = " + notice.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
-						int commentNum = replyService.countComment(" and releaseId = " + notice.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
-						JSONObject json = new JSONObject();
-						json.put("id", notice.getId());
-						json.put("subject", notice.getSubject());
-						json.put("createTime", DateFormatUtil.dateToStringS(notice.getCreateTime()));
-						String picIds = notice.getPicIds();
-						if(picIds!=null&&!picIds.equals("")){
-							String[] ids = picIds.split(",");
-							if(ids.length>0){
-								Picture picture = pictureService.loadPicture(Long.parseLong(ids[0]));
-								if(picture!=null){
-									json.put("picUrl", picture.getUrl());
-								}
-							}
-						}
-						AcProperty property = accountService.loadProperty(notice.getPropertyId());
-						if(property != null){
-							json.put("userId", property.getUserId());
-							json.put("name", property.getPropertyName());
-							json.put("headUrl", property.getPicUrl());
-						}
-						json.put("praiseNum", praiseNum+"");
-						json.put("commentNum", commentNum+"");
-						List<PubPraise> listPraise = replyService.findPraise(" and releaseId = " + notice.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "' and userId = '" + userId + "'");
-						if(listPraise.size()>0){	//判断是否已赞过..
-							json.put("isPraise", "1");
-						}else{
-							json.put("isPraise", "0");
-						}
-						jsonArray.add(json);
-					}
-					jsonObject.put("result", "1");
-					jsonObject.put("page", page);
-					jsonObject.put("value", jsonArray);
+		String condition = "";
+		if(StringUtils.equals(userId.substring(0, 1), "u")){
+			AcUser user = accountService.loadUser(userId);
+			if(user!=null){
+				Long communityId = user.getCommunityId();
+				if(communityId!=null&&communityId!=0){
+					condition = " and communityId = " + communityId + " order by createTime desc ";
 				}else{
-					jsonObject.put("result", "2");
+					jsonObject.put("result", "3");
 					jsonObject.put("page", page);
-					jsonObject.put("value", "没有更多的公告信息!");
+					jsonObject.put("value", "您还未添加社区信息!");
 				}
-			}else{
-				jsonObject.put("result", "3");
-				jsonObject.put("page", page);
-				jsonObject.put("value", "您还未添加社区信息!");
 			}
+		}else if(StringUtils.equals(userId.substring(0, 1), "p")){
+			AcProperty property = accountService.loadProperty(userId);
+			if(property!=null){
+				condition += " and propertyId = '" + userId + "' order by createTime desc ";
+			}
+		}else if(StringUtils.equals(userId.substring(0, 1), "m")){
+			//AcMerchant merchant = accountService.loadMerchant(userId);
 			
 		}
+	
+		List<PubNotice> noticeList = noticeService.findNotice(condition, Integer.parseInt(page), rows);
+		if(noticeList.size()>0){
+			for(PubNotice notice:noticeList){
+				int praiseNum = replyService.countPraise(" and releaseId = " + notice.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
+				int commentNum = replyService.countComment(" and releaseId = " + notice.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
+				JSONObject json = new JSONObject();
+				json.put("id", notice.getId());
+				json.put("subject", notice.getSubject());
+				json.put("createTime", DateFormatUtil.dateToStringS(notice.getCreateTime()));
+				String picIds = notice.getPicIds();
+				if(picIds!=null&&!picIds.equals("")){
+					String[] ids = picIds.split(",");
+					if(ids.length>0){
+						Picture picture = pictureService.loadPicture(Long.parseLong(ids[0]));
+						if(picture!=null){
+							json.put("picUrl", picture.getUrl());
+						}
+					}
+				}
+				AcProperty property = accountService.loadProperty(notice.getPropertyId());
+				if(property != null){
+					json.put("userId", property.getUserId());
+					json.put("name", property.getPropertyName());
+					json.put("headUrl", property.getPicUrl());
+				}
+				json.put("praiseNum", praiseNum+"");
+				json.put("commentNum", commentNum+"");
+				List<PubPraise> listPraise = replyService.findPraise(" and releaseId = " + notice.getId() + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "' and userId = '" + userId + "'");
+				if(listPraise.size()>0){	//判断是否已赞过..
+					json.put("isPraise", "1");
+				}else{
+					json.put("isPraise", "0");
+				}
+				jsonArray.add(json);
+			}
+			jsonObject.put("result", "1");
+			jsonObject.put("page", page);
+			jsonObject.put("value", jsonArray);
+		}else{
+			jsonObject.put("result", "2");
+			jsonObject.put("page", page);
+			jsonObject.put("value", "没有更多的公告信息!");
+		}
+			
 		out.print(jsonObject.toString());
 		
 	}
 	
-	//个人用户获取公告详细内容
+	//获取公告详细内容
 	@SuppressWarnings("unchecked")
 	public void getNoticeDetail() throws IOException{
 		
@@ -411,9 +420,9 @@ public class NoticeAction extends BaseAction{
 		PubNotice notice = noticeService.loadNotice(Long.parseLong(id));
 		if(notice != null){
 			json = JSONObject.fromObject(notice);
-			String startTime = DateFormatUtil.dateToStringM(notice.getStartTime());
-			json.remove("startTime");
-			json.put("startTime", startTime);
+			String createTime = DateFormatUtil.dateToStringM(notice.getCreateTime());
+			json.remove("createTime");
+			json.put("createTime", createTime);
 			AcProperty property = accountService.loadProperty(notice.getPropertyId());
 			if(property!=null){
 				json.put("name", property.getPropertyName());
@@ -464,7 +473,7 @@ public class NoticeAction extends BaseAction{
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String userId = valueMap.get("userId");	//点赞操作的用户id-个人用户
+		String userId = valueMap.get("userId");	//点赞操作的用户id
 		String id = valueMap.get("id");	//公告id
 		
 		int num = replyService.countPraise(" and releaseId = " + Long.parseLong(id) + " and releaseType = '" + DictionaryUtil.RELEASE_TYPE_01 + "'");
@@ -493,19 +502,17 @@ public class NoticeAction extends BaseAction{
 				String propertyId = notice.getPropertyId();
 				if(!userId.equals(propertyId)){	//如果是本人点赞，不发推送消息
 					AcProperty property = accountService.loadProperty(propertyId);
+					AcUser user = accountService.loadUser(userId);	//点赞的用户
 					if(property != null){
-						AcUser user = accountService.loadUser(userId);
-						if(user != null){
-							String value = user.getNickName() + "赞了你的信息!";
-							
-							//发送推送给目标用户
-							if(property.getDeviceToken()!=null&&!property.getDeviceToken().equals("")){
-								PushIOS.pushSingleDevice(value, property.getDeviceToken());	//通知社区用户有人点赞..
-							}
-							
-							//发送系统通知给目标用户
-							messageService.sendMessage(userId, propertyId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_01, DictionaryUtil.MESSAGE_TYPE_PRAISE);
+						String value = "赞了你的信息!";
+						
+						//发送推送给目标用户
+						if(property.getDeviceToken()!=null&&!property.getDeviceToken().equals("")){
+							PushIOS.pushSingleDevice(user.getNickName() + value, property.getDeviceToken());	//通知社区用户有人点赞..
 						}
+						
+						//发送系统通知给目标用户
+						messageService.sendMessage(userId, propertyId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_01, DictionaryUtil.MESSAGE_TYPE_PRAISE);
 					}
 				}
 			}
@@ -528,7 +535,7 @@ public class NoticeAction extends BaseAction{
 		String a[] = map.get("json");
 		String jsonString = a[0];
 		Map<String, String> valueMap = JsonUtil.jsonToMap(jsonString);
-		String userId = valueMap.get("userId");	//发表评论的用户id-个人用户
+		String userId = valueMap.get("userId");	//发表评论的用户id
 		String id = valueMap.get("id");	//公告id
 		String content = valueMap.get("content");
 		
@@ -554,19 +561,17 @@ public class NoticeAction extends BaseAction{
 			String propertyId = notice.getPropertyId();
 			if(!userId.equals(propertyId)){	//如果是本人评论，不发推送消息
 				AcProperty property = accountService.loadProperty(propertyId);
+				AcUser user = accountService.loadUser(userId);	//评论的用户
 				if(property != null){
-					AcUser user = accountService.loadUser(userId);
-					if(user != null){
-						String value = user.getNickName() + "评论了你的信息!";
-						
-						//发送推送给目标用户
-						if(property.getDeviceToken()!=null&&!property.getDeviceToken().equals("")){
-							PushIOS.pushSingleDevice(value, property.getDeviceToken());	//通知社区用户有人评论..
-						}
-						
-						//发送系统通知给目标用户
-						messageService.sendMessage(userId, propertyId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_01, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
+					String value = "评论了你的信息!";
+					
+					//发送推送给目标用户
+					if(property.getDeviceToken()!=null&&!property.getDeviceToken().equals("")){
+						PushIOS.pushSingleDevice(user.getNickName() + value, property.getDeviceToken());	//通知社区用户有人评论..
 					}
+					
+					//发送系统通知给目标用户
+					messageService.sendMessage(userId, propertyId, value, value, Long.parseLong(id), DictionaryUtil.RELEASE_TYPE_01, DictionaryUtil.MESSAGE_TYPE_COMMENTS);
 				}
 			}
 		}
@@ -595,10 +600,30 @@ public class NoticeAction extends BaseAction{
 		if(list.size()>0){
 			for(PubPraise praise:list){
 				JSONObject json = new JSONObject();
-				AcUser user = accountService.loadUser(praise.getUserId());
-				if(user != null){
-					json.put("userId", user.getUserId());
-					json.put("name", user.getNickName());
+				String userId = praise.getUserId();
+				if(StringUtils.isNotEmpty(userId)){
+					if(StringUtils.equals(userId.substring(0, 1), "u")){
+						AcUser user = accountService.loadUser(userId);
+						if(user != null){
+							json.put("userId", user.getUserId());
+							json.put("name", user.getNickName());
+							json.put("headUrl", user.getHeadPortrait());
+						}
+					}else if(StringUtils.equals(userId.substring(0, 1), "p")){
+						AcProperty property = accountService.loadProperty(userId);
+						if(property!=null){
+							json.put("userId", property.getUserId());
+							json.put("name", property.getPropertyName());
+							json.put("headUrl", property.getPicUrl());
+						}
+					}else if(StringUtils.equals(userId.substring(0, 1), "m")){
+						AcMerchant merchant = accountService.loadMerchant(userId);
+						if(merchant!=null){
+							json.put("userId", merchant.getUserId());
+							json.put("name", merchant.getMerchantName());
+							json.put("headUrl", merchant.getPicUrl());
+						}
+					}
 				}
 				jsonArray.add(json);
 			}
@@ -642,12 +667,33 @@ public class NoticeAction extends BaseAction{
 				json.put("content", comment.getContent());
 				String createTime = DateFormatUtil.dateToStringM(comment.getCreateTime());
 				json.put("createTime", createTime);
-				AcUser user = accountService.loadUser(comment.getUserId());
-				if(user != null){
-					json.put("userId", user.getUserId());
-					json.put("name", user.getNickName());
-					json.put("headUrl", user.getHeadPortrait());
+				
+				String userId = comment.getUserId();
+				if(StringUtils.isNotEmpty(userId)){
+					if(StringUtils.equals(userId.substring(0, 1), "u")){
+						AcUser user = accountService.loadUser(userId);
+						if(user != null){
+							json.put("userId", user.getUserId());
+							json.put("name", user.getNickName());
+							json.put("headUrl", user.getHeadPortrait());
+						}
+					}else if(StringUtils.equals(userId.substring(0, 1), "p")){
+						AcProperty property = accountService.loadProperty(userId);
+						if(property!=null){
+							json.put("userId", property.getUserId());
+							json.put("name", property.getPropertyName());
+							json.put("headUrl", property.getPicUrl());
+						}
+					}else if(StringUtils.equals(userId.substring(0, 1), "m")){
+						AcMerchant merchant = accountService.loadMerchant(userId);
+						if(merchant!=null){
+							json.put("userId", merchant.getUserId());
+							json.put("name", merchant.getMerchantName());
+							json.put("headUrl", merchant.getPicUrl());
+						}
+					}
 				}
+				
 				jsonArray.add(json);
 			}
 			jsonObject.put("result", "1");

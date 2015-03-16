@@ -11,7 +11,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Properties;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 
 import com.ginz.util.base.DBHelper;
@@ -127,16 +126,7 @@ public class TimeTask {
 		try {
 			String tabDir = getTabDir();
 			String destFile = fileName + ".txt";
-			File file = new File(tabDir + "/" + destFile);
-			if(file.exists()){
-				FileUtil.copyTo(tabDir + "/" + destFile, tabDir + "/copy/");
-				FileUtils.forceDelete(file);
-			}
 			FileUtil.write(tabDir + "/" + destFile,content);
-			File copyFile = new File(tabDir + "/copy/" + destFile);
-			if(copyFile.exists()){
-				FileUtils.forceDelete(copyFile);
-			}
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

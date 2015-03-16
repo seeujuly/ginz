@@ -71,6 +71,11 @@ public class MessageServiceImpl implements MessageService {
 	public MsgMessageBox saveMessageBox(MsgMessageBox messageBox) {
 		return messageBoxDao.save(messageBox);
 	}
+	
+	@Override
+	public MsgMessageBox updateMessageBox(MsgMessageBox messageBox){
+		return messageBoxDao.update(messageBox);
+	}
 
 	@Override
 	public void deleteMessageBox(Long id) {

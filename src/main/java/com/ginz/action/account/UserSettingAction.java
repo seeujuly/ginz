@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -252,44 +251,41 @@ public class UserSettingAction extends BaseAction {
 		String name = "";
 		String headUrl = "";
 		String bgUrl = "";
-		List<AcUser> userList = new ArrayList();
-		List<AcProperty> propertyList = new ArrayList();
-		List<AcMerchant> merchantList = new ArrayList();
-		if(StringUtils.equals(userId.substring(0, 1), "u")){
-			userList = accountService.findUser(" and userId = '" + tUserId + "' and status = '" + DictionaryUtil.ACCOUNT_STATUS_00 + "' ");
-			if(userList.size()>0){
-				AcUser user = userList.get(0);
+		
+		//判断所要查看的目标用户的账户类型
+		AcUser user = null;
+		AcProperty property = null;
+		AcMerchant merchant = null;
+		if(StringUtils.equals(tUserId.substring(0, 1), "u")){
+			user = accountService.loadUser(tUserId);
+			if(user!=null){
 				name = user.getNickName();
 				headUrl = user.getHeadPortrait();
 				bgUrl = user.getBackground();
 			}
-		}else if(StringUtils.equals(userId.substring(0, 1), "p")){
-			propertyList = accountService.findProperty(" and userId = '" + tUserId + "' and status = '" + DictionaryUtil.ACCOUNT_STATUS_00 + "' ");
-			if(propertyList.size()>0){
-				AcProperty property = propertyList.get(0);
+		}else if(StringUtils.equals(tUserId.substring(0, 1), "p")){
+			property = accountService.loadProperty(tUserId);
+			if(property!=null){
 				name = property.getPropertyName();
 				headUrl = property.getPicUrl();
 				bgUrl = property.getBackground();
 			}
-		}else if(StringUtils.equals(userId.substring(0, 1), "m")){
-			merchantList = accountService.findMerchant(" and userId = '" + tUserId + "' and status = '" + DictionaryUtil.ACCOUNT_STATUS_00 + "' ");
-			if(merchantList.size()>0){
-				AcMerchant merchant = merchantList.get(0);
+		}else if(StringUtils.equals(tUserId.substring(0, 1), "m")){
+			merchant = accountService.loadMerchant(tUserId);
+			if(merchant!=null){
 				name = merchant.getMerchantName();
 				headUrl = merchant.getPicUrl();
 				bgUrl = merchant.getBackground();	
 			}
 		}
 		
-		if(userList.size()>0||propertyList.size()>0||merchantList.size()>0){
+		if(user!=null||property!=null||merchant!=null){
 			jsonObject.put("result", "1");
 			jsonObject.put("name", name);
 			jsonObject.put("headUrl", headUrl);
 			jsonObject.put("bgUrl", bgUrl);
-			
 			HashMap<String,Object> rethm = eventService.listRelease(tUserId);
 			List<Object> list = (List<Object>) rethm.get("list");
-			
 			if(list != null && !list.isEmpty()){
 				Iterator iterator = list.iterator();
 				while(iterator.hasNext()){
@@ -355,31 +351,42 @@ public class UserSettingAction extends BaseAction {
 		
 		String userId = valueMap.get("userId");	//用户id-唯一标识
 		
-		AcUser user = accountService.loadUser(userId);
-		
-		if(user!=null){
-			AcUserDetail userDetail = accountService.loadUserDetail(userId);
-			if(userDetail!=null){
-				jsonObject = JSONObject.fromObject(userDetail);
-				jsonObject.remove("createTime");
-				jsonObject.remove("birthday");
-				jsonObject.remove("workStart");
-				jsonObject.remove("workEnd");
-				String birthday = "";
-				if(userDetail.getBirthday()!=null){
-					birthday = DateFormatUtil.dateToString(userDetail.getBirthday());
+		if(StringUtils.equals(userId.substring(0, 1), "u")){
+			AcUser user = accountService.loadUser(userId);
+			if(user!=null){
+				AcUserDetail userDetail = accountService.loadUserDetail(userId);
+				if(userDetail!=null){
+					jsonObject = JSONObject.fromObject(userDetail);
+					jsonObject.remove("createTime");
+					jsonObject.remove("birthday");
+					jsonObject.remove("workStart");
+					jsonObject.remove("workEnd");
+					String birthday = "";
+					if(userDetail.getBirthday()!=null){
+						birthday = DateFormatUtil.dateToString(userDetail.getBirthday());
+					}
+					jsonObject.put("birthday", birthday);
 				}
-				jsonObject.put("birthday", birthday);
+				jsonObject.put("nickName", user.getNickName());
+				jsonObject.put("email", user.getEmail());
+				jsonObject.put("address", user.getAddress());
 			}
-			jsonObject.put("result", "1");
-			jsonObject.put("nickName", user.getNickName());
-			jsonObject.put("email", user.getEmail());
-			jsonObject.put("address", user.getAddress());
-		}else{
-			jsonObject.put("result", "2");
-			jsonObject.put("value", "查无此人或该用户已被封号");
+		}else if(StringUtils.equals(userId.substring(0, 1), "p")){
+			AcProperty property = accountService.loadProperty(userId);
+			if(property!=null){
+				jsonObject.put("nickName", property.getPropertyName());
+				jsonObject.put("email", property.getEmail());
+				jsonObject.put("address", property.getAddress());
+			}
+		}else if(StringUtils.equals(userId.substring(0, 1), "m")){
+			AcMerchant merchant = accountService.loadMerchant(userId);
+			if(merchant!=null){
+				jsonObject.put("nickName", merchant.getMerchantName());
+				jsonObject.put("email", merchant.getEmail());
+				jsonObject.put("address", merchant.getAddress());
+			}
 		}
-		
+		jsonObject.put("result", "1");
 		out.print(jsonObject.toString());
 		
 	}

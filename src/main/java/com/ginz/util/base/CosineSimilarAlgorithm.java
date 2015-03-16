@@ -27,8 +27,7 @@ public class CosineSimilarAlgorithm {
 		t3.append("音乐会");
 		t3.append("周一10点一起听");
 
-		System.out.println(getSimilarity(t1.toString(),t2.toString()));
-		System.out.println(getSimilarity(t1.toString(),t3.toString()));
+		//System.out.println(getSimilarity(t1.toString(),t2.toString()));
 		
 	}
 
